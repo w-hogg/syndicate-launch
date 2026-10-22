@@ -885,56 +885,57 @@ p.sm { margin: 0; }
   const RDS_P = {};
   for (const id in RDS) RDS_P[id] = EVENTS_PER_YEAR * (RDS[id].w / RDS_W) * MEAN_SEV * (RDS[id].double ? 1.7 : 1);
   const FACTOR_CAP = 4.5;
+  const CAT_BITE = 0.55; // share of each class's catastrophe load that the scenarios carry; lower = gentler catastrophes
 
   // Portfolio templates per class: [label, {rds: relative weight}, structure, window]
   const CLASSES = {
-    propcat: { name: 'Property Cat XoL', short: 'Prop Cat', seg: 're', lr: 0.513, comm: 0.12, scr: 0.70, cat: 0.30, vol: 0.06, tail: 0, rate: -10, distinct: 1,
+    propcat: { name: 'Property Cat XoL', short: 'Prop Cat', seg: 're', lr: 0.577, comm: 0.12, scr: 0.70, cat: 0.30, vol: 0.06, tail: 0, rate: -10, distinct: 1,
       deals: [['European windstorm cat XoL', { euw: 1, ukf: 0.3 }, 'treaty', '1.1'], ['UK flood & storm treaty', { ukf: 1, euw: 0.4 }, 'treaty', '1.1'],
         ['Japan quake & typhoon retro', { jeq: 1, jty: 0.8 }, 'treaty', '1.1'], ['US nationwide cat XoL', { nes: 1, nmq: 0.6, ceq: 0.6, flw: 0.4 }, 'treaty', '1.1'],
         ['Florida homeowners cat XoL', { flw: 1, nes: 0.2 }, 'treaty', '1.7'], ['Gulf commercial property cat QS', { gom: 1, nes: 0.3 }, 'QS', '1.7'],
         ['California quake cat XoL', { ceq: 1, wfr: 0.3 }, 'treaty', '1.7']] },
-    parametric: { name: 'Parametric Climate', short: 'Parametric', seg: 're', lr: 0.539, comm: 0.15, scr: 0.45, cat: 0.22, vol: 0.08, tail: 0, rate: 0, distinct: 3,
+    parametric: { name: 'Parametric Climate', short: 'Parametric', seg: 're', lr: 0.555, comm: 0.15, scr: 0.45, cat: 0.22, vol: 0.08, tail: 0, rate: 0, distinct: 3,
       deals: [['Parametric quake cover, Tokyo', { jeq: 1 }, 'treaty', '1.1'], ['Wildfire parametric for Californian vineyards', { wfr: 1, ceq: 0.3 }, 'binder', '1.1'],
         ['European flood parametric facility', { ukf: 1, euw: 0.5 }, 'facility', '1.1'], ['Parametric hurricane cover for Caribbean utilities', { flw: 1, gom: 0.4 }, 'facility', '1.7']] },
-    propdf: { name: 'Property D&F / US E&S', short: 'Prop D&F', seg: 'pr', lr: 0.495, comm: 0.30, scr: 0.40, cat: 0.10, vol: 0.05, tail: 0, rate: -5, distinct: 1,
+    propdf: { name: 'Property D&F / US E&S', short: 'Prop D&F', seg: 'pr', lr: 0.518, comm: 0.30, scr: 0.40, cat: 0.10, vol: 0.05, tail: 0, rate: -5, distinct: 1,
       deals: [['Texas coastal E&S binder', { gom: 1, nes: 0.2 }, 'binder', '1.1'], ['California high-value homes binder', { ceq: 1, wfr: 0.6 }, 'binder', '1.1'],
         ['US commercial property consortium', { nes: 0.6, gom: 0.5, cyb: 0.3, lmc: 0.3 }, 'consortium', '1.1'], ['Florida homeowners binder', { flw: 1 }, 'binder', '1.7']] },
-    castreaty: { name: 'Casualty Treaty', short: 'Cas Treaty', seg: 're', lr: 0.612, comm: 0.25, scr: 0.45, cat: 0.06, vol: 0.03, tail: 0.09, rate: 5, distinct: 1,
+    castreaty: { name: 'Casualty Treaty', short: 'Cas Treaty', seg: 're', lr: 0.586, comm: 0.25, scr: 0.45, cat: 0.06, vol: 0.03, tail: 0.09, rate: 5, distinct: 1,
       deals: [['US general liability QS', { lia: 1 }, 'QS', '1.1'], ['US auto liability XoL', { lia: 0.7, cyb: 0.1 }, 'treaty', '1.1'],
         ['Umbrella & excess casualty QS', { lia: 1, ter: 0.1 }, 'QS', '1.1'], ['Mid-year casualty QS', { lia: 1 }, 'QS', '1.7']] },
-    finlines: { name: 'Financial Lines (D&O/PI)', short: 'Fin Lines', seg: 'ca', lr: 0.567, comm: 0.27, scr: 0.40, cat: 0.08, vol: 0.04, tail: 0.07, rate: -5, distinct: 1,
+    finlines: { name: 'Financial Lines (D&O/PI)', short: 'Fin Lines', seg: 'ca', lr: 0.528, comm: 0.27, scr: 0.40, cat: 0.08, vol: 0.04, tail: 0.07, rate: -5, distinct: 1,
       deals: [['US D&O lineslip', { lia: 1, cyr: 0.3 }, 'lineslip', '1.1'], ['Lawyers PI consortium', { lia: 0.8, cyr: 0.4 }, 'consortium', '1.1'],
         ['Accountants PI binder', { lia: 0.8 }, 'binder', '1.1'], ['Mid-year D&O lineslip', { lia: 1 }, 'lineslip', '1.7']] },
-    techeo: { name: 'Tech E&O', short: 'Tech E&O', seg: 'ca', lr: 0.574, comm: 0.27, scr: 0.40, cat: 0.08, vol: 0.04, tail: 0.05, rate: -5, distinct: 2,
+    techeo: { name: 'Tech E&O', short: 'Tech E&O', seg: 'ca', lr: 0.577, comm: 0.27, scr: 0.40, cat: 0.08, vol: 0.04, tail: 0.05, rate: -5, distinct: 2,
       deals: [['SaaS tech E&O binder', { cyc: 1, lia: 0.4 }, 'binder', '1.1'], ['Tech E&O consortium', { cyc: 0.6, cyr: 0.5, lia: 0.5 }, 'consortium', '1.1'],
         ['Mid-year tech E&O lineslip', { cyc: 0.6, lia: 0.5 }, 'lineslip', '1.7']] },
-    cyber: { name: 'Cyber', short: 'Cyber', seg: 'ca', lr: 0.426, comm: 0.28, scr: 0.50, cat: 0.24, vol: 0.07, tail: 0, rate: -15, distinct: 2,
+    cyber: { name: 'Cyber', short: 'Cyber', seg: 'ca', lr: 0.415, comm: 0.28, scr: 0.50, cat: 0.24, vol: 0.07, tail: 0, rate: -15, distinct: 2,
       deals: [['SME cyber MGA binder', { cyr: 1, cyc: 0.5, cyb: 0.3 }, 'binder', '1.1'], ['20% QS of a cyber MGA book', { cyc: 1, cyr: 0.7, cyb: 0.4 }, 'QS', '1.1'],
         ['Large-corporate cyber consortium', { cyb: 1, cyc: 0.8, cyr: 0.6 }, 'consortium', '1.1'], ['Mid-year cyber QS', { cyr: 1, cyc: 0.6 }, 'QS', '1.7']] },
-    marine: { name: 'Marine Hull & Cargo', short: 'Marine', seg: 'mat', lr: 0.553, comm: 0.25, scr: 0.40, cat: 0.11, vol: 0.05, tail: 0, rate: 5, distinct: 2,
+    marine: { name: 'Marine Hull & Cargo', short: 'Marine', seg: 'mat', lr: 0.542, comm: 0.25, scr: 0.40, cat: 0.11, vol: 0.05, tail: 0, rate: 5, distinct: 2,
       deals: [['Marine cargo consortium', { mar: 1, gom: 0.2 }, 'consortium', '1.1'], ['War & strikes cargo QS', { mar: 0.6, pol: 0.6 }, 'QS', '1.1'],
         ['Gulf hull & machinery lineslip', { gom: 1, mar: 0.5 }, 'lineslip', '1.7']] },
     energy: { name: 'Energy', short: 'Energy', seg: 'mat', lr: 0.511, comm: 0.22, scr: 0.45, cat: 0.15, vol: 0.07, tail: 0, rate: 0, distinct: 2,
       deals: [['Downstream refinery package', { lmc: 1, cyb: 0.2 }, 'facility', '1.1'], ['Offshore wind construction binder', { euw: 0.8, lmc: 0.5 }, 'binder', '1.1'],
         ['Gulf of Mexico upstream energy consortium', { gom: 1, lmc: 0.6 }, 'consortium', '1.7']] },
-    aviation: { name: 'Aviation & Av War', short: 'Aviation', seg: 'mat', lr: 0.595, comm: 0.22, scr: 0.45, cat: 0.17, vol: 0.06, tail: 0, rate: 5, distinct: 2,
+    aviation: { name: 'Aviation & Av War', short: 'Aviation', seg: 'mat', lr: 0.612, comm: 0.22, scr: 0.45, cat: 0.17, vol: 0.06, tail: 0, rate: 5, distinct: 2,
       deals: [['Airline hull & liability lineslip', { avc: 1, ter: 0.3 }, 'lineslip', '1.1'], ['Aviation war consortium', { pol: 1, ter: 0.4 }, 'consortium', '1.1'],
         ['General aviation binder', { avc: 0.6, ter: 0.2 }, 'binder', '1.7']] },
-    space: { name: 'Space', short: 'Space', seg: 'sp', lr: 0.507, comm: 0.15, scr: 0.60, cat: 0.32, vol: 0.10, tail: 0, rate: 10, distinct: 3,
+    space: { name: 'Space', short: 'Space', seg: 'sp', lr: 0.528, comm: 0.15, scr: 0.60, cat: 0.32, vol: 0.10, tail: 0, rate: 10, distinct: 3,
       deals: [['Satellite launch + 1 year in orbit', { sat: 1, pol: 0.2 }, 'consortium', '1.1'], ['LEO constellation in-orbit cover', { sat: 1, cyb: 0.3 }, 'facility', '1.7']] },
-    terror: { name: 'Political Violence & Terror', short: 'PV & Terror', seg: 'sp', lr: 0.492, comm: 0.25, scr: 0.40, cat: 0.17, vol: 0.05, tail: 0, rate: 0, distinct: 2,
+    terror: { name: 'Political Violence & Terror', short: 'PV & Terror', seg: 'sp', lr: 0.488, comm: 0.25, scr: 0.40, cat: 0.17, vol: 0.05, tail: 0, rate: 0, distinct: 2,
       deals: [['Political violence binder, emerging markets', { srcc: 1, pol: 0.5 }, 'binder', '1.1'], ['City-centre terrorism consortium', { ter: 1, srcc: 0.3 }, 'consortium', '1.1'],
         ['Mid-year PV lineslip', { srcc: 1, pol: 0.4 }, 'lineslip', '1.7']] },
-    prc: { name: 'Political Risk & Credit', short: 'PR & Credit', seg: 'sp', lr: 0.52, comm: 0.22, scr: 0.45, cat: 0.18, vol: 0.05, tail: 0.03, rate: 5, distinct: 2,
+    prc: { name: 'Political Risk & Credit', short: 'PR & Credit', seg: 'sp', lr: 0.517, comm: 0.22, scr: 0.45, cat: 0.18, vol: 0.05, tail: 0.03, rate: 5, distinct: 2,
       deals: [['Contract frustration lineslip', { pol: 1 }, 'lineslip', '1.1'], ['Trade credit QS', { pol: 0.8, lia: 0.2 }, 'QS', '1.1'],
         ['Confiscation & expropriation binder', { pol: 1 }, 'binder', '1.7']] },
-    specie: { name: 'Specie & Fine Art', short: 'Specie', seg: 'sp', lr: 0.567, comm: 0.25, scr: 0.35, cat: 0.12, vol: 0.05, tail: 0, rate: 0, distinct: 2,
+    specie: { name: 'Specie & Fine Art', short: 'Specie', seg: 'sp', lr: 0.565, comm: 0.25, scr: 0.35, cat: 0.12, vol: 0.05, tail: 0, rate: 0, distinct: 2,
       deals: [['Fine art & specie consortium', { hst: 1, ter: 0.3, mar: 0.2 }, 'consortium', '1.1'], ['Jewellers’ block binder', { hst: 1 }, 'binder', '1.1'],
         ['Cash-in-transit lineslip', { hst: 0.8, srcc: 0.4 }, 'lineslip', '1.7']] },
-    contingency: { name: 'Contingency & K&R', short: 'Contingency', seg: 'sp', lr: 0.55, comm: 0.25, scr: 0.40, cat: 0.15, vol: 0.05, tail: 0, rate: 0, distinct: 2,
+    contingency: { name: 'Contingency & K&R', short: 'Contingency', seg: 'sp', lr: 0.536, comm: 0.25, scr: 0.40, cat: 0.15, vol: 0.05, tail: 0, rate: 0, distinct: 2,
       deals: [['Festival cancellation binder', { evc: 1, ter: 0.3 }, 'binder', '1.1'], ['Kidnap & ransom consortium', { pol: 0.6, srcc: 0.4 }, 'consortium', '1.1'],
         ['Sports non-appearance lineslip', { evc: 1 }, 'lineslip', '1.7']] },
-    ah: { name: 'Accident & Health', short: 'A&H', seg: 'sp', lr: 0.569, comm: 0.32, scr: 0.20, cat: 0.04, vol: 0.03, tail: 0, rate: 0, distinct: 1,
+    ah: { name: 'Accident & Health', short: 'A&H', seg: 'sp', lr: 0.524, comm: 0.32, scr: 0.20, cat: 0.04, vol: 0.03, tail: 0, rate: 0, distinct: 1,
       deals: [['Business travel A&H binder', { avc: 0.6, ter: 0.4 }, 'binder', '1.1'], ['Gig-worker personal accident binder', { srcc: 0.4, ter: 0.3 }, 'binder', '1.1'],
         ['Sports injury A&H lineslip', { evc: 0.5, ter: 0.2 }, 'lineslip', '1.7']] }
   };
@@ -943,6 +944,7 @@ p.sm { margin: 0; }
   for (const id in CLASSES) {
     const c = CLASSES[id];
     c.id = id;
+    c.cat *= CAT_BITE;
     c.templates = c.deals.map((d, i) => {
       const rel = d[1];
       let base = 0; for (const r in rel) base += rel[r] * RDS_P[r];
@@ -2002,7 +2004,7 @@ p.sm { margin: 0; }
   };
 
   const BADGES = {
-    bigone: ['Survived the Big One', 'Took a catastrophe hit of £10m+ and still created value'],
+    bigone: ['Survived the Big One', 'Took a catastrophe hit of £6m+ and still created value'],
     bigline: ['Big Line Energy', 'Wrote 10 or more big lines'],
     bloodhound: ['Bordereaux Bloodhound', 'Dealt with every portfolio alert'],
     lutine: ['Lutine Double', 'Combined ratio under 85% over three years'],
@@ -2278,7 +2280,7 @@ p.sm { margin: 0; }
         const p = E.mixProfile(m.split);
         const dots = Object.keys(m.split).map((c) => '<i style="background:' + clsColor(c) + '" title="' + esc(E.CLASSES[c].name) + '"></i>').join('');
         return '<button class="mixcard" data-mix="' + m.id + '" aria-pressed="false"><span class="dots">' + dots + '</span><span class="mname">' + esc(m.name) + '</span><span class="mtag">' + esc(m.tag) + '</span>' +
-          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(Math.min(1, Math.max(0.05, (p.margin - 0.05) / 0.3)) * 100) + '%"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.28) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%"></b></span></button>';
+          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(Math.min(1, Math.max(0.05, (p.margin - 0.06) / 0.15)) * 100) + '%"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%"></b></span></button>';
       }).join('');
       const auCards = Object.keys(E.AUS).map((id) => {
         const a = E.AUS[id];
@@ -2408,8 +2410,8 @@ p.sm { margin: 0; }
       // stats
       const p = E.mixProfile(G.split);
       stats.innerHTML =
-        '<div class="stat"><span class="eyebrow">Quiet-year margin</span><span class="v num">' + pct(p.margin, 1) + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, Math.max(0.03, (p.margin - 0.05) / 0.3)) * 100) + '%"></i></div></div>' +
-        '<div class="stat"><span class="eyebrow">Volatility</span><span class="v">' + (p.vol > 0.2 ? 'Wild' : p.vol > 0.15 ? 'Lively' : p.vol > 0.1 ? 'Steady' : 'Sleepy') + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.vol / 0.28) * 100) + '%;background:var(--bad)"></i></div></div>' +
+        '<div class="stat"><span class="eyebrow">Quiet-year margin</span><span class="v num">' + pct(p.margin, 1) + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, Math.max(0.03, (p.margin - 0.06) / 0.15)) * 100) + '%"></i></div></div>' +
+        '<div class="stat"><span class="eyebrow">Volatility</span><span class="v">' + (p.vol > 0.15 ? 'Wild' : p.vol > 0.12 ? 'Lively' : p.vol > 0.08 ? 'Steady' : 'Sleepy') + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%;background:var(--bad)"></i></div></div>' +
         '<div class="stat"><span class="eyebrow">Capital (ECA)</span><span class="v num">£' + p.eca.toFixed(0) + 'm</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%;background:var(--crane)"></i></div></div>' +
         '<div class="stat' + (p.div > 0.15 ? ' shimmer' : '') + '"><span class="eyebrow">Diversification credit</span><span class="v num">' + pct(p.div, 0) + '</span><div class="meter"><i style="width:' + Math.round((p.div / 0.25) * 100) + '%;background:var(--good)"></i></div></div>';
     },
@@ -4291,7 +4293,7 @@ p.sm { margin: 0; }
       const avgT = G.decisionTimes.length ? G.decisionTimes.reduce((a, b) => a + b, 0) / G.decisionTimes.length : 99;
       const paidCall = Object.values(G.cashChoices).includes('pay');
       const badges = [];
-      if (G.market.events.some((e) => e.loss > 10) && res.value > 0) badges.push('bigone');
+      if (G.market.events.some((e) => e.loss > 6) && res.value > 0) badges.push('bigone');
       if (G.bigLines >= 10) badges.push('bigline');
       if (G.alerts.length && G.alerts.every((a) => a.alert === 'audit' || a.alert === 'exit')) badges.push('bloodhound');
       if (res.runoff === null && res.gwp > 60 && res.cor < 0.85) badges.push('lutine');

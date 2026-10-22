@@ -77,6 +77,8 @@ Add the three years, then
 
 Profits stay in the syndicate until a year closes, so they count towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash: pay up, or go into run-off and end the game.
 
+**How likely are you to succeed?** In simulation over 104 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, follows the rate cycle) finishes with a positive score about **9 times in 10**. A casual player does so about 8 times in 10, with a lower score: a median of about 26,000 against 38,000. Random swiping succeeds about 1 time in 4.
+
 ## Fair competition
 
 The three-year market (each year's modifier, the catastrophes, the rate cycle and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. Opened as a plain file, it keeps a leaderboard on your device and offers a "Copy result" line to paste into chat.
