@@ -2023,11 +2023,13 @@ p.sm { margin: 0; }
   };
 
   // ---------- pointer drag helper (tap and keyboard fall back to onTap) ----------
+  // opts.ignore: selector for child controls that keep their own clicks (pointer capture would swallow them)
   function draggable(node, opts) {
     let id = null, sx = 0, sy = 0, lx = 0, ly = 0, lt = 0, vx = 0, vy = 0, moved = false;
     const th = opts.threshold || 6;
     node.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 || (opts.enabled && !opts.enabled())) return;
+      if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
       id = e.pointerId; sx = lx = e.clientX; sy = ly = e.clientY; lt = performance.now(); moved = false; vx = vy = 0;
       try { node.setPointerCapture(id); } catch (err) { /* capture unsupported */ }
       opts.onDown && opts.onDown(e);
@@ -3248,6 +3250,7 @@ p.sm { margin: 0; }
       const gs = slip.querySelector('#gs');
       const dir = (dx, dy) => (Math.abs(dy) > Math.abs(dx) && dy > 0 ? 1 : dx > 0 ? 2 : 0);
       draggable(slip, {
+        ignore: '.tell',
         enabled: () => this.cur && !this.cur.busy && !this.over,
         onStart: () => slip.classList.add('dragging'),
         onMove: (dx, dy) => {
