@@ -349,9 +349,23 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .bar2 { position: relative; height: 8px; border-radius: 4px; background: var(--night-2); margin-top: 5px; overflow: hidden; }
 .bar2 i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--good); transition: width .4s; }
 .bar2 .line { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--bad); }
-.mixbars { display: grid; gap: 2px; margin-top: 4px; }
-.mixbars div { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: var(--night-2); }
-.mixbars span { display: block; height: 100%; transition: width .4s; }
+.mixgauge { display: block; width: 100%; text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
+.mixgauge:hover { border-color: var(--crane); }
+.mixbars { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 5px; align-items: center; margin-top: 4px; }
+.mixbars em { font: 700 0.5rem/1 var(--f-ui); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.mixbars .mb { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--night-2); }
+.mixbars .mb i { display: block; height: 100%; background: var(--c); border-right: 1px solid #0c131b; transition: width .4s; }
+.mixbars .mb i.offplan { background: repeating-linear-gradient(135deg, var(--c) 0 3px, #0c131b 3px 5px); }
+.mixpop { width: min(300px, calc(100vw - 40px)); }
+@media (max-width: 640px) { .mixbars { grid-template-columns: minmax(0, 1fr); } .mixbars em, .mixgauge .wide { display: none; } }
+.mixpop table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.mixpop th { text-align: left; font: 700 0.58rem/1 var(--f-ui); letter-spacing: 0.08em; text-transform: uppercase; color: #6a6252; padding: 2px 4px 4px; }
+.mixpop td { padding: 3px 4px; border-top: 1px solid #23272c1f; }
+.mixpop td i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid #0006; }
+.mixpop td small { color: var(--stamp); font-weight: 700; }
+.mixpop td.over { color: var(--stamp); font-weight: 700; } .mixpop td.under { color: #1b2a6b; font-weight: 700; }
+.mixpop p { margin: 0; font-size: 0.74rem; }
+.tag.mixtag.good { border-color: #1d7a4c; color: #1d7a4c; } .tag.mixtag.bad { border-color: var(--stamp); color: var(--stamp); }
 .perilbtn { min-height: 0; height: 100%; border-radius: 10px; padding: 0 12px; display: grid; place-items: center; gap: 2px; background: var(--steel); border: 1px solid var(--girder); cursor: pointer; font: 700 0.6rem/1 var(--f-ui); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); }
 .perilbtn svg { width: 22px; height: 22px; }
 .perilbtn.hot { border-color: var(--bad); color: #ffd2c9; box-shadow: 0 0 calc(var(--heat, 0) * 24px) #e5543f; animation: throb 1.2s ease-in-out infinite; }
@@ -1846,7 +1860,12 @@ p.sm { margin: 0; }
   const fmtPts = (n) => (n < 0 ? '−' : '') + Math.abs(Math.round(n)).toLocaleString('en-GB');
   const pct = (x, d = 0) => (x * 100).toFixed(d) + '%';
   const segVar = (seg) => 'var(--seg-' + seg + ')';
-  const clsColor = (cls) => segVar(E.CLASSES[cls].seg);
+  // one colour per class, chosen so the classes in every mix are easy to tell apart
+  const CLASS_COLOR = {
+    propcat: '#9283f7', parametric: '#c4b5fd', castreaty: '#5b8def', propdf: '#ee8c3d', finlines: '#2fb7a6', techeo: '#99f6e4', cyber: '#4ade80', marine: '#38bdf8',
+    energy: '#facc15', aviation: '#cbd5e1', space: '#e862a3', terror: '#f87171', prc: '#d4a24c', specie: '#f0abfc', contingency: '#a3e635', ah: '#fda4af'
+  };
+  const clsColor = (cls) => CLASS_COLOR[cls] || segVar(E.CLASSES[cls].seg);
   const lerp = (a, b, t) => a + (b - a) * t;
   const rand = Math.random;
   const pick = (a) => a[Math.floor(rand() * a.length)];
@@ -3215,7 +3234,7 @@ p.sm { margin: 0; }
         '<div class="hud">' +
         '<div class="gauge"><span class="eyebrow">Capital <b id="hCap"></b></span><div class="bar2"><i id="hCapBar"></i><span class="line" id="hCapLine"></span></div></div>' +
         '<div class="gauge"><span class="eyebrow">GWP <b id="hGwp"></b></span><div class="bar2"><i id="hGwpBar" style="background:var(--crane)"></i><span class="line" id="hGwpLine" style="background:var(--ink-2)"></span></div></div>' +
-        '<div class="gauge"><span class="eyebrow">Mix <b id="hDrift"></b></span><div class="mixbars"><div id="hPlan"></div><div id="hBound"></div></div></div>' +
+        '<button class="gauge mixgauge" id="mixGauge" aria-label="Your business mix against plan"><span class="eyebrow">Mix <b id="hDrift"></b></span><span class="mixbars"><em>Plan</em><span class="mb" id="hPlan"></span><em>Written</em><span class="mb" id="hBound"></span></span></button>' +
         '<button class="perilbtn" id="rdsBtn" aria-label="Open the RDS Board">' + icon('storm') + '<span id="rdsTxt">RDS</span></button>' +
         '</div>' +
         '<div class="box" id="box"><div class="clock" id="clock" hidden></div><div class="brokerrow" id="brokerRow"></div><div class="slotarea" id="slotArea"></div>' +
@@ -3225,6 +3244,7 @@ p.sm { margin: 0; }
         '</div></section>');
       this.root = root;
       root.querySelectorAll('.actions [data-line]').forEach((b) => b.addEventListener('click', () => this.decide(+b.dataset.line)));
+      root.querySelector('#mixGauge').addEventListener('click', (e) => { e.stopPropagation(); this.mixInfo(); });
       root.querySelector('#rdsBtn').addEventListener('click', () => { if (this.phase === 'ff' || this.phase === 'rush' || this.phase === 'mid17') this.openRDS({ mode: 'view' }); });
       root.querySelectorAll('.favour').forEach((n) => this.wireFavour(n));
       this.onKey = (e) => {
@@ -3407,11 +3427,14 @@ p.sm { margin: 0; }
       this.root.querySelector('#hGwp').textContent = '£' + bt.toFixed(0) + '/' + Y.capacity.toFixed(0) + 'm';
       this.root.querySelector('#hGwpBar').style.width = Math.min(100, (bt / (Y.capacity * 1.3)) * 100) + '%';
       this.root.querySelector('#hGwpLine').style.left = (1 / 1.3) * 100 + '%';
-      const w = E.weights(Y.split);
-      this.root.querySelector('#hPlan').innerHTML = Object.keys(w).map((k) => '<span style="width:' + w[k] * 100 + '%;background:' + clsColor(k) + '"></span>').join('');
-      const bound = {}; yoaEntries(this.y).forEach((b) => { bound[b.deal.cls] = (bound[b.deal.cls] || 0) + b.P; });
-      this.root.querySelector('#hBound').innerHTML = bt ? Object.keys(bound).map((k) => '<span style="width:' + (bound[k] / bt) * 100 + '%;background:' + clsColor(k) + '"></span>').join('') : '';
-      this.root.querySelector('#hDrift').textContent = bt ? Math.round(this.drift()) + ' pts off' : 'on plan';
+      // plan and written side by side, in plan order; classes outside the plan are hatched
+      const md = this.mixData();
+      this.root.querySelector('#hPlan').innerHTML = md.rows.filter((r) => r.plan > 0).map((r) => '<i style="width:' + r.plan * 100 + '%;--c:' + clsColor(r.k) + '"></i>').join('');
+      this.root.querySelector('#hBound').innerHTML = md.bt ? md.rows.filter((r) => r.wrote > 0).map((r) => '<i class="' + (r.off ? 'offplan' : '') + '" style="width:' + r.wrote * 100 + '%;--c:' + clsColor(r.k) + '"></i>').join('') : '';
+      const dr = Math.round(md.drift), hd = this.root.querySelector('#hDrift');
+      hd.innerHTML = md.bt ? dr + '% off<span class="wide"> plan</span>' : 'nothing yet';
+      // stay neutral until enough is written to judge (the Q1 review ignores the mix below 30% of plan)
+      hd.style.color = !md.bt || md.bt < Y.capacity * 0.3 ? '' : dr <= 10 ? 'var(--good)' : dr <= 35 ? 'var(--warn)' : '#ffb3a6';
       const wr = this.worstRDS();
       const rb = this.root.querySelector('#rdsBtn');
       this.root.querySelector('#rdsTxt').textContent = wr ? 'RDS ' + Math.round(wr.pct * 100) + '%' : 'RDS';
@@ -3420,12 +3443,37 @@ p.sm { margin: 0; }
       if (this.phase === 'ff') { const fm = this.root.querySelector('#ffMonth'); if (fm) fm.textContent = MONTHS[Math.min(11, this.month)] + ' ' + yoaName(this.y); }
       return vals;
     },
-    drift() {
-      const bt = yoaTot(this.y); if (!bt) return 0;
+    // this year's written mix against the plan; drift is the share of written premium sitting in different classes from the plan
+    mixData(extra) {
       const w = E.weights(this.Y.split), bound = {};
       yoaEntries(this.y).forEach((b) => { bound[b.deal.cls] = (bound[b.deal.cls] || 0) + b.P; });
-      let d = 0; for (const k of new Set([...Object.keys(w), ...Object.keys(bound)])) d += Math.abs((bound[k] || 0) / bt - (w[k] || 0));
-      return d * 50;
+      if (extra) bound[extra.cls] = (bound[extra.cls] || 0) + extra.P;
+      const bt = Object.values(bound).reduce((s, v) => s + v, 0);
+      const rows = Object.keys(w).concat(Object.keys(bound).filter((k) => !(k in w))).map((k) => ({ k, plan: w[k] || 0, wrote: bt ? (bound[k] || 0) / bt : 0, off: !(k in w) }));
+      return { rows, bt, drift: bt ? rows.reduce((s, r) => s + Math.abs(r.wrote - r.plan), 0) * 50 : 0 };
+    },
+    drift() { return this.mixData().drift; },
+    mixInfo() {
+      const old = this.root.querySelector('.mixpop'); if (old) { old.remove(); return; }
+      this.root.querySelectorAll('.popover').forEach((p) => p.remove());
+      const md = this.mixData(), dr = Math.round(md.drift);
+      const pc = (x) => Math.round(x * 100) + '%';
+      const rows = md.rows.map((r) => {
+        const d = Math.round((r.wrote - r.plan) * 100);
+        return '<tr><td><i style="background:' + clsColor(r.k) + '"></i>' + esc(E.CLASSES[r.k].short) + (r.off ? ' <small>not in plan</small>' : '') + '</td><td class="num">' + pc(r.plan) + '</td><td class="num">' + (md.bt ? pc(r.wrote) : '–') + '</td>' +
+          '<td class="num ' + (d > 2 ? 'over' : d < -2 ? 'under' : '') + '">' + (md.bt ? (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d) : '') + '</td></tr>';
+      }).join('');
+      const p = el('<div class="popover mixpop" role="dialog"><h4>Your mix vs plan · YoA ' + yoaName(this.y) + '</h4>' +
+        '<table><thead><tr><th>Class</th><th>Plan</th><th>Written</th><th>Gap</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p>' + (md.bt ? '<b>' + dr + '%</b> of the premium you’ve written is in different classes from your plan.' : 'Nothing written yet this year.') + ' Within 10%: the on-plan bonus. Over 35% at the Q1 review: a PMD letter.</p>' +
+        '<div class="row"><button class="btn ghost" data-a="close">Close</button></div></div>');
+      const hud = this.root.querySelector('.hud'), g = this.root.querySelector('#mixGauge');
+      hud.style.position = 'relative';
+      hud.appendChild(p);
+      p.style.top = 'calc(100% + 6px)';
+      p.style.left = Math.max(0, Math.min(g.offsetLeft, hud.clientWidth - p.offsetWidth)) + 'px';
+      p.querySelector('[data-a="close"]').addEventListener('click', () => p.remove());
+      setTimeout(() => { const off = (e) => { if (!p.contains(e.target)) { p.remove(); removeEventListener('pointerdown', off, true); } }; addEventListener('pointerdown', off, true); }, 0);
     },
     rdsState(abs) {
       const at = abs == null ? Math.floor(this.abs()) : abs;
@@ -3588,6 +3636,12 @@ p.sm { margin: 0; }
         '<span>RDS: <b>' + esc(E.RDS[main].name) + '</b> +' + fmtM(addS) + ' / +' + fmtM(addS * 2) + ' → ' + Math.round(pctBig * 100) + '% of appetite</span>' +
         '<span class="rdsmini"><i style="width:' + Math.min(100, pctNow * 100) + '%"></i><i class="add" style="left:' + Math.min(100, pctNow * 100) + '%;width:' + Math.max(0, Math.min(100, pctBig * 100) - Math.min(100, pctNow * 100)) + '%;background:' + col + '"></i></span></div>';
     },
+    // would a small line on this slip bring the mix closer to plan, or push it further away?
+    mixHint(d) {
+      const now = this.mixData(); if (!now.bt) return '';
+      const after = this.mixData({ cls: d.cls, P: d.base }).drift;
+      return after < now.drift - 0.5 ? '<span class="tag mixtag good">Helps your mix</span>' : after > now.drift + 0.5 ? '<span class="tag mixtag bad">Moves you off plan</span>' : '';
+    },
     renderSlip() {
       const c = this.cur, d = c.d, cl = E.CLASSES[d.cls];
       const area = this.root.querySelector('#slotArea');
@@ -3595,7 +3649,7 @@ p.sm { margin: 0; }
       area.innerHTML = '<div class="slip" id="slip"><div class="holes"><i></i><i></i><i></i><i></i></div>' +
         '<div class="sh"><span>' + esc(STRUCT[d.structure] || d.structure) + ' · ' + d.window + '</span><span>Incepts ' + when + '</span></div>' +
         '<h3>' + esc(d.label) + '</h3>' +
-        '<div class="clsrow"><span class="tag" style="--c:' + clsColor(d.cls) + '"><i></i>' + esc(cl.name) + '</span>' + (d.off ? '<span class="tag off">Off plan</span>' : '') + (d.hot ? '<span class="tag">Hot box</span>' : '') + '</div>' +
+        '<div class="clsrow"><span class="tag" style="--c:' + clsColor(d.cls) + '"><i></i>' + esc(cl.name) + '</span>' + (d.off ? '<span class="tag off">Off plan</span>' : this.mixHint(d)) + (d.hot ? '<span class="tag">Hot box</span>' : '') + '</div>' +
         '<div class="terms"><div><span>Small line</span><b class="num">£' + d.base.toFixed(1) + 'm</b></div><div><span>Big line</span><b class="num">£' + (d.base * 2).toFixed(1) + 'm</b></div>' +
         '<div><span>Commission</span><b class="num">' + Math.round(d.comm * 100) + '%</b></div><div><span>Market rates</span><b class="num">' + (cl.rate > 0 ? '+' : '') + cl.rate + '%</b></div></div>' +
         this.rdsLine(d) +
@@ -3717,10 +3771,10 @@ p.sm { margin: 0; }
       const drift = this.drift();
       const box = this.root.querySelector('#slotArea');
       box.innerHTML = '<div class="ffpanel" id="q1panel" style="position:relative"><span class="eyebrow">Lloyd’s Q1 review</span><div class="ffmonth">YoA ' + yoaName(this.y) + '</div><p>' +
-        (over.length ? esc(E.RDS[over[0].r].name) + ' is at ' + Math.round(over[0].pct * 100) + '% of your agreed appetite.' : 'RDS within appetite.') + ' Mix ' + Math.round(drift) + ' points from plan.</p></div>';
+        (over.length ? esc(E.RDS[over[0].r].name) + ' is at ' + Math.round(over[0].pct * 100) + '% of your agreed appetite.' : 'RDS within appetite.') + ' Mix ' + Math.round(drift) + '% off plan.</p></div>';
       const panel = box.querySelector('#q1panel');
       if (over.length) this.pmdLetter('your net ' + E.RDS[over[0].r].name + ' exposure is ' + Math.round(over[0].pct * 100) + '% of the appetite in your plan.');
-      else if (drift > 35 && yoaTot(this.y) > this.Y.capacity * 0.3) this.pmdLetter('your business mix has drifted ' + Math.round(drift) + ' points from your SBF.');
+      else if (drift > 35 && yoaTot(this.y) > this.Y.capacity * 0.3) this.pmdLetter(Math.round(drift) + '% of the premium you’ve written is in different classes from your business plan.');
       else slamStamp(panel, 'On track<small>Q1 review</small>', { pos: 'right:8%;top:22%', rot: -7, shake: false, blue: true });
       this.over = true;
       setTimeout(() => this.resumeFF(), (over.length ? 2600 : 1500) / SPEED);
