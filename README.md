@@ -31,6 +31,7 @@ A planner bar runs January to December, with pins for 1.1, the Q1 review, 1.4 an
 | Outwards | Place two annual cat XL shields on your RDS rows | Buying the reinsurance programme at 1.1 |
 | Q1 review | Lloyd's checks your RDS against appetite and your mix against plan | PMD quarterly monitoring |
 | Portfolio alerts | A coverholder misbehaves: audit it (£0.3m), exit the book, or ignore it and its loss ratio rises 35% | Binder oversight and bordereaux |
+| In-tray (twice a year) | An event needs one of three answers within 15 seconds: Lloyd's and the regulators, a market change, your people and brokers, or claims and reserves | The day job of a managing agency |
 | Catastrophes | Forecast storms give you 10 seconds to buy a last-minute ILW or make the Reinsurance Call; earthquakes, cyber and man-made losses arrive without warning | Lloyd's RDS: compulsory natural and man-made scenarios, specialist scenarios and syndicate-defined ones |
 | 1.7 window | A few mid-year slips, mostly property cat | The 1 July renewals |
 | SBF day (1 September) | Read the market outlook, choose next year's stamp (Shrink, Hold, Grow, Go large, all based on this year's actual stamp), move up to two chips, and get PMD's stamp. PMD caps growth above a 95% projected combined ratio, blocks it above 105% and cuts the stamp by 20% above 115% | The Syndicate Business Forecast |
@@ -47,6 +48,17 @@ The **Capital**, **GWP** and **Mix** gauges show their reference marks (the solv
 - `1` / `2` / `3` play a Favour
 - `P` opens the RDS Board (between renewal windows)
 - `Esc` pauses
+
+## The in-tray
+
+Twice a year, in a quiet month, something lands on your desk and you choose one of three answers before a 15-second clock runs out. There are 18 events in four groups:
+
+- **Lloyd's & regulators:** an incorrect quarterly return (QMA), a new Lloyd's account manager, a sanctions screening hit, a coverholder data breach, a request for climate scenario analysis.
+- **Market changes:** rates jump after an industry loss, a reinsurer pulls out of your cat XL, claims inflation spikes, conflict lifts marine war rates.
+- **People & brokers:** a rival poaches your star underwriter, a rival's star wants to join you, a broker wants more commission, the members' agent calls, a whistleblower.
+- **Claims & reserves:** a disputed large claim, the actuary flags reserve deterioration, a coverholder exceeds its authority, a suspected fraud ring.
+
+Questions from Lloyd's and the regulators have a right answer, and you only see the effect once you've chosen; the wrong one can cost a PMD letter. Market, people and claims events are judgement calls, and each answer shows what it does: a cost now, a loss ratio change, a new book, cheaper or dearer shields next year, or a risk settled at year end (a court case, or reserves that may or may not deteriorate). Fines and your agency's own costs come straight off your value; syndicate costs are shared with your members. The annual report lists each year's events and reveals how the risky ones turned out, and rival news tells you how the other syndicates handled theirs.
 
 ## Catastrophes and RDS
 
@@ -74,11 +86,13 @@ Your score is the value **your managing agency** creates over three years of acc
 ```
 For each year of account:
   Gross written premium − commission − attritional losses − cat losses (after outwards)
-  − reserve development − expenses and outwards spend  = syndicate underwriting result
+  − reserve development − expenses, outwards spend and
+    in-tray syndicate costs                             = syndicate underwriting result
   − members' share of that result                      = your share of the result
   − cost of your own capital (and your share of any cash call)
   + managing agency fees on members' shares
   + profit commission on members' profits (after their losses are made good)
+  − in-tray costs that fall on your agency (fines, reviews, retention bonuses)
                                                         = value to your agency
 Add the three years, then
   + £0.5m (500 points) for each year on plan
@@ -93,11 +107,11 @@ Add the three years, then
 
 Profits stay in the syndicate until a year closes, so your share counts towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash, and you pay your share of it. Pay up, or go into run-off and end the game.
 
-**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle) finishes with a positive score **more than 9 times in 10** whatever their own share. A casual player does so 8 to 9 times in 10, with a lower score. Random swiping succeeds about 1 time in 4. Keeping all of the stamp yourself gives the highest average (about 38,000 for a careful player); keeping 20% gives about 20,000, but a gentler worst case.
+**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle, handles the in-tray well) finishes with a positive score **about 9 times in 10** whatever their own share. A casual player does so 3 to 4 times in 5, with a lower score. Random swiping succeeds about 1 time in 5. Keeping all of the stamp yourself gives the highest average (about 34,000 for a careful player); keeping 20% gives about 19,000, but a gentler worst case.
 
 ## Fair competition
 
-The three-year market (each year's modifier, the catastrophes, the rate cycle and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. Opened as a plain file, it keeps a leaderboard on your device and offers a "Copy result" line to paste into chat.
+The three-year market (each year's modifier, the catastrophes, the rate cycle, the in-tray events and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. Opened as a plain file, it keeps a leaderboard on your device and offers a "Copy result" line to paste into chat.
 
 ## Under the hood
 

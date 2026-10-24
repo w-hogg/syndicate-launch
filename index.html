@@ -532,6 +532,29 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 @keyframes toastIn { from { transform: translateY(-14px); opacity: 0; } }
 .letter { position: absolute; z-index: 35; right: 10px; bottom: 60px; width: min(300px, calc(100% - 20px)); background: var(--slip); color: var(--slip-ink); padding: 12px; border-radius: 4px; font: 400 0.76rem/1.45 var(--f-slip); box-shadow: 0 16px 40px #000c; animation: letterIn .5s cubic-bezier(.2,1.2,.4,1); }
 .letter h4 { margin: 0 0 4px; font: 700 0.8rem/1.2 var(--f-slip); text-transform: uppercase; }
+.letter.warn { border-top: 4px solid var(--warn); }
+.letter { pointer-events: none; }
+.evsheet { display: grid; gap: 10px; }
+.evcard { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; }
+.evwho { display: grid; justify-items: center; gap: 2px; width: 104px; text-align: center; }
+.evwho .face { width: 76px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #2a3d52, var(--night-2)); border: 2px solid var(--girder); overflow: hidden; }
+.evwho b { font-size: 0.72rem; line-height: 1.2; color: var(--ink); }
+.evwho small { font-size: 0.62rem; color: var(--ink-3); line-height: 1.2; }
+.evtext { position: relative; margin: 0; background: var(--slip); color: var(--slip-ink); border-radius: 12px; padding: 10px 12px; font: 400 0.86rem/1.45 var(--f-slip); box-shadow: 0 6px 16px #0007; }
+.evtext::before { content: ""; position: absolute; left: -6px; top: 50%; width: 12px; height: 12px; background: var(--slip); transform: translateY(-50%) rotate(45deg); }
+.evans { display: grid; gap: 8px; }
+.evbtn { text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--slip); color: var(--slip-ink); border: 0; font: 600 var(--t-s)/1.35 var(--f-ui); cursor: pointer; box-shadow: 0 4px 0 var(--slip-2), 0 8px 18px #0006; display: flex; gap: 10px; align-items: flex-start; min-width: 0; }
+.evbtn .k { font: 800 0.8rem/1 var(--f-display); background: var(--slip-ink); color: var(--slip); border-radius: 4px; padding: 3px 6px; flex: none; }
+.evbtn .t { display: grid; gap: 3px; min-width: 0; }
+.evbtn small { font: 600 0.7rem/1.3 var(--f-ui); color: #5a5446; }
+.evbtn:hover:not(:disabled) { transform: translateY(-1px); }
+.evbtn:disabled { cursor: default; opacity: .55; }
+.evbtn.chosen { opacity: 1; outline: 3px solid var(--brass); }
+.evfoot { display: grid; gap: 8px; }
+.evfoot .timer { width: 100%; }
+.evsay { margin: 0; font: italic 400 0.86rem/1.4 var(--f-slip); color: var(--ink); }
+.evfx { margin: 0; font-size: 0.8rem; color: var(--ink-2); }
+@media (max-width: 520px) { .evcard { grid-template-columns: minmax(0, 1fr); justify-items: center; } .evtext::before { left: 50%; top: -6px; transform: translateX(-50%) rotate(45deg); } .evwho { width: auto; } }
 @keyframes letterIn { from { transform: translateY(120%) rotate(8deg); } }
 #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 80; }
 .helpgrid { display: grid; gap: 8px; font-size: var(--t-s); color: var(--ink-2); }
@@ -1479,14 +1502,17 @@ p.sm { margin: 0; }
     const T = 12 * YEARS;
     const curve = [], uwCurve = [];
     const per = [];
-    for (let y = 0; y < YEARS; y++) per.push({ yoa: y, gwp: 0, comm: 0, attr: 0, cat: 0, res: 0, expenses: 0, outwards: 0, ilw: 0, audits: 0, fixed: 0, uwGross: 0, qsTake: 0, uw: 0, capCost: 0, cashCallCost: 0, value: 0, bound: {}, onPlan: false });
+    for (let y = 0; y < YEARS; y++) per.push({ yoa: y, gwp: 0, comm: 0, attr: 0, cat: 0, res: 0, expenses: 0, outwards: 0, ilw: 0, audits: 0, fixed: 0, evSynd: 0, evAgency: 0, uwGross: 0, qsTake: 0, uw: 0, capCost: 0, cashCallCost: 0, value: 0, bound: {}, onPlan: false });
     const lines = entries.map(b => ({
-      b, lr: dealLR(b.deal, m) * (b.alert === 'ignore' ? 1.35 : 1), cat: 0,
+      b, lr: dealLR(b.deal, m) * (b.alert === 'ignore' ? 1.35 : 1) * fxLR(b, o.fx), cat: 0,
       end: b.alert === 'exit' ? b.alertMonth : b.start + 12
     }));
     for (const l of lines) if (l.b.alert === 'audit' && au !== 'forensic') { per[l.b.yoa].audits += 0.3; }
-    const evByMonth = {};
+    const evByMonth = {}, fxByMonth = {};
     m.events.forEach(e => { (evByMonth[e.month] = evByMonth[e.month] || []).push(e); });
+    // in-year events: syndicate costs and the agency's own costs land in the month they happen
+    (o.fx || []).forEach(f => { if (f.synd || f.agency) (fxByMonth[f.month] = fxByMonth[f.month] || []).push(f); });
+    let agencyEv = 0;
     let cumUW = 0, worstUW = 0, cashCallCost = 0, runoff = null, agencyCum = 0, agencyCash = 0;
     let agDone = 0, yAg = 0, yPool = 0, pcDeficit = 0, pcNow = 0;
     const cashCalls = [];
@@ -1529,6 +1555,10 @@ p.sm { margin: 0; }
         }
         if (o.ilw && o.ilw[e.key]) { const c = gross * ILW_COST; per[y].ilw += c; uw -= c; }
       }
+      for (const f of (fxByMonth[mo] || [])) {
+        if (f.synd) { uw -= f.synd; per[f.y].evSynd += f.synd; }
+        if (f.agency) { per[f.y].evAgency += f.agency; agencyEv += f.agency; }
+      }
       cumUW += net(uw);
       worstUW = Math.min(worstUW, cumUW);
       // the agency's running value for the race: its own share and fees, plus profit commission once members are in profit
@@ -1552,7 +1582,7 @@ p.sm { margin: 0; }
       }
       const capAccrued = o.years.slice(0, y).reduce((s, Y) => s + Y.capital.reduce((a, c) => a + c.amt * c.rate, 0), 0)
         + Yo.capital.reduce((a, c) => a + c.amt * c.rate, 0) * ((mo % 12) + 1) / 12;
-      curve.push(round1(agencyCum - capAccrued - agencyCash));
+      curve.push(round1(agencyCum - capAccrued - agencyCash - agencyEv));
       uwCurve.push(cumUW);
       if (runoff !== null) break;
     }
@@ -1582,7 +1612,7 @@ p.sm { margin: 0; }
       if (runoff !== null && 12 * y > runoff) { P.skipped = true; continue; }
       const yearFrac = runoff !== null && runoff < 12 * y + 12 ? (runoff - 12 * y + 1) / 12 : 1;
       P.fixed *= yearFrac;
-      P.expenses = P.fixed + P.outwards + P.ilw + P.audits;
+      P.expenses = P.fixed + P.outwards + P.ilw + P.audits + P.evSynd;
       P.uwGross = P.gwp - P.comm - P.attr - P.cat - P.res - P.expenses;
       P.qsTake = o.qs ? P.uwGross * QS_SHARE : 0;
       P.uw = P.uwGross - P.qsTake;
@@ -1597,7 +1627,7 @@ p.sm { margin: 0; }
       P.membersTake = third * P.uw - P.fees - P.pc;
       P.alignedUW = a * P.uw;
       P.capCost = Yo.capital.reduce((s, c) => s + c.amt * c.rate, 0) * yearFrac + a * P.cashCallCost;
-      P.value = P.alignedUW - P.capCost + P.fees + P.pc;
+      P.value = P.alignedUW - P.capCost + P.fees + P.pc - P.evAgency;
       P.cor = P.gwp > 0 ? (P.comm + P.attr + P.cat + P.res + P.expenses) / P.gwp : 0;
       P.fal = Yo.fal;
       P.roc = Yo.fal > 0 ? P.uw / Yo.fal : 0;
@@ -1658,11 +1688,12 @@ p.sm { margin: 0; }
     for (const e of entries) {
       if (e.yoa !== yoa) continue;
       P += e.P;
-      loss += e.P * (e.deal.comm + dealLR(e.deal, market) * (e.alert === 'ignore' ? 1.35 : 1));
+      loss += e.P * (e.deal.comm + dealLR(e.deal, market) * (e.alert === 'ignore' ? 1.35 : 1) * fxLR(e, prot && prot.fx));
       const Y = prot && prot.years && prot.years[Math.floor(Math.max(month, e.start) / 12)];
       let exp = 0; for (const r in e.deal.rds) exp += e.deal.rds[r] * RDS_P[r] * (Y && (Y.outwards || []).includes(r) ? 0.5 : 1);
       loss += e.P * exp * clamp((bookEnd(e) - Math.max(month, e.start)) / 12, 0, 1);
     }
+    for (const f of (prot && prot.fx) || []) if (f.y === yoa && f.month <= month && f.synd) loss += f.synd;
     for (const ev of market.events) {
       if (ev.month > month) continue;
       const mult = protMult(ev, prot);
@@ -1680,6 +1711,263 @@ p.sm { margin: 0; }
     if (runoff !== null && runoff !== undefined) return 'Run-off';
     const g = GRADES.find(([min]) => score >= min);
     return g ? g[1] : 'Remediation plan';
+  }
+
+
+  // ---------- in-year events: two a year from four groups, the same draw for everyone in a week ----------
+  // kind 'rule' has a right answer (tags good/ok/bad) and keeps its effects hidden until you choose; kind 'trade' shows them.
+  // An answer's fx(c) can hold: agency (£m, your agency's own cost), synd (£m, a syndicate cost shared with members),
+  // (negative agency is income), lr [{mult, cls|id}] on this year's books, pmd, goodwill (waives the next PMD letter),
+  // add {cls, P, prefer} (a new book), scale {f, cls|id} (premium), shield (next year's cat XL price), snub {broker, half}
+  // (their slips skip your next 1.1), and risk {p, hit, miss, hitText, missText}, decided by the week's roll at year end.
+  const EVENT_GROUPS = { lloyds: 'Lloyd’s & regulators', market: 'Market change', people: 'People & brokers', claims: 'Claims & reserves' };
+  const EVENT_MONTHS = [[1, 3], [7, 9]]; // Feb or Apr, then Aug or Oct: the quiet months of the year
+  const fmtM1 = (x) => '£' + (x < 1 ? String(Math.round(x * 100) / 100) : (Math.round(x * 10) / 10).toFixed(1)) + 'm';
+  const CONTACTS = ['Priya Raman', 'Tom Okafor', 'Hannah Lowe', 'Marcus Bell'];
+  const EVENTS = [
+    { id: 'badreturn', group: 'lloyds', kind: 'rule', who: 'lloyds', title: 'Your quarterly return was wrong',
+      text: () => 'Lloyd’s Market Finance has spotted that your Quarterly Monitoring Return (QMA) went in with last quarter’s reserve figures. They want it put right.',
+      a: [{ t: 'Resubmit today, with a note on what went wrong and how you’ve fixed it.', tag: 'good', fx: () => ({ agency: 0.1 }), say: 'Thanks for being upfront. We’ll log it as resolved.' },
+        { t: 'Resubmit it quietly. No need for a fuss.', tag: 'ok', fx: () => ({ agency: 0.4 }), say: 'We noticed the silence. We’d like an independent review of your reporting, at your cost.' },
+        { t: 'Explain that the difference isn’t material.', tag: 'bad', fx: () => ({ pmd: 1 }), say: 'Materiality is our call, not yours. Expect a letter.' }],
+      news: 'argued with Lloyd’s over a wrong return' },
+    { id: 'newcontact', group: 'lloyds', kind: 'rule', who: 'newcontact', title: 'A new face at Lloyd’s',
+      text: (c) => 'Your Lloyd’s account manager has moved on. ' + c.contact + ', the new one, wants to understand your syndicate before business plan season.',
+      a: [{ t: 'Walk them through your plan, your RDS and your reserves in person.', tag: 'good', fx: () => ({ goodwill: 1 }), say: 'Really helpful. I’ll bear it in mind if Performance Management has concerns.' },
+        { t: 'Send the slide deck and offer a call.', tag: 'ok', fx: () => ({}), say: 'Thanks. I’ll read it when I can.' },
+        { t: 'Point them at last year’s SBF: it’s all in there.', tag: 'bad', fx: () => ({ agency: 0.3 }), say: 'Then we’ll need monthly reporting from you for a while.' }],
+      news: 'brushed off its new Lloyd’s contact' },
+    { id: 'sanctions', group: 'lloyds', kind: 'rule', who: 'compliance', title: 'A sanctions screening hit', when: (c) => !!c.book,
+      text: (c) => 'Screening shows that ' + c.book.deal.label + ' covers a company that has just been added to the UK sanctions list.',
+      a: [{ t: 'Freeze the cover, report it to OFSI and Lloyd’s, and tighten your screening.', tag: 'good', fx: () => ({ agency: 0.2 }), say: 'Reported within the day. Lloyd’s is satisfied.' },
+        { t: 'Cancel the cover quietly and move on.', tag: 'ok', fx: () => ({ agency: 0.6 }), say: 'The broker reported it before you did. The late report costs a penalty.' },
+        { t: 'Keep it on risk: a claim is unlikely.', tag: 'bad', fx: () => ({ pmd: 1, agency: 0.5 }), say: 'That’s a sanctions breach. A penalty, and PMD wants a word.' }],
+      news: 'was caught covering a sanctioned company' },
+    { id: 'breach', group: 'lloyds', kind: 'rule', who: 'compliance', title: 'A coverholder data breach', when: (c) => !!c.binder,
+      text: (c) => 'The coverholder behind ' + c.binder.deal.label + ' has been hit by ransomware. Policyholder data may have been taken.',
+      a: [{ t: 'Make sure the regulator hears within 72 hours, tell Lloyd’s, and pay for a forensic review.', tag: 'good', fx: () => ({ agency: 0.3 }), say: 'Notified on time, and the forensic review finds the gap.' },
+        { t: 'Leave it to the coverholder: it’s their system.', tag: 'ok', fx: () => ({ agency: 0.6 }), say: 'Lloyd’s reminds you that overseeing your coverholders is your job. A remediation programme follows.' },
+        { t: 'Wait and see whether any data turns up online.', tag: 'bad', fx: () => ({ pmd: 1, synd: 0.4 }), say: 'It did. Claims from policyholders, and a letter from PMD.' }],
+      news: 'sat on a coverholder data breach' },
+    { id: 'climate', group: 'lloyds', kind: 'rule', who: 'lloyds', title: 'Climate scenario analysis',
+      text: () => 'Lloyd’s wants every syndicate’s climate scenario analysis this year, covering physical, transition and liability risk.',
+      a: [{ t: 'Build it from your RDS and cat modelling: most of the work is done.', tag: 'good', fx: () => ({ agency: 0.05 }), say: 'Joined-up thinking. Exactly what we hoped for.' },
+        { t: 'Hire a consultancy to write it from scratch.', tag: 'ok', fx: () => ({ agency: 0.5 }), say: 'Very glossy. Very expensive.' },
+        { t: 'Push back: climate isn’t really your business.', tag: 'bad', fx: () => ({ pmd: 1 }), say: 'It’s everyone’s business. Expect a letter.' }],
+      news: 'told Lloyd’s that climate wasn’t its business' },
+    { id: 'hardening', group: 'market', kind: 'trade', who: (c) => c.brokerId, title: 'Rates jump after an industry loss', when: (c) => !!c.hot,
+      text: (c) => 'A big industry loss has pushed ' + CLASSES[c.hot].name + ' rates up sharply. ' + c.brokerName + ' can get you a mid-year line on a ' + CLASSES[c.hot].short + ' book at the new rates.',
+      a: [{ t: (c) => 'Take a big line: ' + fmtM1(c.big) + '.', tag: 'bold', fx: (c) => ({ add: { cls: c.hot, P: c.big } }), say: 'Lovely. Hard-market pricing, while it lasts.' },
+        { t: (c) => 'Take a small line: ' + fmtM1(c.small) + '.', tag: 'mid', fx: (c) => ({ add: { cls: c.hot, P: c.small } }), say: 'Sensible. I’ll scratch it now.' },
+        { t: 'Pass: the plan is the plan.', tag: 'safe', fx: () => ({}), say: 'Your loss. Someone else will take it.' }],
+      timeout: 2, best: (c) => (c.gwpRatio + c.big / c.capacity <= 1.12 ? 0 : c.gwpRatio + c.small / c.capacity <= 1.12 ? 1 : 2), news: 'piled into the hard market' },
+    { id: 'retro', group: 'market', kind: 'trade', who: 'reggie', title: 'A reinsurer pulls out', when: (c) => c.y < 2,
+      text: () => 'One of the reinsurers behind your cat XL is leaving the market. Next year’s shields will cost more unless you act.',
+      a: [{ t: 'Lock in a two-year deal now for £0.4m.', tag: 'safe', fx: () => ({ synd: 0.4, shield: 1 }), show: '−£0.4m now; next year’s shields at the usual price.', say: 'Done. Two years, fixed.' },
+        { t: 'Wait for 1.1 and pay the going rate.', tag: 'mid', fx: () => ({ shield: 1.35 }), show: 'Next year’s shields cost 35% more.', say: 'Your call. Prices only go one way after a pull-out.' },
+        { t: 'Wait, and hold out for a better price.', tag: 'bold', fx: () => ({ risk: { p: 0.5, hit: { shield: 1.7 }, miss: { shield: 1 }, hitText: 'The market hardened: next year’s shields cost 70% more.', missText: 'A new reinsurer arrived: next year’s shields at the usual price.' } }), show: 'Even odds, settled at year end: next year’s shields at the usual price, or 70% more.', say: 'Brave. I’ll keep my ear to the ground.' }],
+      timeout: 1, best: (c) => (c.buysShields ? 0 : 1) },
+    { id: 'inflation', group: 'market', kind: 'trade', who: 'actuary', title: 'Claims inflation spikes', when: (c) => !!c.top && c.topP > 2,
+      text: (c) => 'Claims inflation has hit 9%. Your ' + CLASSES[c.top].name + ' business (' + fmtM1(c.topP) + ' this year) was priced for 4%.',
+      a: [{ t: 'Reprice mid-term: push rates up and accept losing some business.', tag: 'safe', fx: (c) => ({ scale: { cls: c.top, f: 0.92 } }), show: (c) => CLASSES[c.top].short + ' premium falls 8%; its loss ratio holds.', say: 'Painful, but the book stays honest.' },
+        { t: 'Hold rates and absorb it.', tag: 'bold', fx: (c) => ({ lr: [{ cls: c.top, mult: 1.08 }] }), show: (c) => 'Your ' + CLASSES[c.top].short + ' loss ratio rises 8% this year.', say: 'Then the reserves had better hold.' },
+        { t: (c) => 'Buy an aggregate stop-loss for ' + fmtM1(c.stop) + '.', tag: 'mid', fx: (c) => ({ synd: c.stop }), show: (c) => '−' + fmtM1(c.stop) + '; the loss ratio holds.', say: 'Belt and braces. I approve.' }],
+      timeout: 1, best: (c) => { const C = CLASSES[c.top]; const cost = [0.16 * c.topP * Math.max(0.1, 1 - C.comm - C.lr - C.cat - 0.08), 0.08 * C.lr * c.topP, c.stop]; return cost.indexOf(Math.min(...cost)); },
+      news: 'got caught out by claims inflation' },
+    { id: 'war', group: 'market', kind: 'trade', who: (c) => c.brokerId, title: 'Conflict lifts war rates',
+      text: (c) => 'Conflict has flared in a major shipping lane, and war rates for hull and cargo are up 50%. ' + c.brokerName + ' needs a lead on a marine war book.' + ('marine' in c.split ? '' : ' Marine isn’t in your business plan, so Lloyd’s would want to know.'),
+      a: [{ t: (c) => 'Lead it with a big line: ' + fmtM1(c.warBig) + '.', tag: 'bold', fx: (c) => ({ add: { cls: 'marine', P: c.warBig, prefer: 'war' }, pmd: 'marine' in c.split ? 0 : 1 }), say: 'That’s what a lead looks like.' },
+        { t: (c) => 'Follow with a small line: ' + fmtM1(c.warSmall) + '.', tag: 'mid', fx: (c) => ({ add: { cls: 'marine', P: c.warSmall, prefer: 'war' }, pmd: 'marine' in c.split ? 0 : 1 }), say: 'Fair enough. I’ll find a lead elsewhere.' },
+        { t: 'Pass: war cover isn’t in your plan.', tag: 'safe', fx: () => ({}), say: 'Understood. Plenty of others will.' }],
+      timeout: 2, best: (c) => (!('marine' in c.split) ? 2 : c.gwpRatio + c.warBig / c.capacity <= 1.12 ? 0 : c.gwpRatio + c.warSmall / c.capacity <= 1.12 ? 1 : 2), news: 'led a war book into a hot market' },
+    { id: 'poached', group: 'people', kind: 'trade', who: (c) => c.au, title: 'Your star underwriter is poached', when: (c) => !!c.top,
+      text: (c) => c.rival + ' has offered your lead ' + CLASSES[c.top].name + ' underwriter a 40% pay rise to jump ship.',
+      a: [{ t: 'Match it, with a retention bonus.', tag: 'safe', fx: () => ({ agency: 0.5 }), say: 'They’re staying. Expensive, but they know the book.' },
+        { t: 'Let them go and promote the deputy.', tag: 'bold', fx: (c) => ({ lr: [{ cls: c.top, mult: 1.05 }] }), show: (c) => 'Your ' + CLASSES[c.top].short + ' loss ratio rises 5% this year.', say: 'The deputy is keen. Keen isn’t the same as experienced.' },
+        { t: 'Hire a replacement from another syndicate.', tag: 'mid', fx: (c) => ({ agency: 0.25, lr: [{ cls: c.top, mult: 1.02 }] }), show: (c) => '−£0.25m (your agency); the ' + CLASSES[c.top].short + ' loss ratio rises 2%.', say: 'A safe pair of hands, at a price.' }],
+      timeout: 1, best: (c) => { const C = CLASSES[c.top]; const cost = [0.5, 0.05 * C.lr * c.topP * c.a, 0.25 + 0.02 * C.lr * c.topP * c.a]; return cost.indexOf(Math.min(...cost)); },
+      news: 'lost its star underwriter to a rival' },
+    { id: 'commission', group: 'people', kind: 'trade', who: (c) => c.brokerId, title: 'A broker wants more commission', when: (c) => c.y < 2 && c.brokerP > 3,
+      text: (c) => c.brokerName + ' of ' + c.brokerFirm + ' wants 2.5 points more commission on everything placed with you this year (' + fmtM1(c.brokerP) + ').',
+      a: [{ t: 'Agree: they’re your biggest broker.', tag: 'safe', fx: (c) => ({ synd: 0.025 * c.brokerP }), say: 'Splendid. The box will be busy.' },
+        { t: 'Meet them halfway at 1 point.', tag: 'mid', fx: (c) => ({ synd: 0.01 * c.brokerP, snub: { broker: c.brokerId, half: true } }), show: (c) => '−' + fmtM1(0.01 * c.brokerP) + '; half their slips skip your box at the next 1.1.', say: 'Hmm. Some of my clients prefer more generous markets.' },
+        { t: 'Refuse.', tag: 'bold', fx: (c) => ({ snub: { broker: c.brokerId } }), show: 'Their slips skip your box at the next 1.1.', say: 'Then I’ll take my slips elsewhere.' }],
+      timeout: 2, best: (c) => (c.brokerP < 0.1 * c.capacity ? 2 : 1) },
+    { id: 'agentmeeting', group: 'people', kind: 'rule', who: 'agent', title: 'The members’ agent calls', when: (c) => c.y < 2 && c.hasNames,
+      text: () => 'The members’ agent for your Names wants to hear how the year is going before advising their clients about next year.',
+      a: [{ t: 'Present the full numbers, the good and the bad.', tag: 'good', fx: () => ({ agency: -0.2 }), say: 'Refreshingly straight. I’ll steer a couple more Names your way: more fees for you.' },
+        { t: 'Send them the glossy brochure.', tag: 'ok', fx: () => ({}), say: 'Lovely photos. Not many numbers.' },
+        { t: 'Too busy: offer a slot after 1.1.', tag: 'bad', fx: () => ({ agency: 0.3 }), say: 'After 1.1? Then my clients want a fee cut to stay.' }] },
+    { id: 'recruit', group: 'people', kind: 'trade', who: (c) => c.au, title: 'A star wants to join you', when: (c) => !!c.top,
+      text: (c) => 'A respected ' + CLASSES[c.top].name + ' underwriter at ' + c.rival + ' wants to join your box, and their team would follow.',
+      a: [{ t: 'Hire them and the team.', tag: 'bold', fx: (c) => ({ agency: 0.4, lr: [{ cls: c.top, mult: 0.95 }] }), show: (c) => '−£0.4m (your agency); your ' + CLASSES[c.top].short + ' loss ratio falls 5% this year.', say: 'They start Monday. The Room is talking.' },
+        { t: 'Hire them on their own.', tag: 'mid', fx: (c) => ({ agency: 0.15, lr: [{ cls: c.top, mult: 0.98 }] }), show: (c) => '−£0.15m (your agency); your ' + CLASSES[c.top].short + ' loss ratio falls 2%.', say: 'A good signing. The team stays put.' },
+        { t: 'Decline politely.', tag: 'safe', fx: () => ({}), say: 'Fair enough. They’ll try elsewhere.' }],
+      timeout: 2, best: (c) => { const C = CLASSES[c.top]; const gain = [0.05 * C.lr * c.topP * c.a - 0.4, 0.02 * C.lr * c.topP * c.a - 0.15, 0]; return gain.indexOf(Math.max(...gain)); } },
+    { id: 'whistle', group: 'people', kind: 'rule', who: 'compliance', title: 'A whistleblower',
+      text: (c) => 'An anonymous report says one of your underwriters has been taking lavish hospitality from ' + c.brokerFirm + '.',
+      a: [{ t: 'Investigate properly under your whistleblowing policy, and protect the whistleblower.', tag: 'good', fx: () => ({ agency: 0.15 }), say: 'Handled by the book. A warning for the underwriter, and the policy works.' },
+        { t: 'Have a quiet word with the underwriter.', tag: 'ok', fx: () => ({ agency: 0.4 }), say: 'The whistleblower went to the FCA instead. An investigation follows.' },
+        { t: 'Find out who made the report.', tag: 'bad', fx: () => ({ pmd: 1, agency: 0.5 }), say: 'Going after a whistleblower is a serious breach. The FCA and PMD both want answers.' }],
+      news: 'went looking for a whistleblower' },
+    { id: 'bigclaim', group: 'claims', kind: 'trade', who: 'claims', title: 'A disputed large claim', when: (c) => !!c.book,
+      text: (c) => 'A policyholder under ' + c.book.deal.label + ' claims ' + fmtM1(c.claim) + '. The wording is unclear, so cover is arguable. ' + (c.r1 < 0.5 ? 'Our lawyers like our chances.' : 'Our lawyers are nervous.'),
+      a: [{ t: 'Pay in full: the market will remember.', tag: 'safe', fx: (c) => ({ synd: c.claim }), say: 'Paid. The broker is telling everyone.' },
+        { t: 'Offer a 60% settlement.', tag: 'mid', fx: (c) => ({ synd: 0.6 * c.claim }), say: 'They took it. Nobody’s happy, which means it’s fair.' },
+        { t: 'Decline, and defend it in court.', tag: 'bold', fx: (c) => ({ risk: { p: c.r1 < 0.5 ? 0.2 : 0.7, hit: { synd: 1.5 * c.claim }, miss: { synd: 0.15 }, hitText: 'You lost in court: the claim plus costs, ' + fmtM1(1.5 * c.claim) + '.', missText: 'You won in court. Legal costs: £0.15m.' } }),
+          show: (c) => 'Settled at year end: win and pay £0.15m of costs, or lose and pay ' + fmtM1(1.5 * c.claim) + '.', say: 'See you in court, then.' }],
+      timeout: 2, best: (c) => (c.r1 < 0.5 ? 2 : 1), news: 'lost a big claims case in court' },
+    { id: 'reserves', group: 'claims', kind: 'trade', who: 'actuary', title: 'The actuary flags reserve deterioration', when: (c) => !!c.long,
+      text: (c) => CLASSES[c.long].name + ' claims are coming in worse than planned. The actuary wants to strengthen reserves by ' + fmtM1(c.resAmt) + ' now. ' + (c.r1 < 0.6 ? 'They’re fairly sure.' : 'They say it could be noise.'),
+      a: [{ t: 'Strengthen now, as advised.', tag: 'safe', fx: (c) => ({ synd: c.resAmt, y: c.longY }), say: 'Prudent. Your future self thanks you.' },
+        { t: 'Strengthen half now, and watch it.', tag: 'mid', fx: (c) => ({ synd: c.resAmt / 2, y: c.longY, risk: { p: c.r1 < 0.6 ? 0.8 : 0.25, hit: { synd: 0.8 * c.resAmt }, miss: {}, hitText: 'The deterioration was real: another ' + fmtM1(0.8 * c.resAmt) + '.', missText: 'It was noise. Nothing more needed.' } }),
+          show: (c) => '−' + fmtM1(c.resAmt / 2) + ' now, and maybe ' + fmtM1(0.8 * c.resAmt) + ' more at year end.', say: 'A compromise. I’ll keep watching.' },
+        { t: 'Hold: it may be noise.', tag: 'bold', fx: (c) => ({ y: c.longY, risk: { p: c.r1 < 0.6 ? 0.8 : 0.25, hit: { synd: 1.6 * c.resAmt }, miss: {}, hitText: 'It was real, and it grew: ' + fmtM1(1.6 * c.resAmt) + '.', missText: 'It was noise. Nothing to pay.' } }),
+          show: (c) => 'If it’s real, ' + fmtM1(1.6 * c.resAmt) + ' at year end.', say: 'I’ve noted my concern in the minutes.' }],
+      timeout: 2, best: (c) => (c.r1 < 0.6 ? 0 : 2), news: 'ignored its actuary on reserves' },
+    { id: 'authority', group: 'claims', kind: 'rule', who: 'claims', title: 'A coverholder exceeds its authority', when: (c) => !!c.binder,
+      text: (c) => 'The coverholder behind ' + c.binder.deal.label + ' has bound risks outside its binding authority: bigger limits, and territories you never agreed.',
+      a: [{ t: 'Cancel the out-of-authority risks, and report the breach to Lloyd’s.', tag: 'good', fx: (c) => ({ synd: 0.05, scale: { id: c.binder.deal.id, f: 0.97 } }), say: 'Cancelled and reported. The coverholder is on notice.' },
+        { t: 'Accept them this once, and audit the coverholder.', tag: 'ok', fx: (c) => ({ synd: 0.3, lr: [{ id: c.binder.deal.id, mult: 1.1 }] }), say: 'The audit finds more than you hoped.' },
+        { t: 'Let it slide: the premium’s good.', tag: 'bad', fx: (c) => ({ lr: [{ id: c.binder.deal.id, mult: 1.3 }] }), say: 'The premium was good. The claims are better.' }],
+      news: 'let a coverholder run wild' },
+    { id: 'fraud', group: 'claims', kind: 'rule', who: 'claims', title: 'A suspected fraud ring', when: (c) => !!c.top,
+      text: (c) => 'Your claims team suspects a fraud ring behind a cluster of ' + CLASSES[c.top].name + ' claims.',
+      a: [{ t: 'Bring in a fraud investigator, and share the data through the market’s fraud database.', tag: 'good', fx: (c) => ({ synd: 0.15, lr: [{ cls: c.top, mult: 0.97 }] }), say: 'Ring broken. Claims are down.' },
+        { t: 'Pay them: fighting it costs more than it saves.', tag: 'ok', fx: (c) => ({ lr: [{ cls: c.top, mult: 1.04 }] }), say: 'Word gets round. More of the same arrive.' },
+        { t: 'Decline every claim in the cluster.', tag: 'bad', fx: () => ({ pmd: 1, synd: 0.2 }), say: 'Some were genuine. Complaints, a regulator’s review, and a PMD letter.' }],
+      news: 'refused a whole cluster of claims' }
+  ];
+  const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
+
+  // The week's draw: six slots (two a year, never the same group twice in a year) and the order events are tried in.
+  function eventPlan(season) {
+    const r = rng('events|' + season);
+    const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const g = shuffle(Object.keys(EVENT_GROUPS)).concat(shuffle(Object.keys(EVENT_GROUPS)).slice(0, 2));
+    if (g[4] === g[5]) g[5] = Object.keys(EVENT_GROUPS).find((k) => k !== g[4]);
+    const slots = [];
+    for (let y = 0; y < YEARS; y++) for (let s = 0; s < 2; s++) slots.push({ y, month: EVENT_MONTHS[s][r() < 0.5 ? 0 : 1], group: g[2 * y + s] });
+    return { slots, order: shuffle(EVENTS.map((e) => e.id)) };
+  }
+  // What an event needs to know about the game at that moment; numbers are the same for everyone with the same book.
+  // o: {season, slot, y, month (absolute), au, market, entries, split, members, capacity, buysShields, rival}
+  function eventCtx(o) {
+    const cur = o.entries.filter((e) => e.yoa === o.y && !(e.alert === 'exit' && e.alertMonth <= o.month));
+    const byP = (a) => a.slice().sort((x, y) => y.P - x.P)[0] || null;
+    const sumBy = (key) => { const t = {}; cur.forEach((e) => { const k = key(e); t[k] = (t[k] || 0) + e.P; }); return t; };
+    const cls = sumBy((e) => e.deal.cls), brk = sumBy((e) => e.deal.broker);
+    const top = Object.keys(cls).sort((a, b) => cls[b] - cls[a])[0] || null;
+    const brokerId = Object.keys(brk).sort((a, b) => brk[b] - brk[a])[0] || 'hal';
+    const Y = o.market.years[o.y];
+    const inPlan = Object.keys(o.split);
+    const hot = inPlan.slice().sort((a, b) => Y.rateIdx[b] - Y.rateIdx[a])[0] || null;
+    const longT = {}; o.entries.filter((e) => e.yoa >= o.y - 1 && e.yoa <= o.y && LONG_TAIL.includes(e.deal.cls)).forEach((e) => { const k = e.deal.cls + '|' + e.yoa; longT[k] = (longT[k] || 0) + e.P; });
+    const longKey = Object.keys(longT).sort((a, b) => longT[b] - longT[a])[0];
+    const rr = rng('event|' + o.season + '|' + o.slot);
+    const r1 = rr(), r2 = rr();
+    const cap = o.capacity || PLAN_GWP, written = cur.reduce((s, e) => s + e.P, 0);
+    const mem = o.members || [];
+    return {
+      season: o.season, slot: o.slot, y: o.y, month: o.month, au: o.au, market: o.market, split: o.split, capacity: cap, r1, r2,
+      a: 1 - mem.reduce((s, x) => s + x.share, 0), hasNames: mem.some((x) => x.kind === 'names'),
+      book: byP(cur), binder: byP(cur.filter((e) => e.deal.structure === 'binder')),
+      top, topP: top ? cls[top] : 0, stop: top ? round1(0.025 * cls[top]) : 0,
+      brokerId, brokerName: BROKERS[brokerId].name, brokerFirm: BROKERS[brokerId].firm, brokerP: brk[brokerId] || 0,
+      hot, hotIn: !!hot, gwpRatio: written / cap, big: round1(0.08 * cap), small: round1(0.04 * cap), warBig: round1(0.06 * cap), warSmall: round1(0.03 * cap),
+      long: longKey ? longKey.split('|')[0] : null, longY: longKey ? +longKey.split('|')[1] : o.y, resAmt: longKey ? clamp(round1(0.05 * longT[longKey]), 0.4, 2.5) : 0,
+      claim: clamp(round1(0.07 * (byP(cur) || { P: 10 }).P), 0.5, 2.5),
+      buysShields: !!o.buysShields, rival: o.rival || 'A rival', contact: CONTACTS[Math.floor(r1 * CONTACTS.length)]
+    };
+  }
+  function pickEvent(plan, slot, c, used) {
+    const ok = (id) => !used.includes(id) && (!EVENT_BY_ID[id].when || EVENT_BY_ID[id].when(c));
+    const g = plan.slots[slot].group;
+    const id = plan.order.find((x) => EVENT_BY_ID[x].group === g && ok(x)) || plan.order.find(ok);
+    return id ? EVENT_BY_ID[id] : null;
+  }
+  const evStr = (v, c) => (typeof v === 'function' ? v(c) : v);
+  // what an answer does, in words
+  function describeFx(f) {
+    const out = [];
+    if (f.agency) out.push((f.agency > 0 ? '−' : '+') + fmtM1(Math.abs(f.agency)) + (f.agency > 0 ? ' (your agency’s cost)' : ' (your agency)'));
+    if (f.synd) out.push('−' + fmtM1(f.synd) + ' (a syndicate cost)');
+    (f.lr || []).forEach((l) => out.push((l.mult > 1 ? 'loss ratio +' : 'loss ratio −') + Math.round(Math.abs(l.mult - 1) * 100) + '% on ' + (l.cls ? CLASSES[l.cls].short : 'that book') + ' this year'));
+    if (f.scale) out.push('premium −' + Math.round((1 - f.scale.f) * 100) + '% on ' + (f.scale.cls ? CLASSES[f.scale.cls].short : 'that book'));
+    if (f.add) out.push('+' + fmtM1(f.add.P) + ' of ' + CLASSES[f.add.cls].short + ' premium');
+    if (f.pmd) out.push('a PMD letter: −£1.0m (−1,000 points)');
+    if (f.goodwill) out.push('your next PMD letter becomes a warning');
+    if (f.shield && f.shield !== 1) out.push('next year’s shields cost ' + Math.round((f.shield - 1) * 100) + '% more');
+    if (f.snub) out.push((f.snub.half ? 'half of ' : '') + BROKERS[f.snub.broker].name + '’s slips skip your next 1.1');
+    if (f.risk) out.push('settled at year end');
+    return out.length ? out.join('; ') : 'nothing changes';
+  }
+  // the card as shown: answers in a seeded order for rule events, effects listed up front for trade events
+  function eventView(ev, c) {
+    const idx = [0, 1, 2];
+    if (ev.kind === 'rule') { const r = rng('evorder|' + c.season + '|' + c.slot); for (let i = 2; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; } }
+    return {
+      id: ev.id, group: ev.group, groupLabel: EVENT_GROUPS[ev.group], kind: ev.kind, who: evStr(ev.who, c), title: ev.title, text: ev.text(c),
+      answers: idx.map((i) => { const a = ev.a[i]; return { i, t: evStr(a.t, c), tag: a.tag, show: ev.kind === 'trade' ? (a.show ? evStr(a.show, c) : describeFx(a.fx(c))) : null }; }),
+      timeout: ev.timeout != null ? ev.timeout : ev.a.findIndex((a) => a.tag === 'bad')
+    };
+  }
+  // an answer's effects, with any risk decided by the week's roll; the cost of a risk lands at year end
+  function eventFx(ev, i, c) {
+    const a = ev.a[i], f = Object.assign({}, a.fx(c));
+    const res = { id: ev.id, i, tag: a.tag, y: f.y != null ? f.y : c.y, month: c.month, say: a.say, title: ev.title, choice: evStr(a.t, c), news: ev.news && (a.tag === 'bad' || a.tag === 'bold') ? ev.news : null };
+    for (const k of ['agency', 'synd', 'lr', 'pmd', 'goodwill', 'add', 'scale', 'shield', 'snub']) if (f[k] != null) res[k] = f[k];
+    if (res.add) res.add = Object.assign({}, res.add, { P: round1(res.add.P) });
+    if (f.risk) {
+      const hit = c.r2 < f.risk.p, o = hit ? f.risk.hit : f.risk.miss;
+      res.later = Object.assign({ month: 12 * c.y + 11, text: hit ? f.risk.hitText : f.risk.missText, hit }, o);
+      if (res.later.shield != null) res.shield = res.later.shield;
+      if (!hit && res.news && ev.id === 'bigclaim') res.news = null;
+    }
+    res.effect = describeFx(Object.assign({}, res, { risk: f.risk }));
+    return res;
+  }
+  // how an automated player answers: 'best' (careful), 'mixed' (casual), 'random', 'bold' (Kraken)
+  function eventPick(ev, c, policy, r) {
+    const tagged = (t) => ev.a.findIndex((a) => a.tag === t);
+    if (policy === 'random') return Math.floor(r() * 3);
+    if (policy === 'bold') return ev.kind === 'rule' ? tagged(r() < 0.5 ? 'bad' : 'ok') : tagged('bold');
+    const best = ev.kind === 'rule' ? tagged('good') : ev.best(c);
+    if (policy === 'mixed') { const x = r(); return ev.kind === 'rule' ? tagged(x < 0.55 ? 'good' : x < 0.85 ? 'ok' : 'bad') : x < 0.5 ? best : Math.floor(r() * 3); }
+    return best;
+  }
+  // a fresh book for the 'add' effect: the class at its current rates, a little better after the loss that hardened it
+  function eventDeal(c, cls, P, prefer) {
+    const r = rng('evdeal|' + c.season + '|' + c.slot + '|' + cls);
+    const C = CLASSES[cls];
+    const pool = prefer ? C.templates.filter((t) => t.label.toLowerCase().includes(prefer)) : C.templates;
+    const tmpl = (pool.length ? pool : C.templates)[Math.floor(r() * (pool.length || C.templates.length))];
+    const b = BROKERS[c.brokerId] || BROKERS.hal;
+    const qBase = clamp(Math.exp(r.normal(b.qBias - 0.03, 0.18)), 0.6, 1.6);
+    const q = cycleQ(qBase, c.market.years[c.y].rateIdx[cls] + 0.05);
+    return Object.assign({
+      id: 'y' + c.y + 'ev' + c.slot + '-' + cls, cls, off: !(cls in c.split), label: tmpl.label, tmpl: tmpl.i, rds: tmpl.rds, lrAdj: tmpl.lrAdj,
+      structure: tmpl.structure, window: c.month % 12 >= 6 ? '1.7' : '1.1', year: c.y, broker: c.brokerId, qBase, q, base: P, comm: C.comm, ev: true
+    }, tellsFor(q, C, r));
+  }
+  // an answer's lasting effects on the game state: costs and loss ratios for scoring, new or rescaled books,
+  // and what carries into later months (next year's shield price, a broker's snub, goodwill)
+  function applyEventFx(f, c, st) {
+    if (f.synd || f.agency || f.lr) st.fx.push({ y: f.y, month: f.month, synd: f.synd || 0, agency: f.agency || 0, lr: f.lr || null });
+    if (f.later && (f.later.synd || f.later.agency)) st.fx.push({ y: f.y, month: f.later.month, synd: f.later.synd || 0, agency: f.later.agency || 0 });
+    let added = null;
+    if (f.add) { added = { deal: eventDeal(c, f.add.cls, f.add.P, f.add.prefer), P: f.add.P, start: f.month, yoa: c.y }; st.entries.push(added); }
+    if (f.scale) for (const e of st.entries) if (e.yoa === f.y && ((f.scale.id && e.deal.id === f.scale.id) || (f.scale.cls && e.deal.cls === f.scale.cls))) e.P = round1(e.P * f.scale.f);
+    if (f.shield != null) st.shieldMult[c.y + 1] = f.shield;
+    if (f.snub) st.snub[c.y + 1] = f.snub;
+    if (f.goodwill) st.goodwill = (st.goodwill || 0) + f.goodwill;
+    return added;
+  }
+  // the loss-ratio multiple events put on a book
+  function fxLR(b, fx) {
+    let m = 1;
+    for (const f of fx || []) if (f.y === b.yoa) for (const l of f.lr || []) if ((l.id && l.id === b.deal.id) || (l.cls && l.cls === b.deal.cls)) m *= l.mult;
+    return m;
   }
 
   // ---------- automated players (rivals and the balance sim) ----------
@@ -1772,7 +2060,12 @@ p.sm { margin: 0; }
     const ilw = {}, reinsCall = {};
     let pmd = 0;
     const pmdWhy = [], pmdAt = [];
-    const prot = { years, ilw, reinsCall };
+    // in-year events: the week's draw, answered by cfg.events ('best' | 'mixed' | 'random' | 'bold')
+    const evPlan = cfg.events ? eventPlan(cfg.season) : null;
+    const evUsed = [], eventLog = [];
+    const st = { entries, fx: [], shieldMult: {}, snub: {}, goodwill: 0 };
+    const letter = (why, at) => { if (st.goodwill > 0) { st.goodwill--; return; } pmd++; pmdWhy.push(why); pmdAt.push(at); };
+    const prot = { years, ilw, reinsCall, fx: st.fx };
     const loading = cfg.loading || 0;
     for (let y = 0; y < YEARS; y++) {
       const Y = market.years[y];
@@ -1789,7 +2082,7 @@ p.sm { margin: 0; }
         review.forEach((x) => { if (x.action !== 'stays') memberNews.push({ y, kind: x.kind, action: x.action }); });
         members = applyReview(review, (x, t) => 1 - (t + x.to - x.share) >= alignedTarget - 0.001);
         third = members.reduce((s, x) => s + x.share, 0);
-        const before = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years: years.concat([]), pmd: 0 });
+        const before = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years: years.concat([]), pmd: 0, fx: st.fx });
         const avail = falCarry + prevA * (before.uwCurve[12 * y - 2] || 0);
         const need = (1 - third) * eca;
         const target = need * (cfg.capitalMode === 'loose' ? 1.25 : 1.03);
@@ -1802,7 +2095,7 @@ p.sm { margin: 0; }
       const yearEntries = [];
       // renewals of last year's book
       if (y > 0 && cfg.renew !== 'none') {
-        const prevScore = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years: years.slice(), pmd: 0 });
+        const prevScore = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years: years.slice(), pmd: 0, fx: st.fx });
         for (const e of entries.filter(e => e.yoa === y - 1 && e.alert !== 'exit')) {
           const lineCat = (prevScore.lines.find(l => l.id === e.deal.id) || {}).cat || 0;
           const tl = bookTrafficLight(e, market, lineCat);
@@ -1824,7 +2117,9 @@ p.sm { margin: 0; }
       const renewed17 = yearEntries.filter(e => e.deal.window === '1.7').reduce((s, e) => s + e.P, 0);
       for (const win of ['1.1', '1.7']) {
         const n = deckSize(cfg.au, y, win);
-        const deck = makeDeck(cfg.season, split, cfg.au, y, win, deckScale(cap, win, win === '1.1' ? renewed11 : renewed17, n), cfg.tag, market);
+        let deck = makeDeck(cfg.season, split, cfg.au, y, win, deckScale(cap, win, win === '1.1' ? renewed11 : renewed17, n), cfg.tag, market);
+        const sn = st.snub[y];
+        if (sn && win === '1.1') deck = deck.filter((d, i) => d.broker !== sn.broker || (sn.half && i % 2 === 0));
         const offer = win === '1.1' ? Math.min(deck.length, cfg.deals11 || Math.round(deck.length * 0.9)) : deck.length;
         const load = rdsExposure(entries.concat(yearEntries), 12 * y + (win === '1.7' ? 6 : 0));
         const appet = rdsAppetite(split, cap, fal);
@@ -1850,20 +2145,34 @@ p.sm { margin: 0; }
         worst.alertMonth = 12 * y + am;
         worst.alert = cfg.audit ? (worst.deal.q > 1.25 ? 'exit' : 'audit') : 'ignore';
       });
+      if (evPlan) {
+        for (let s = 2 * y; s < 2 * y + 2; s++) {
+          const month = 12 * y + evPlan.slots[s].month;
+          const c = eventCtx({ season: cfg.season, slot: s, y, month, au: cfg.au, market, entries, split, members, capacity: cap, buysShields: !!cfg.outwards });
+          const ev = pickEvent(evPlan, s, c, evUsed);
+          if (!ev) continue;
+          evUsed.push(ev.id);
+          const f = eventFx(ev, eventPick(ev, c, cfg.events, r), c);
+          eventLog.push(f);
+          applyEventFx(f, c, st);
+          if (f.pmd) letter('event', month);
+        }
+        boundTot = entries.filter((e) => e.yoa === y).reduce((s2, e) => s2 + e.P, 0);
+      }
       // outwards: two annual shields on the biggest RDS exposures
       const expo = rdsExposure(entries, 12 * y);
       const top = Object.keys(expo).sort((a, b) => expo[b] - expo[a]).slice(0, 2);
       const outwards = cfg.outwards ? top : [];
-      const outwardsCost = outwards.reduce((s, rr) => s + shieldCost(rr, expo[rr]), 0);
+      const outwardsCost = outwards.reduce((s, rr) => s + shieldCost(rr, expo[rr]), 0) * (st.shieldMult[y] || 1);
       // Q1 review: a PMD letter if any net RDS is over appetite
       const appetite = rdsAppetite(split, cap, fal);
-      if (Object.keys(expo).some(rr => expo[rr] * (outwards.includes(rr) ? 0.5 : 1) > appetite[rr])) { pmd++; pmdWhy.push('rds'); pmdAt.push(12 * y + 2); }
+      if (Object.keys(expo).some(rr => expo[rr] * (outwards.includes(rr) ? 0.5 : 1) > appetite[rr])) letter('rds', 12 * y + 2);
       if (cfg.ilw) for (const e of Y.events) {
         if (!e.warn || outwards.includes(e.rds)) continue;
         const ex = rdsExposure(entries, e.month)[e.rds] || 0;
         if (ex > fal * 0.25) ilw[e.key] = true;
       }
-      if (boundTot > cap * 1.2) { pmd++; pmdWhy.push('gwp'); pmdAt.push(12 * y); }
+      if (boundTot > cap * 1.2) letter('gwp', 12 * y);
       years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca: eca * cap / capacity, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost, members: members.map(x => Object.assign({}, x)) });
       // the business plan for next year
       if (y < YEARS - 1) {
@@ -1881,25 +2190,25 @@ p.sm { margin: 0; }
       }
     }
     pmdAt.sort((a, b) => a - b);
-    const res = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years, ilw, reinsCall, pmd, pmdAt, cashCallChoice: () => cfg.cashCall || 'pay' });
-    res.entries = entries; res.years = years; res.pmdWhy = pmdWhy; res.memberNews = memberNews;
+    const res = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years, ilw, reinsCall, pmd, pmdAt, fx: st.fx, cashCallChoice: () => cfg.cashCall || 'pay' });
+    res.entries = entries; res.years = years; res.pmdWhy = pmdWhy; res.memberNews = memberNews; res.eventLog = eventLog;
     return res;
   }
 
   const RIVALS = {
-    kraken: { name: 'Kraken Re', no: 9174, mix: 'natcat', au: 'rainmaker', policy: 'aggressive', capitalMode: 'loose', outwards: false, ilw: false, audit: false, renew: 'all', plan: 'large', aligned: 1,
+    kraken: { name: 'Kraken Re', no: 9174, mix: 'natcat', au: 'rainmaker', policy: 'aggressive', capitalMode: 'loose', outwards: false, ilw: false, audit: false, renew: 'all', plan: 'large', aligned: 1, events: 'bold',
       blurb: 'PE-owned Nat Cat. Binds everything, keeps it all.',
       talk: ['Nice binder… shame about the bordereaux.', 'We wrote that before you finished reading it.', 'Cat models are for people who can’t feel the wind.', 'Our PE backers say hi.', 'Is that a small line? Adorable.'] },
-    raven: { name: 'Raven', no: 9301, mix: 'mat', au: 'veteran', policy: 'skilled', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'cycle', aligned: 0.5,
+    raven: { name: 'Raven', no: 9301, mix: 'mat', au: 'veteran', policy: 'skilled', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'cycle', aligned: 0.5, events: 'best',
       blurb: 'Veteran MAT house. Leads the consortia.',
       talk: ['We were leading that consortium before you were born.', 'Lovely day for cargo.', 'Read the small print, dear boy. Always.', 'The Room remembers.', 'Lunch? We’ve already had it.'] },
-    firewall: { name: 'Firewall', no: 9099, mix: 'cyber', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: true, ilw: false, audit: false, renew: 'smart', plan: 'grow', aligned: 0.7,
+    firewall: { name: 'Firewall', no: 9099, mix: 'cyber', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: true, ilw: false, audit: false, renew: 'smart', plan: 'grow', aligned: 0.7, events: 'mixed',
       blurb: 'Cyber pure-play. Rides the cyber cycle.',
       talk: ['Have you tried turning your syndicate off and on again?', 'Our model says you’re 82% likely to regret that.', 'Patch your underwriting.', 'We accept payment in basis points.', 'Latency is a state of mind.'] },
-    hearthstone: { name: 'Hearthstone', no: 9188, mix: 'composite', au: 'forensic', policy: 'cautious', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'static', aligned: 0.3,
+    hearthstone: { name: 'Hearthstone', no: 9188, mix: 'composite', au: 'forensic', policy: 'cautious', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'static', aligned: 0.3, events: 'best',
       blurb: 'Names-backed composite. Slow, steady, mostly other people’s money.',
       talk: ['Steady as she goes.', 'Our Names have been here since 1890.', 'We audited your binder for you. You’re welcome.', 'Diversification is a lifestyle.', 'Patience, young syndicate.'] },
-    longtail: { name: 'Longtail', no: 9150, mix: 'castreaty', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: false, ilw: false, audit: true, renew: 'all', plan: 'grow', aligned: 0.6,
+    longtail: { name: 'Longtail', no: 9150, mix: 'castreaty', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: false, ilw: false, audit: true, renew: 'all', plan: 'grow', aligned: 0.6, events: 'mixed',
       blurb: 'Casualty treaty specialist. Sleeps well (for now).',
       talk: ['See you at the three-year close.', 'IBNR is just a feeling.', 'Social inflation? Never heard of her.', 'We reserve the right to reserve.', 'Short-tail is for tourists.'] }
   };
@@ -1909,7 +2218,7 @@ p.sm { margin: 0; }
     const rv = RIVALS[rivalId];
     const res = simulateGame({
       season, market, split: MIX_BY_ID[rv.mix].split, au: rv.au, policy: rv.policy, tag: 'rival-' + rivalId,
-      capitalMode: rv.capitalMode, outwards: rv.outwards, ilw: rv.ilw, audit: rv.audit, renew: rv.renew, plan: rv.plan, aligned: rv.aligned, cashCall: 'pay'
+      capitalMode: rv.capitalMode, outwards: rv.outwards, ilw: rv.ilw, audit: rv.audit, renew: rv.renew, plan: rv.plan, aligned: rv.aligned, events: rv.events, cashCall: 'pay'
     });
     res.rival = rivalId;
     return res;
@@ -1919,7 +2228,8 @@ p.sm { margin: 0; }
     hashStr, rng, clamp, round1, seasonKey, YEARS, SEGMENTS, RDS, RDS_GROUPS, RDS_P, CLASSES, LONG_TAIL, PROPERTY,
     MIXES, MIX_BY_ID, AUS, BROKERS, MODIFIERS, RIVALS, NEMESIS, RACEHORSE,
     PLAN_GWP, FIXED_COSTS, ECU, SOLVENCY_LINE, CASH_CALL_COST, QS_SHARE, OUTWARDS_LOAD, ILW_COST, APPETITE, WINDOW_SHARE, CAPACITY_STEPS,
-    MIN_ALIGNED, MAX_THIRD, MEMBERS, ON_PLAN, protMult, mixDrift, stampFill, startMembers, memberReturn, memberReview, applyReview,
+    MIN_ALIGNED, MAX_THIRD, MEMBERS, ON_PLAN, protMult, mixDrift,
+    EVENTS, EVENT_BY_ID, EVENT_GROUPS, eventPlan, eventCtx, pickEvent, eventView, eventFx, eventPick, eventDeal, applyEventFx, describeFx, fxLR, stampFill, startMembers, memberReturn, memberReview, applyReview,
     fixedCosts, shieldCost, deckSize, weekMarket, splitKey, weights, capitalFor, mixProfile, capitalOffers, makeDeck, renewalOffer, deckScale, brokerLine, dealLR,
     rdsExposure, rdsAppetite, scoreGame, pmdVerdict, projectYoA, bookTrafficLight, GRADES, grade, estimateQ, POLICIES, simulateGame, rivalRun
   };
@@ -1933,7 +2243,7 @@ p.sm { margin: 0; }
   const SPEED = Math.min(20, Math.max(0.25, parseFloat(params.get('speed')) || 1));
   const AUTO = params.get('autoplay');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const SEASON = params.get('season') || '3b-' + E.seasonKey(new Date());
+  const SEASON = params.get('season') || '3c-' + E.seasonKey(new Date());
   const SEASON_LABEL = SEASON.replace(/^[^-]+-/, '');
   const BASE_YEAR = (parseInt((SEASON.match(/(\d{4})-W/) || [])[1], 10) || new Date().getFullYear()) + 1;
   const yoaName = (y) => String(BASE_YEAR + y);
@@ -2148,8 +2458,23 @@ p.sm { margin: 0; }
     bot: { robot: true, suit: '#4a5a6b' },
     chair: { skin: '#e8c4a4', hair: 'side', hairC: '#d4d6da', suit: '#1d2733', tie: '#4b2a5a', mood: 'frown' },
     actuary: { skin: '#d9a882', hair: 'crop', hairC: '#6b4b32', suit: '#273544', tie: '#2fb7a6', acc: ['round'], mood: 'neutral' },
-    regulator: { skin: '#a86f4c', hair: 'bun', hairC: '#1a1412', suit: '#2a2f3a', acc: ['glasses', 'clipboard'], mood: 'neutral' }
+    regulator: { skin: '#a86f4c', hair: 'bun', hairC: '#1a1412', suit: '#2a2f3a', acc: ['glasses', 'clipboard'], mood: 'neutral' },
+    lloyds: { skin: '#e3b894', hair: 'crop', hairC: '#3a2a1e', suit: '#1f2f4a', tie: '#b23a48', acc: ['clipboard'], mood: 'neutral' },
+    newcontact: { skin: '#c99272', hair: 'bob', hairC: '#3b2416', suit: '#2c3e57', acc: ['glasses'], mood: 'happy' },
+    compliance: { skin: '#f0d2b8', hair: 'bun', hairC: '#8a5a32', suit: '#2b2b33', acc: ['round', 'clipboard'], mood: 'neutral' },
+    claims: { skin: '#9a6444', hair: 'bald', hairC: '#2a1d16', suit: '#33402e', tie: '#d4a24c', acc: ['glasses'], mood: 'neutral' },
+    agent: { skin: '#efcfb4', hair: 'side', hairC: '#a8a8a8', suit: '#3a3226', tie: '#2f6b4f', acc: ['pocket'], mood: 'neutral' }
   };
+  // who brings each in-tray event: [portrait, name, role]
+  function whoOf(key, c) {
+    if (E.BROKERS[key]) return [key, E.BROKERS[key].name, E.BROKERS[key].firm];
+    if (E.AUS[key]) return [key, E.AUS[key].name, 'Your Active Underwriter'];
+    return ({
+      lloyds: ['lloyds', 'Your Lloyd’s account manager', 'Lloyd’s'], newcontact: ['newcontact', c.contact, 'Your new Lloyd’s account manager'],
+      compliance: ['compliance', 'Head of Compliance', 'Your agency'], claims: ['claims', 'Head of Claims', 'Your agency'],
+      actuary: ['actuary', 'Chief Actuary', 'Your agency'], agent: ['agent', 'The members’ agent', 'Advises your Names']
+    })[key] || ['hal', 'A visitor', ''];
+  }
   function face(id, moodOverride) {
     const s = CAST[id] || CAST.hal;
     const mood = moodOverride || s.mood || 'neutral';
@@ -2321,6 +2646,7 @@ p.sm { margin: 0; }
     midnight: ['Midnight Scratch', 'Bound a slip in the last 3 seconds before midnight'],
     threepeat: ['Three-Peat', 'Created value in every year of account'],
     darling: ['Members’ Darling', 'A member asked for a bigger line on your stamp'],
+    citizen: ['Model Citizen', 'Handled every Lloyd’s and regulator question by the book'],
     declined: ['Declined Everything', 'Bound fewer than three portfolios', true],
     runoff: ['Run-off', 'Pulled up stumps after a cash call', true]
   };
@@ -2349,7 +2675,11 @@ p.sm { margin: 0; }
     ['PMD', 'Lloyd’s Performance Management Directorate. Writes letters.'],
     ['SBF', 'Syndicate Business Forecast: next year’s business plan, submitted each autumn.'],
     ['Coming into line', 'Each November, members’ capital must cover next year’s ECA.'],
-    ['RITC', 'Reinsurance to close: how a year of account closes after 36 months, passing its liabilities to a later year.']
+    ['RITC', 'Reinsurance to close: how a year of account closes after 36 months, passing its liabilities to a later year.'],
+    ['QMA', 'Quarterly Monitoring Return, part A: the financial return every syndicate sends Lloyd’s each quarter.'],
+    ['SM&CR', 'Senior Managers and Certification Regime: the rules that make named people accountable.'],
+    ['OFSI', 'Office of Financial Sanctions Implementation: the UK body you report sanctions breaches to.'],
+    ['Stop-loss', 'Reinsurance that caps the loss ratio on a class or a whole book.']
   ];
 
   // The road through a game: pre-launch, three years as an active syndicate, then the close.
@@ -2370,6 +2700,7 @@ p.sm { margin: 0; }
     ['1.1 rush', 'Brokers queue at your box until midnight on 31 December'],
     ['Outwards', 'Put cat XL shields on your biggest disaster scenarios'],
     ['Q1 review', 'Lloyd’s checks your exposure and your mix'],
+    ['In-tray', 'Twice a year, Lloyd’s, the market, your people or a claim needs an answer'],
     ['Catastrophes', 'Some come with a forecast, some without warning'],
     ['1.7 window', 'A few mid-year renewals, mostly property cat'],
     ['SBF day', 'Years 1 and 2: plan next year, grow or shrink'],
@@ -2485,6 +2816,7 @@ p.sm { margin: 0; }
       '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Syndicate underwriting result\n − Members’ share\n = Your share of the result\n − Cost of your own capital (and your share of cash calls)\n + Managing agency fees on members’ shares\n + Profit commission on members’ profits\n = Value to your agency\nAdd the three years, then\n + £0.5m (500 points) for each year on plan\n − £1.0m (1,000 points) per Performance Management letter\n = SCORE (£1k = 1 point)</pre>' +
       '<p>Your stamp is split into shares. Members bring their own Funds at Lloyd’s (FAL) and keep their share of the result; you must keep at least 20% yourself. A bigger share of your own means more upside and more risk. Members react to results each November: some walk, some want more.</p>' +
       '<p>Your ECA is your SCR × 1.35, built from your business mix and stamp. Spread books earn a diversification credit. Profits stay in the syndicate until the year closes. Fall below 60% of your ECA after a catastrophe and Lloyd’s calls for more capital.</p>' +
+      '<p><b>The in-tray:</b> twice a year an event needs an answer: Lloyd’s, the market, your people or a claim. Questions from Lloyd’s and the regulators have a right answer, and you see the effect after you choose. Market, people and claims events are judgement calls, and each answer shows what it does. Fines and your own costs come straight off your agency’s value; syndicate costs are shared with your members.</p>' +
       '<p><b>On plan</b> means premium within 85–115% of your stamp and no more than ' + E.ON_PLAN.drift + '% of it in different classes from your plan. The GWP and Mix gauges turn green when you’re there.</p>' +
       '<h3>Glossary</h3><dl class="glossary">' + GLOSSARY.map(([t, d]) => '<dt>' + esc(t) + '</dt><dd>' + esc(d) + '</dd>').join('') + '</dl>' +
       '<div class="stickfoot"><button class="btn primary" data-close>Got it</button></div></div>');
@@ -2652,6 +2984,7 @@ p.sm { margin: 0; }
       y: 0, years: [], next: null, entries: [], walked: [], streak: 0, hotLeft: 0,
       ilw: {}, reinsCall: {}, armedReins: false, favours: { lunch: true, reins: true, poach: true },
       lines: [], members: [], aligned: 1, alignedFal: 0, memberNews: {}, darling: false,
+      evPlan: E.eventPlan(SEASON), evUsed: [], evLog: [], fx: [], goodwill: 0, shieldMult: {}, snub: {},
       cashChoices: {}, cashTopUps: {}, runoff: null, alerts: [], decisionTimes: [], calledIt: false,
       shreddedRed: 0, midnightScratch: false, cycleSurf: false, bigLines: 0,
       nemesis: null, rival2: null, rivalRuns: {}, ghost: null, result: null
@@ -2664,12 +2997,12 @@ p.sm { margin: 0; }
     return Object.assign({
       market: G.market, au: G.au, qs: G.qs,
       years: G.years.map((Y) => ({ fal: Y.fal, alignedFal: Y.alignedFal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], outwardsCost: Y.outwardsCost || 0, members: Y.members || [] })),
-      ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd, pmdAt: G.pmdAt,
+      ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd, pmdAt: G.pmdAt, fx: G.fx,
       cashCallChoice: (info) => G.cashChoices[info.month] || 'pay'
     }, extra || {});
   }
   // what the projections should credit: shields by year, ILWs and the Reinsurance Call
-  const protOpts = () => ({ years: G.years, ilw: G.ilw, reinsCall: G.reinsCall });
+  const protOpts = () => ({ years: G.years, ilw: G.ilw, reinsCall: G.reinsCall, fx: G.fx });
   // the opening: fill the first year's stamp with members' lines and the agency's own capital
   function recomputeCapital() {
     G.eca = E.capitalFor(G.split, G.loading, G.qs, E.PLAN_GWP).eca;
@@ -3484,6 +3817,7 @@ p.sm { margin: 0; }
       }
       const ev = G.market.events.find((e) => e.month === abs && !e.done);
       if (ev && m < 12) { this.eventPin(ev); this.openRDS({ mode: 'event', e: ev }); return true; }
+      for (let s = 2 * y; s < 2 * y + 2; s++) if (m === G.evPlan.slots[s].month && !this.flags['ev' + s]) { this.flags['ev' + s] = true; if (this.openEvent(s)) return true; }
       if (m === 2 && !this.flags.q1) { this.flags.q1 = true; this.q1Review(); return true; }
       if (m === 4 && !this.flags.alert) { this.flags.alert = true; if (this.triggerAlert()) return true; }
       if (m === 6 && !this.flags.mid) { this.flags.mid = true; this.startMid(); return true; }
@@ -3687,6 +4021,13 @@ p.sm { margin: 0; }
       const renewed = yoaEntries(y).filter((e) => e.deal.window === '1.1').reduce((s, e) => s + e.P, 0);
       const n = E.deckSize(G.au, y, '1.1');
       this.deck = E.makeDeck(SEASON, Y.split, G.au, y, '1.1', E.deckScale(Y.capacity, '1.1', renewed, n), 'player', G.market);
+      // a broker you refused (or half-refused) on commission keeps some slips away
+      const sn = G.snub[y];
+      if (sn) {
+        const before = this.deck.length;
+        this.deck = this.deck.filter((d, i) => d.broker !== sn.broker || (sn.half && i % 2 === 0));
+        if (this.deck.length < before) toast(E.BROKERS[sn.broker].name + ' is sulking', (before - this.deck.length) + (before - this.deck.length > 1 ? ' slips' : ' slip') + ' went to a more generous market.', 'var(--warn)', 4);
+      }
       this.deckIdx = 0;
       this.clockMax = this.clock = Math.max(18, 32 - (y === 0 ? (G.rushPenalty || 0) : 0));
       if (y === 0 && G.rushPenalty) toast('Late permission: −' + (32 - this.clockMax) + 's on the clock', (G.rushWhy || []).join('. ') + '.', 'var(--warn)', 5);
@@ -3929,8 +4270,19 @@ p.sm { margin: 0; }
       const bt = yoaTot(this.y), key = 'gwp' + this.y;
       if (!G.pmdFlags[key] && bt > this.Y.capacity * 1.2) { G.pmdFlags[key] = true; this.pmdLetter('your YoA ' + yoaName(this.y) + ' premium is running at ' + pct(bt / this.Y.capacity) + ' of plan.'); }
     },
-    pmdLetter(text) {
+    // quiet: the letter counts but isn't shown (the in-tray card already says so)
+    pmdLetter(text, quiet) {
+      // goodwill with your Lloyd's contact turns one letter into a warning
+      if (G.goodwill > 0) {
+        G.goodwill--;
+        if (quiet) return;
+        const w = el('<div class="letter warn" role="status"><h4>Lloyd’s Performance Management</h4>Dear Active Underwriter,<br>We note that ' + esc(text) + ' Your account manager has spoken for you, so this time it is a warning.<br><b>No penalty</b></div>');
+        this.root.querySelector('#box').appendChild(w);
+        setTimeout(() => w.remove(), 6000 / Math.min(SPEED, 2));
+        return;
+      }
       G.pmd++; G.pmdNotes.push(text); G.pmdAt.push(this.abs());
+      if (quiet) return;
       const l = el('<div class="letter" role="status"><h4>Lloyd’s Performance Management</h4>Dear Active Underwriter,<br>We note that ' + esc(text) + ' Please explain.<br><b>−£1.0m (−1,000 points)</b></div>');
       this.root.querySelector('#box').appendChild(l);
       Sound.thud();
@@ -4176,9 +4528,10 @@ p.sm { margin: 0; }
       const y = this.y, at = 12 * y;
       this.Y.outwards = []; this.Y.outwardsCost = 0;
       const st = this.rdsState(at);
-      const cost = (r) => E.shieldCost(r, (st.rows.find((x) => x.r === r) || { gross: 0 }).gross);
+      const sm = G.shieldMult[y] || 1;
+      const cost = (r) => E.shieldCost(r, (st.rows.find((x) => x.r === r) || { gross: 0 }).gross) * sm;
       const S = this.sheet('<span class="eyebrow">1 January ' + yoaName(y) + ' · outwards</span><h3>Buy your cat XL</h3>' +
-        '<p class="muted sm">A catastrophe excess of loss (cat XL) treaty is reinsurance you buy for the year. Drag a shield onto a disaster scenario (RDS) row, or tap the row. Each shield halves your losses from that scenario for the year. It’s priced at the expected recovery plus a margin: the price is shown on each row.</p>' +
+        '<p class="muted sm">A catastrophe excess of loss (cat XL) treaty is reinsurance you buy for the year. Drag a shield onto a disaster scenario (RDS) row, or tap the row. Each shield halves your losses from that scenario for the year. It’s priced at the expected recovery plus a margin: the price is shown on each row.' + (sm > 1 ? ' <b>After a reinsurer left the market, shields cost ' + Math.round((sm - 1) * 100) + '% more this year.</b>' : '') + '</p>' +
         '<div class="stickbar"><div class="shields" id="shields"></div><div class="boardfoot"><span class="sm" id="outCost"></span><button class="btn primary" id="outDone"></button></div></div>' +
         '<div class="rdsboard" id="rdsb"></div>', 'rdssheet');
       const toggle = (r) => {
@@ -4747,6 +5100,80 @@ p.sm { margin: 0; }
       G.next = null;
     },
 
+    // ---- the in-tray: two events a year, three answers each ----
+    evCtx(s) {
+      const y = this.y, Y = this.Y;
+      return E.eventCtx({ season: SEASON, slot: s, y, month: 12 * y + G.evPlan.slots[s].month, au: G.au, market: G.market, entries: G.entries, split: Y.split, members: Y.members || [], capacity: Y.capacity, buysShields: (Y.outwards || []).length > 0, rival: E.RIVALS[G.nemesis].name });
+    },
+    openEvent(s) {
+      const c = this.evCtx(s), ev = E.pickEvent(G.evPlan, s, c, G.evUsed);
+      if (!ev) return false;
+      this.root.querySelectorAll('.letter').forEach((l) => l.remove());
+      G.evUsed.push(ev.id);
+      const y = this.y, v = E.eventView(ev, c), [fc, nm, role] = whoOf(v.who, c);
+      this.setPhase('event', MONTHS[c.month % 12] + ' · in-tray');
+      this.setActions(false);
+      Sound.thud();
+      const out = v.kind === 'rule' ? 'Out of time counts as the worst answer.' : 'Out of time means: “' + v.answers.find((a) => a.i === v.timeout).t + '”';
+      const S = this.sheet('<span class="eyebrow">' + MONTHS[c.month % 12] + ' ' + yoaName(y) + ' · In-tray · ' + esc(v.groupLabel) + '</span><h3>' + esc(v.title) + '</h3>' +
+        '<div class="evcard"><div class="evwho"><div class="face">' + face(fc) + '</div><b>' + esc(nm) + '</b><small>' + esc(role) + '</small></div><p class="evtext">' + esc(v.text) + '</p></div>' +
+        '<div class="evans">' + v.answers.map((a, k) => '<button class="evbtn" data-i="' + a.i + '"><span class="k">' + (k + 1) + '</span><span class="t">' + esc(a.t) + (a.show ? '<small>' + esc(a.show) + '</small>' : '') + '</span></button>').join('') + '</div>' +
+        '<div class="evfoot" id="evFoot"><div class="timer" id="evTimer"><span class="num">15s</span><span class="track"><span class="fill"></span></span></div><span class="muted sm">' +
+        (v.kind === 'rule' ? 'There’s a right answer. You see the effect after you choose. ' : 'A judgement call: each answer shows what it does. ') + esc(out) + '</span></div>', 'evsheet');
+      let t = 15, done = false;
+      const keyH = (e) => {
+        if (paused) return;
+        if (done) { if (e.key === 'Enter' || e.key === ' ') { const b = S.body.querySelector('#evGo'); if (b) { e.preventDefault(); b.click(); } } return; }
+        const k = ['1', '2', '3'].indexOf(e.key);
+        if (k >= 0) { e.preventDefault(); choose(v.answers[k].i); }
+      };
+      const choose = (i) => {
+        if (done) return;
+        done = true;
+        this.overlayTick = null;
+        const f = E.eventFx(ev, i, c);
+        S.body.querySelectorAll('.evbtn').forEach((b) => { b.disabled = true; b.classList.toggle('chosen', +b.dataset.i === i); });
+        this.applyEvent(f, c);
+        const good = f.tag === 'good' || f.tag === 'safe';
+        S.body.querySelector('.evwho .face').innerHTML = face(fc, good ? 'happy' : f.tag === 'bad' ? 'frown' : 'raised');
+        const foot = S.body.querySelector('#evFoot');
+        foot.innerHTML = '<p class="evsay">“' + esc(f.say) + '”</p><p class="evfx"><b>Effect:</b> ' + esc(f.effect) + (f.later ? '. You’ll find out at year end.' : '.') + '</p><button class="btn primary" id="evGo">Continue <span class="kbd">Enter</span></button>';
+        Sound.blip(f.tag !== 'bad');
+        const go2 = foot.querySelector('#evGo');
+        go2.addEventListener('click', () => { removeEventListener('keydown', keyH); S.close(); this.resumeFF(); });
+        this.focusLater(go2);
+        if (AUTO) setTimeout(() => go2.click(), 500 / SPEED);
+      };
+      addEventListener('keydown', keyH);
+      S.body.querySelectorAll('.evbtn').forEach((b) => b.addEventListener('click', () => choose(+b.dataset.i)));
+      this.overlayTick = (dt) => {
+        t -= dt;
+        const tm = S.body.querySelector('#evTimer'); if (!tm) return;
+        tm.querySelector('.num').textContent = Math.max(0, Math.ceil(t)) + 's';
+        tm.querySelector('.fill').style.transform = 'scaleX(' + Math.max(0, t / 15) + ')';
+        tm.classList.toggle('hot', t < 5);
+        if (t <= 0) choose(v.timeout);
+      };
+      this.tick('IN-TRAY · ' + v.title.toUpperCase());
+      if (AUTO) setTimeout(() => { if (!done) choose(E.eventPick(ev, c, params.get('ev') || 'best', E.rng('auto|' + SEASON + '|' + ev.id))); }, 600 / SPEED);
+      return true;
+    },
+    // what an answer changes: scoring costs and loss ratios, new or rescaled books, letters, and next year's terms
+    applyEvent(f, c) {
+      const st = { entries: G.entries, fx: G.fx, shieldMult: G.shieldMult, snub: G.snub, goodwill: G.goodwill };
+      const added = E.applyEventFx(f, c, st);
+      G.goodwill = st.goodwill;
+      G.evLog.push(Object.assign({ y: this.y }, f));
+      if (added) { this.addBinder(added); this.checkGWP(); }
+      if (f.scale) this.renderShelf();
+      if (f.pmd) {
+        const warned = G.goodwill > 0;
+        this.pmdLetter(f.id === 'war' ? 'you have written marine war cover that is not in your business plan.' : 'your handling of “' + f.title.toLowerCase() + '” fell short of what we expect.', true);
+        if (warned) f.effect = f.effect.replace('a PMD letter: −£1.0m (−1,000 points)', 'a PMD letter, which your account manager turns into a warning');
+      }
+      this.updateRace();
+    },
+
     // ---- 31 December: the annual report ----
     devFor(k, share) {
       let amt = 0; const byCls = {};
@@ -4783,6 +5210,8 @@ p.sm { margin: 0; }
         else if (rr.runoff !== null && rr.runoff < 12 * y) continue;
         else if (rr.cashCalls.some((c) => c.year === y)) news.push(nm + ' needed a cash call.');
         else news.push(nm + ': ' + fmtM(rr.curve[12 * y + 11], true) + ' of value so far.');
+        const evn = (rr.eventLog || []).find((f) => f.y === y && f.news);
+        if (evn && !(rr.runoff !== null && rr.runoff < 12 * y) && !news.some((n) => n.endsWith(evn.news + '.'))) news.push(nm + ' ' + evn.news + '.');
       }
       const lanes = [['You', res.curve[12 * y + 11]], [E.RIVALS[G.nemesis].name, G.rivalRuns[G.nemesis].curve[12 * y + 11]], [E.RIVALS[G.rival2].name, G.rivalRuns[G.rival2].curve[12 * y + 11]]];
       if (G.ghost) lanes.push([G.ghost.label, this.curveAt(G.ghost.curve, abs)]);
@@ -4800,6 +5229,7 @@ p.sm { margin: 0; }
       const feesN = memN.reduce((s2, x) => s2 + x.fee * x.share, 0) * Yn.capacity;
       const pcN = thirdN > 0 ? memN.reduce((s2, x) => s2 + x.pc * x.share, 0) / thirdN * Math.max(0, thirdN * uwEst - feesN) : 0;
       const takeN = (1 - thirdN) * uwEst + feesN + pcN - Yn.capital.reduce((s2, c) => s2 + c.amt * c.rate, 0);
+      const inTray = G.evLog.filter((f) => f.y === y).map((f) => '<li><b>' + esc(f.title) + ':</b> ' + esc(f.later ? f.later.text : f.effect.charAt(0).toUpperCase() + f.effect.slice(1) + '.') + '</li>');
       const mnews = (G.memberNews[y] || []).map((n) => esc(n.label) + ({ leaves: ' leaves the stamp', cuts: ' halves its line to ' + Math.round(n.to * 100) + '%', offers: n.accepted ? ' grows to ' + Math.round(n.to * 100) + '%' : ' offered more; you declined' })[n.action] + '.');
       const takeLine = '<p class="sm">Projected value to you from YoA ' + yoaName(y) + ': <b class="num" style="color:' + (takeN >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + fmtM(takeN, true) + '</b>' + (thirdN > 0 ? ' (your ' + Math.round((1 - thirdN) * 100) + '% share, plus ' + fmtM(feesN + pcN) + ' of fees and commission) of a projected ' + fmtM(uwEst, true) + ' syndicate result.' : ' of a projected ' + fmtM(uwEst, true) + ' result.') + '</p>';
       // the on-plan bonus: premium within 85–115% of the stamp and the mix close to plan
@@ -4810,7 +5240,7 @@ p.sm { margin: 0; }
       const planLine = Pn ? '<p class="sm planline ' + (Pn.onPlan ? 'on' : 'off') + '">' + (Pn.onPlan ? '<b>On plan</b> for YoA ' + yoaName(y) + ': premium ' + gp(gpc) + ' of the stamp, mix ' + Math.round(Pn.drift) + '% off. <b class="num">+£0.5m (+500 points)</b>.' : '<b>Off plan</b> for YoA ' + yoaName(y) + ': ' + why.join(', and ') + '. No on-plan bonus this year.') + '</p>' : '';
       const S = this.sheet('<div class="annual"><div class="ledger mini"><div class="mast">The Lime Street Ledger</div><div class="dateline"><span>31 December ' + yoaName(y) + '</span><span>Year-end edition</span></div><h2>' + esc(hl) + '</h2></div>' +
         '<div class="an-grid"><div><span class="eyebrow">Your open years</span><table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>Proj. COR</th><th>Age</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>' +
-        takeLine + planLine + (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
+        takeLine + planLine + (inTray.length ? '<span class="eyebrow">In-tray</span><ul class="devlist">' + inTray.join('') + '</ul>' : '') + (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
         '<div><span class="eyebrow">The Derby after ' + (12 * (y + 1)) + ' months</span><ol class="standings">' + lanes.map(([n, v]) => '<li class="' + (n === 'You' ? 'me' : '') + '"><span>' + esc(n) + '</span><b class="num">' + fmtM(v, true) + '</b></li>').join('') + '</ol>' +
         (memN.length || mnews.length ? '<span class="eyebrow">Member news</span><ul class="devlist">' + (mnews.length ? mnews.map((n) => '<li>' + n + '</li>').join('') : '<li>All your members are staying on.</li>') + '</ul>' : '') +
         '<span class="eyebrow">Rival news</span><ul class="devlist">' + news.map((n) => '<li>' + esc(n) + '</li>').join('') + '</ul></div></div>' +
@@ -4917,7 +5347,7 @@ p.sm { margin: 0; }
   }
   function sumPer(res) {
     const t = {};
-    for (const k of ['gwp', 'comm', 'attr', 'cat', 'res', 'expenses', 'uwGross', 'qsTake', 'uw', 'alignedUW', 'fees', 'pc', 'capCost']) t[k] = res.per.reduce((s, P) => s + (P.skipped ? 0 : P[k] || 0), 0);
+    for (const k of ['gwp', 'comm', 'attr', 'cat', 'res', 'expenses', 'evSynd', 'evAgency', 'uwGross', 'qsTake', 'uw', 'alignedUW', 'fees', 'pc', 'capCost']) t[k] = res.per.reduce((s, P) => s + (P.skipped ? 0 : P[k] || 0), 0);
     return t;
   }
   function waterfallSVG(res) {
@@ -4928,7 +5358,8 @@ p.sm { margin: 0; }
       ['Attritional losses', -t.attr],
       ['Cat losses', -t.cat],
       ['Reserve development', -t.res],
-      ['Expenses & outwards', -t.expenses],
+      ['Expenses & outwards', -(t.expenses - t.evSynd)],
+      ...(Math.abs(t.evSynd) > 0.05 ? [['In-tray: syndicate costs', -t.evSynd]] : []),
       ['Underwriting result', t.uwGross, 'total']
     ];
     if (G.qs) rows.push(['Outward QS share', -t.qsTake]);
@@ -4936,6 +5367,7 @@ p.sm { margin: 0; }
     if (Math.abs(members) > 0.05 || t.fees > 0.05) rows.push(['Members’ share', -members], ['Your share of the result', t.alignedUW, 'total']);
     rows.push(['Cost of your capital', -t.capCost]);
     if (t.fees > 0.05 || t.pc > 0.05) rows.push(['Managing agency fees', t.fees], ['Profit commission', t.pc]);
+    if (Math.abs(t.evAgency) > 0.05) rows.push(['In-tray: your agency’s costs', -t.evAgency]);
     rows.push(['Value to your agency', res.value, 'total'], ['On-plan bonus', res.onPlanYears * 0.5], ['PMD letters', -res.pmd], ['Score (£m)', res.score / 1000, 'total']);
     let cum = 0;
     const segs = rows.map(([label, v, kind]) => {
@@ -5011,6 +5443,8 @@ p.sm { margin: 0; }
       if (G.midnightScratch) badges.push('midnight');
       if (res.runoff === null && res.per.every((P) => P.value > 0)) badges.push('threepeat');
       if (G.darling) badges.push('darling');
+      const rules = G.evLog.filter((f) => ['good', 'ok', 'bad'].includes(f.tag));
+      if (rules.length >= 2 && rules.every((f) => f.tag === 'good')) badges.push('citizen');
       if (own.length < 3) badges.push('declined');
       if (res.runoff !== null) badges.push('runoff');
       G.badges = badges;
