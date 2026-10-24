@@ -349,8 +349,20 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .bar2 { position: relative; height: 8px; border-radius: 4px; background: var(--night-2); margin-top: 5px; overflow: hidden; }
 .bar2 i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--good); transition: width .4s; }
 .bar2 .line { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--bad); }
-.mixgauge { display: block; width: 100%; text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
-.mixgauge:hover { border-color: var(--crane); }
+.mixgauge, .tapgauge { display: block; width: 100%; text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
+.mixgauge:hover, .tapgauge:hover { border-color: var(--crane); }
+.bar2 .line.eca { background: var(--ink); opacity: .8; }
+.bar2 .band { position: absolute; top: 0; bottom: 0; z-index: 1; background: #ffffff1c; border-left: 1px solid #8ee6b4; border-right: 1px solid #8ee6b4; }
+.bar2 i { z-index: 0; } .bar2 .line { z-index: 2; }
+.hudpop { width: min(300px, calc(100vw - 40px)); }
+.hudpop table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.hudpop td { padding: 3px 4px; border-top: 1px solid #23272c1f; vertical-align: top; }
+.hudpop td small { display: block; color: #6a6252; font-size: 0.66rem; }
+.hudpop tr.tot td { font-weight: 800; border-top: 2px solid #23272c55; }
+.hudpop p { margin: 0; font-size: 0.74rem; }
+.hudpop .rules { margin: 0; padding-left: 16px; font-size: 0.74rem; display: grid; gap: 3px; }
+.perilbtn small { display: block; font-size: 0.5rem; letter-spacing: 0.04em; opacity: .75; margin-top: 2px; }
+@media (max-width: 640px) { .perilbtn small { display: none; } }
 .mixbars { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 5px; align-items: center; margin-top: 4px; }
 .mixbars em { font: 700 0.5rem/1 var(--f-ui); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
 .mixbars .mb { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--night-2); }
@@ -418,6 +430,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .actions .btn { padding: 0 8px; min-width: 0; }
 .actions .btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 420px) { .actions .btn { padding: 0 4px; font-size: 0.72rem; letter-spacing: 0.02em; } }
 .waiting { text-align: center; color: var(--ink-3); font-size: var(--t-s); }
 .side { grid-area: side; display: grid; gap: 8px; min-height: 0; align-content: start; }
 .favours { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -476,6 +489,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 
 /* ---------- overlay / peril board / modals ---------- */
 .overlay { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #05080ccc; padding: 10px 0; backdrop-filter: blur(2px); }
+.overlay.opaque { background: #0c131bf7; }
 .sheet { position: relative; width: min(760px, 100%); max-height: 100%; overflow-y: auto; background: var(--steel); border: 1px solid var(--girder); border-radius: 16px; padding: 14px; display: grid; gap: 10px; box-shadow: 0 30px 60px #000c; }
 .sheet h3 { font: 800 var(--t-xl)/1 var(--f-display); text-transform: uppercase; }
 .forecast { display: flex; gap: 10px; align-items: center; background: #2b1210; border: 1px solid #7a2a1e; border-radius: 10px; padding: 8px 10px; color: #ffd7cf; font-size: var(--t-s); }
@@ -521,6 +535,22 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 @keyframes letterIn { from { transform: translateY(120%) rotate(8deg); } }
 #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 80; }
 .helpgrid { display: grid; gap: 8px; font-size: var(--t-s); color: var(--ink-2); }
+.helpgrid h3 { margin-top: 6px; }
+.rcard .rhint { display: block; font-size: 0.64rem; font-weight: 700; color: var(--brass-2); }
+.planline.on b:first-child { color: var(--good); } .planline.off b:first-child { color: var(--warn); }
+.statsub { display: block; font-size: 0.64rem; color: var(--ink-3); margin-top: 1px; }
+.bocrule { margin: 4px 0 0; font-size: 0.72rem; color: var(--ink-3); text-align: center; }
+.alertpanel p { margin: 4px 0 8px; }
+.alopts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.alopts .btn { min-height: 52px; height: auto; padding: 6px 8px; display: grid; gap: 2px; text-align: center; white-space: normal; }
+.alopts .btn small { font: 600 0.62rem/1.2 var(--f-ui); text-transform: none; letter-spacing: 0; opacity: .85; }
+@media (max-width: 520px) { .alopts { grid-template-columns: minmax(0, 1fr); } .alopts .btn { min-height: 44px; } }
+.mcard .mrule { display: block; grid-column: 1 / -1; font-size: 0.66rem; color: var(--ink-3); }
+.glossary { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.glossary dt { font-weight: 800; color: var(--ink); }
+.glossary dd { margin: 0; }
+@media (max-width: 520px) { .glossary { grid-template-columns: minmax(0, 1fr); } .glossary dd { margin-bottom: 4px; } }
+.pl-pin { cursor: pointer; }
 .helpgrid pre { margin: 0; white-space: pre-wrap; font: 400 0.8rem/1.5 var(--f-slip); color: var(--ink); background: var(--night-2); padding: 10px; border-radius: 8px; overflow-x: auto; }
 
 /* ---------- year planner pieces ---------- */
@@ -812,7 +842,7 @@ p.sm { margin: 0; }
 .ledger .photo { width: 96px; height: 110px; background: #cfc6b2; border: 1px solid #1c1b19; overflow: hidden; filter: grayscale(1) contrast(1.2); }
 .ledger .body { font: 400 0.84rem/1.5 Georgia, 'Times New Roman', serif; min-width: 0; }
 .ledger .body p { margin: 0 0 6px; }
-.ledger .figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; border-top: 1px solid #1c1b19; padding-top: 8px; }
+.ledger .figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 10px; border-top: 1px solid #1c1b19; padding-top: 8px; }
 .ledger .figs div { text-align: center; }
 .ledger .figs b { display: block; font: 900 1.5rem/1 var(--f-display); }
 .ledger .figs span { font: 700 0.6rem/1.2 var(--f-ui); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -820,6 +850,7 @@ p.sm { margin: 0; }
 .bigscore { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
 .bigscore .n { font: 900 clamp(2.6rem, 10vw, 4rem)/0.9 var(--f-display); color: var(--brass-2); font-variant-numeric: tabular-nums; }
 .bigscore .g { font: 800 1.2rem/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.bigscore .pts { font: 700 0.72rem/1 var(--f-ui); color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
 .wf { width: 100%; height: auto; display: block; }
 .wf text { font-family: var(--f-ui); font-size: 11px; fill: var(--ink-2); }
 .wf .v { fill: var(--ink); font-weight: 700; }
@@ -1076,7 +1107,7 @@ p.sm { margin: 0; }
   const AUS = {
     veteran: { name: 'The Veteran', line: '30 years in the Room', ability: 'Brokers wait 40% longer, and you can read their gut tells.' },
     quant: { name: 'The Quant', line: 'Has a model for lunch', ability: 'Sees the price adequacy on every slip, and halves reserve shocks.' },
-    rainmaker: { name: 'The Rainmaker', line: 'Knows everyone', ability: 'More and bigger deals (not all of them pretty), but costs £1.5m more a year.' },
+    rainmaker: { name: 'The Rainmaker', line: 'Knows everyone', ability: 'More brokers queue at your box: extra slips in every window. The lunches cost £1.5m a year.' },
     forensic: { name: 'The Forensic', line: 'Reads bordereaux for fun', ability: 'Sees each portfolio’s audit grade, and audits are free.' }
   };
 
@@ -1113,6 +1144,7 @@ p.sm { margin: 0; }
   const shieldCost = (rdsId, gross) => gross * RDS_P[rdsId] * 0.5 * OUTWARDS_LOAD;
   const WINDOW_SHARE = { '1.1': 0.85, '1.7': 0.15 };
   const CAPACITY_STEPS = { shrink: 0.8, hold: 1, grow: 1.25, large: 1.5 };
+  const ON_PLAN = { lo: 0.85, hi: 1.15, drift: 20 }; // a year is on plan if premium is within 85–115% of the stamp and no more than 20% of it is in different classes
   const fixedCosts = (cap, au) => FIXED_COSTS * (0.6 + 0.4 * cap / PLAN_GWP) + (au === 'rainmaker' ? 1.5 : 0);
 
   // ---------- members on the stamp ----------
@@ -1125,7 +1157,7 @@ p.sm { margin: 0; }
   const MEMBERS = {
     names: { label: 'Names via members’ agents', short: 'Names', color: '#e9d3a0', line: [0.08, 0.12], fee: 0.01, pc: 0.175, leave: 0, grow: 0.38, growBy: 0.5, note: 'Follow performance closely.' },
     corporate: { label: 'Kestrel Insurance Group', short: 'Kestrel', color: '#9fd0ff', line: [0.2, 0.25], fee: 0.0075, pc: 0.15, halve: -0.05, grow: 0.42, growBy: 0.25, note: 'Patient corporate capital.' },
-    ils: { label: 'London Bridge 2 ILS fund', short: 'ILS fund', color: '#f0a35c', line: [0.15, 0.2], fee: 0.005, pc: 0.2, leave: 0, catLimit: 0.35, grow: 0.35, growBy: 0.5, note: 'Walks after a big catastrophe.' },
+    ils: { label: 'Thames Gate ILS fund', short: 'ILS fund', color: '#f0a35c', line: [0.15, 0.2], fee: 0.005, pc: 0.2, leave: 0, catLimit: 0.35, grow: 0.35, growBy: 0.5, note: 'Walks after a big catastrophe.' },
     family: { label: 'Family office', short: 'Family', color: '#c9e08a', line: [0.1, 0.15], fee: 0.01, pc: 0.1, stays: true, note: 'Loyal. Also owns a racehorse.' }
   };
   const round3 = (x) => Math.round(x * 1000) / 1000;
@@ -1144,15 +1176,18 @@ p.sm { margin: 0; }
     return [memberOf('corporate', third * 0.4), memberOf('ils', third * 0.3), memberOf('names', third * 0.3)];
   }
   // The members' view of a year at coming into line: their return on capital after fees and profit commission, and the catastrophe hit
-  function memberReturn(entries, market, y, au, Y, qs) {
+  function memberReturn(entries, market, y, au, Y, qs, prot) {
     const mem = (Y && Y.members) || [];
     const third = mem.reduce((s, x) => s + x.share, 0);
     let gwp = 0; for (const e of entries) if (e.yoa === y) gwp += e.P;
-    const uw = gwp > 0 ? gwp * (1 - projectYoA(entries, market, y, 12 * y + 10, au)) * (qs ? 1 - QS_SHARE : 1) : 0;
+    const uw = gwp > 0 ? gwp * (1 - projectYoA(entries, market, y, 12 * y + 10, au, prot)) * (qs ? 1 - QS_SHARE : 1) : 0;
     let cat = 0;
-    for (const ev of market.years[y].events) for (const e of entries) {
-      if (ev.month < e.start || ev.month >= e.start + 12) continue;
-      cat += e.P * (e.deal.rds[ev.rds] || 0) * ev.sev * 0.8;
+    for (const ev of market.years[y].events) {
+      const mult = protMult(ev, prot);
+      for (const e of entries) {
+        if (ev.month < e.start || ev.month >= bookEnd(e)) continue;
+        cat += e.P * (e.deal.rds[ev.rds] || 0) * ev.sev * mult;
+      }
     }
     const catHit = cat / Math.max(1, (Y && Y.fal) || 1);
     if (third <= 0) return { ret: 0, catHit, uw };
@@ -1337,6 +1372,14 @@ p.sm { margin: 0; }
     const hasProperty = inMix.some(k => PROPERTY.includes(k));
     const rain = auId === 'rainmaker';
     const n = deckSize(auId, year, win);
+    // brokers know your plan: in-plan slips arrive roughly in its proportions (largest remainder), in random order
+    const bw = inMix.map(k => [k, w[k] * (win === '1.7' && PROPERTY.concat(['energy', 'marine']).includes(k) ? 2.5 : 1)]);
+    const bwt = bw.reduce((s, x) => s + x[1], 0);
+    const bag = [];
+    bw.map(([k, x]) => ({ k, x: x / bwt * n })).map(o => ({ k: o.k, f: Math.floor(o.x), rem: o.x - Math.floor(o.x) + r() * 1e-6 }))
+      .sort((a, b) => b.rem - a.rem).forEach((o, i, all) => { const extra = i < n - all.reduce((s, z) => s + z.f, 0) ? 1 : 0; for (let j = 0; j < o.f + extra; j++) bag.push(o.k); });
+    for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+    let bi = 0;
     const deck = [];
     for (let i = 0; i < n; i++) {
       const off = r() < 0.15;
@@ -1345,7 +1388,7 @@ p.sm { margin: 0; }
       let cls;
       if (brokerId === 'fiona') cls = r.weighted(PROPERTY.map(k => [k, w[k] || 0.01]));
       else if (off) cls = r.pick(offMix);
-      else cls = r.weighted(inMix.map(k => [k, w[k] * (win === '1.7' && PROPERTY.concat(['energy', 'marine']).includes(k) ? 2.5 : 1)]));
+      else cls = bag[bi++ % bag.length];
       const c = CLASSES[cls];
       let pool = c.templates.filter(t => t.window === win);
       if (!pool.length) pool = c.templates;
@@ -1445,6 +1488,7 @@ p.sm { margin: 0; }
     const evByMonth = {};
     m.events.forEach(e => { (evByMonth[e.month] = evByMonth[e.month] || []).push(e); });
     let cumUW = 0, worstUW = 0, cashCallCost = 0, runoff = null, agencyCum = 0, agencyCash = 0;
+    let agDone = 0, yAg = 0, yPool = 0, pcDeficit = 0, pcNow = 0;
     const cashCalls = [];
     const falNow = (y) => (o.years[Math.min(y, nYears - 1)] || {}).fal || 0;
     let falExtra = 0;
@@ -1487,8 +1531,13 @@ p.sm { margin: 0; }
       }
       cumUW += net(uw);
       worstUW = Math.min(worstUW, cumUW);
-      // the agency's running take for the race: its aligned share, profit commission and fees
-      agencyCum += (a + pcR * third) * net(uw) + mem.reduce((s, x) => s + x.fee * x.share, 0) * (Yo.capacity || 0) / 12;
+      // the agency's running value for the race: its own share and fees, plus profit commission once members are in profit
+      const feeM = mem.reduce((s, x) => s + x.fee * x.share, 0) * (Yo.capacity || 0) / 12;
+      yAg += a * net(uw) + feeM;
+      yPool += third * net(uw) - feeM;
+      pcNow = third > 0 ? pcR * Math.max(0, yPool + pcDeficit) : 0;
+      agencyCum = agDone + yAg + pcNow;
+      if (mo % 12 === 11) { agDone += yAg + pcNow; if (third > 0) pcDeficit = Math.min(0, yPool + pcDeficit); yAg = 0; yPool = 0; pcNow = 0; }
       // solvency check after an event month: FAL plus funds held in the syndicate (open-year profits or losses)
       if (evByMonth[mo]) {
         const capitalNow = falNow(y) + falExtra + cumUW;
@@ -1557,13 +1606,24 @@ p.sm { margin: 0; }
       let drift = 0;
       for (const k of new Set([...Object.keys(w), ...Object.keys(P.bound)])) drift += Math.abs((bt ? (P.bound[k] || 0) / bt : 0) - (w[k] || 0));
       P.drift = drift * 50; P.boundTot = bt;
-      P.onPlan = runoff === null && bt >= Yo.capacity * 0.9 && bt <= Yo.capacity * 1.1 && P.drift <= 10;
+      P.onPlan = runoff === null && bt >= Yo.capacity * ON_PLAN.lo && bt <= Yo.capacity * ON_PLAN.hi && P.drift <= ON_PLAN.drift;
       if (P.onPlan) onPlanYears++;
       total += P.value; gwpAll += P.gwp; lossAll += P.comm + P.attr + P.cat + P.res + P.expenses;
     }
     const pmd = o.pmd || 0;
     const score = Math.round(total * 1000 + onPlanYears * 500 - pmd * 1000);
     if (runoff !== null) while (curve.length < T) { curve.push(curve[curve.length - 1]); uwCurve.push(uwCurve[uwCurve.length - 1]); }
+    // letters and the on-plan bonus land in the race when they happen, and the race finishes on the score
+    const pmdAt = (o.pmdAt || []).slice(0, pmd);
+    while (pmdAt.length < pmd) pmdAt.push(T - 1);
+    // mid-game the curve only runs to the months played so far
+    for (let i = 0; i < curve.length; i++) {
+      let adj = 0;
+      for (const m of pmdAt) if (m <= i) adj -= 1;
+      for (let y = 0; y < nYears; y++) if (per[y].onPlan && i >= 12 * y + 11) adj += 0.5;
+      curve[i] = round1(curve[i] + adj);
+    }
+    if (curve.length >= T) curve[T - 1] = round1(score / 1000);
     const uwAll = per.reduce((s, P) => s + (P.skipped ? 0 : P.uw), 0);
     const falAvg = o.years.reduce((s, Y) => s + (Y.fal || 0), 0) / Math.max(1, nYears);
     const live = per.filter((P) => !P.skipped && P.aligned != null);
@@ -1584,33 +1644,42 @@ p.sm { margin: 0; }
     return { mult: ask, stamp: 'Approved', note: 'Approved as submitted.' };
   }
   // projected combined ratio of a YoA part-way through its first year
-  function projectYoA(entries, market, yoa, month, au) {
+  // Catastrophe multiplier on an event after the protection in place: shield, ILW, Reinsurance Call (0.8 when unknown)
+  function protMult(ev, prot) {
+    if (!prot) return 0.8;
+    const Y = prot.years && prot.years[Math.floor(ev.month / 12)];
+    return ((Y && (Y.outwards || []).includes(ev.rds)) ? 0.5 : 1) * (prot.ilw && prot.ilw[ev.key] ? 0.5 : 1) * (prot.reinsCall && prot.reinsCall[ev.key] ? 0.5 : 1);
+  }
+  const bookEnd = (e) => (e.alert === 'exit' && e.alertMonth != null ? Math.min(e.start + 12, e.alertMonth) : e.start + 12);
+  // projected combined ratio of a YoA part-way through: catastrophes so far at their cost after your protection,
+  // plus the expected catastrophe load still to run (halved on shielded scenarios). prot: {years, ilw, reinsCall}
+  function projectYoA(entries, market, yoa, month, au, prot) {
     let P = 0, loss = 0;
     for (const e of entries) {
       if (e.yoa !== yoa) continue;
       P += e.P;
       loss += e.P * (e.deal.comm + dealLR(e.deal, market) * (e.alert === 'ignore' ? 1.35 : 1));
-      let exp = 0; for (const r in e.deal.rds) exp += e.deal.rds[r] * RDS_P[r];
-      const left = clamp((e.start + 12 - month) / 12, 0, 1);
-      loss += e.P * exp * left;
+      const Y = prot && prot.years && prot.years[Math.floor(Math.max(month, e.start) / 12)];
+      let exp = 0; for (const r in e.deal.rds) exp += e.deal.rds[r] * RDS_P[r] * (Y && (Y.outwards || []).includes(r) ? 0.5 : 1);
+      loss += e.P * exp * clamp((bookEnd(e) - Math.max(month, e.start)) / 12, 0, 1);
     }
     for (const ev of market.events) {
       if (ev.month > month) continue;
+      const mult = protMult(ev, prot);
       for (const e of entries) {
-        if (e.yoa !== yoa || ev.month < e.start || ev.month >= e.start + 12) continue;
-        loss += e.P * (e.deal.rds[ev.rds] || 0) * ev.sev * 0.8;
+        if (e.yoa !== yoa || ev.month < e.start || ev.month >= bookEnd(e)) continue;
+        loss += e.P * (e.deal.rds[ev.rds] || 0) * ev.sev * mult;
       }
     }
     return P > 0 ? loss / P + 0.08 : 1;
   }
 
-  function grade(roc, runoff) {
+  // grades on the final score; thresholds from the simulation put careful play at roughly 15/35/30/15/5%
+  const GRADES = [[45000, 'Lloyd’s darling'], [28000, 'Solid franchise'], [15000, 'Keep calm and carry on'], [0, 'PMD on speed-dial']];
+  function grade(score, runoff) {
     if (runoff !== null && runoff !== undefined) return 'Run-off';
-    if (roc >= 0.25) return 'Lloyd’s darling';
-    if (roc >= 0.15) return 'Solid franchise';
-    if (roc >= 0.05) return 'Keep calm and carry on';
-    if (roc >= 0) return 'PMD on speed-dial';
-    return 'Remediation plan';
+    const g = GRADES.find(([min]) => score >= min);
+    return g ? g[1] : 'Remediation plan';
   }
 
   // ---------- automated players (rivals and the balance sim) ----------
@@ -1641,9 +1710,14 @@ p.sm { margin: 0; }
       }
       if (deal.off && edge > 0.88) return 0;
       if (ctx.boundTot > ctx.capacity * 1.1) return 0;
-      if (edge < 0.93) return 2;
-      if (edge < 1.04) return 1;
-      return 0;
+      let line = edge < 0.93 ? 2 : edge < 1.04 ? 1 : 0;
+      // a careful underwriter watches the mix gauge: trims lines that pull off plan, leans into ones that help
+      if (ctx.w && line && ctx.boundTot > 0) {
+        const now = mixDrift(ctx.bound, ctx.w), after = mixDrift(ctx.bound, ctx.w, deal.cls, deal.base * line);
+        if (after > now + 0.5 && after > ON_PLAN.drift * 0.8 && edge > 0.86) line--;
+        else if (after < now - 0.5 && line === 1 && edge < 1 && ctx.boundTot < ctx.capacity) line = 2;
+      }
+      return line;
     },
     aggressive: (deal, ctx) => { const est = estimateQ(deal, ctx.au, ctx.r.normal(0, 0.1)); return est < 1.15 ? 2 : 1; },
     cautious: (deal, ctx) => { const est = estimateQ(deal, ctx.au, ctx.r.normal(0, 0.05)); return est < 0.98 ? 1 : 0; },
@@ -1653,6 +1727,17 @@ p.sm { margin: 0; }
       return est < 0.92 ? 2 : est < 1.06 ? 1 : 0;
     }
   };
+
+  // percentage of premium in different classes from the plan (the Mix gauge), optionally after adding P of cls
+  function mixDrift(bound, w, cls, P) {
+    const b = Object.assign({}, bound);
+    if (cls) b[cls] = (b[cls] || 0) + P;
+    const bt = Object.values(b).reduce((s, v) => s + v, 0);
+    if (!bt) return 0;
+    let d = 0;
+    for (const k of new Set([...Object.keys(w), ...Object.keys(b)])) d += Math.abs((b[k] || 0) / bt - (w[k] || 0));
+    return d * 50;
+  }
 
   // last year's revealed performance of a portfolio: (attritional + cat) / premium vs the class norm
   function bookTrafficLight(entry, market, lineCat) {
@@ -1686,7 +1771,8 @@ p.sm { margin: 0; }
     const memberNews = [];
     const ilw = {}, reinsCall = {};
     let pmd = 0;
-    const pmdWhy = [];
+    const pmdWhy = [], pmdAt = [];
+    const prot = { years, ilw, reinsCall };
     const loading = cfg.loading || 0;
     for (let y = 0; y < YEARS; y++) {
       const Y = market.years[y];
@@ -1699,7 +1785,7 @@ p.sm { margin: 0; }
       else {
         // coming into line: members react to last year, then the agency covers its share
         const prevA = 1 - third;
-        const review = memberReview(members, memberReturn(entries, market, y - 1, cfg.au, years[y - 1], !!cfg.qs));
+        const review = memberReview(members, memberReturn(entries, market, y - 1, cfg.au, years[y - 1], !!cfg.qs, prot));
         review.forEach((x) => { if (x.action !== 'stays') memberNews.push({ y, kind: x.kind, action: x.action }); });
         members = applyReview(review, (x, t) => 1 - (t + x.to - x.share) >= alignedTarget - 0.001);
         third = members.reduce((s, x) => s + x.share, 0);
@@ -1732,6 +1818,8 @@ p.sm { margin: 0; }
           yearEntries.push(ne); boundTot += P;
         }
       }
+      const boundBy = {};
+      yearEntries.forEach((e) => { boundBy[e.deal.cls] = (boundBy[e.deal.cls] || 0) + e.P; });
       const renewed11 = yearEntries.filter(e => e.deal.window === '1.1').reduce((s, e) => s + e.P, 0);
       const renewed17 = yearEntries.filter(e => e.deal.window === '1.7').reduce((s, e) => s + e.P, 0);
       for (const win of ['1.1', '1.7']) {
@@ -1742,13 +1830,13 @@ p.sm { margin: 0; }
         const appet = rdsAppetite(split, cap, fal);
         for (let i = 0; i < offer; i++) {
           const deal = deck[i];
-          const line = policy(deal, { au: cfg.au, r, boundTot, capacity: cap, rdsLoad: cfg.policy === 'skilled' ? load : null, appetite: appet });
+          const line = policy(deal, { au: cfg.au, r, boundTot, capacity: cap, rdsLoad: cfg.policy === 'skilled' ? load : null, appetite: appet, bound: boundBy, w: cfg.policy === 'skilled' ? weights(split) : null });
           if (!line) continue;
           const room = cap * 1.3 - boundTot;
           const P = Math.min(deal.base * line, room);
           if (P < 0.5) continue;
           const ne = { deal, P: round1(P), start: 12 * y + (win === '1.7' ? 6 : 0), yoa: y };
-          yearEntries.push(ne); boundTot += ne.P;
+          yearEntries.push(ne); boundTot += ne.P; boundBy[deal.cls] = (boundBy[deal.cls] || 0) + ne.P;
           for (const rr in deal.rds) load[rr] = (load[rr] || 0) + ne.P * deal.rds[rr];
         }
       }
@@ -1769,17 +1857,17 @@ p.sm { margin: 0; }
       const outwardsCost = outwards.reduce((s, rr) => s + shieldCost(rr, expo[rr]), 0);
       // Q1 review: a PMD letter if any net RDS is over appetite
       const appetite = rdsAppetite(split, cap, fal);
-      if (Object.keys(expo).some(rr => expo[rr] * (outwards.includes(rr) ? 0.5 : 1) > appetite[rr])) { pmd++; pmdWhy.push('rds'); }
+      if (Object.keys(expo).some(rr => expo[rr] * (outwards.includes(rr) ? 0.5 : 1) > appetite[rr])) { pmd++; pmdWhy.push('rds'); pmdAt.push(12 * y + 2); }
       if (cfg.ilw) for (const e of Y.events) {
         if (!e.warn || outwards.includes(e.rds)) continue;
         const ex = rdsExposure(entries, e.month)[e.rds] || 0;
         if (ex > fal * 0.25) ilw[e.key] = true;
       }
-      if (boundTot > cap * 1.2) { pmd++; pmdWhy.push('gwp'); }
-      years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost, members: members.map(x => Object.assign({}, x)) });
+      if (boundTot > cap * 1.2) { pmd++; pmdWhy.push('gwp'); pmdAt.push(12 * y); }
+      years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca: eca * cap / capacity, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost, members: members.map(x => Object.assign({}, x)) });
       // the business plan for next year
       if (y < YEARS - 1) {
-        const proj = projectYoA(entries, market, y, 12 * y + 8, cfg.au);
+        const proj = projectYoA(entries, market, y, 12 * y + 8, cfg.au, prot);
         let ask = { static: 1, cycle: proj < 0.95 ? 1.25 : 1, grow: 1.25, large: 1.5 }[cfg.plan || 'static'];
         const v = pmdVerdict(proj, ask);
         capacity = Math.round(capacity * v.mult);
@@ -1792,7 +1880,8 @@ p.sm { margin: 0; }
         }
       }
     }
-    const res = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years, ilw, reinsCall, pmd, cashCallChoice: () => cfg.cashCall || 'pay' });
+    pmdAt.sort((a, b) => a - b);
+    const res = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years, ilw, reinsCall, pmd, pmdAt, cashCallChoice: () => cfg.cashCall || 'pay' });
     res.entries = entries; res.years = years; res.pmdWhy = pmdWhy; res.memberNews = memberNews;
     return res;
   }
@@ -1830,9 +1919,9 @@ p.sm { margin: 0; }
     hashStr, rng, clamp, round1, seasonKey, YEARS, SEGMENTS, RDS, RDS_GROUPS, RDS_P, CLASSES, LONG_TAIL, PROPERTY,
     MIXES, MIX_BY_ID, AUS, BROKERS, MODIFIERS, RIVALS, NEMESIS, RACEHORSE,
     PLAN_GWP, FIXED_COSTS, ECU, SOLVENCY_LINE, CASH_CALL_COST, QS_SHARE, OUTWARDS_LOAD, ILW_COST, APPETITE, WINDOW_SHARE, CAPACITY_STEPS,
-    MIN_ALIGNED, MAX_THIRD, MEMBERS, stampFill, startMembers, memberReturn, memberReview, applyReview,
+    MIN_ALIGNED, MAX_THIRD, MEMBERS, ON_PLAN, protMult, mixDrift, stampFill, startMembers, memberReturn, memberReview, applyReview,
     fixedCosts, shieldCost, deckSize, weekMarket, splitKey, weights, capitalFor, mixProfile, capitalOffers, makeDeck, renewalOffer, deckScale, brokerLine, dealLR,
-    rdsExposure, rdsAppetite, scoreGame, pmdVerdict, projectYoA, bookTrafficLight, grade, estimateQ, POLICIES, simulateGame, rivalRun
+    rdsExposure, rdsAppetite, scoreGame, pmdVerdict, projectYoA, bookTrafficLight, GRADES, grade, estimateQ, POLICIES, simulateGame, rivalRun
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1844,7 +1933,7 @@ p.sm { margin: 0; }
   const SPEED = Math.min(20, Math.max(0.25, parseFloat(params.get('speed')) || 1));
   const AUTO = params.get('autoplay');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const SEASON = params.get('season') || '3a-' + E.seasonKey(new Date());
+  const SEASON = params.get('season') || '3b-' + E.seasonKey(new Date());
   const SEASON_LABEL = SEASON.replace(/^[^-]+-/, '');
   const BASE_YEAR = (parseInt((SEASON.match(/(\d{4})-W/) || [])[1], 10) || new Date().getFullYear()) + 1;
   const yoaName = (y) => String(BASE_YEAR + y);
@@ -2208,7 +2297,7 @@ p.sm { margin: 0; }
   const FACTS = {
     enquiry: ['Step 1 · Enquiry & Triage', 'In reality you’d open with an enquiry to Lloyd’s, then submit <b>qualitative and quantitative triage templates</b>. Here you get some poker chips.'],
     boc: ['Step 2 · The BOC', 'In reality the <b>Business Opportunities Committee</b> meets you in person for about an hour. You get three questions.'],
-    mih: ['Step 3 · Making it Happen', 'After <b>in-principle approval</b> from the Council of Lloyd’s, Lloyd’s, the PRA and the FCA review everything. Capital is set on the <b>Lloyd’s Standard Model</b>, and the ECA is your SCR × 1.35. Your stamp is split into <b>lines</b>: third-party members bring their own FAL and pay you fees and profit commission; your agency funds the rest.'],
+    mih: ['Step 3 · Making it Happen', 'After <b>in-principle approval</b> from the Council of Lloyd’s, Lloyd’s, the PRA and the FCA review everything. Capital is set on the <b>Lloyd’s Standard Model</b>, and the ECA is your SCR × 1.35. Your stamp is split into <b>shares</b>: third-party members bring their own <b>Funds at Lloyd’s (FAL)</b> and pay you fees and profit commission; your agency funds the rest.'],
     tape: ['Red Tape Rush', 'Every form below is real. The pen is optional.'],
     year0: ['31 December · The 1.1 renewals', 'From triage to <b>permission to underwrite</b> usually takes 2–8 months. Now the big one: most of the market renews on <b>1 January</b>. You have until midnight.'],
     year1: ['Year 2 · Renewal season', 'Your first year of account is still open. Now you find out which books were any good, and decide what to renew at <b>1.1</b>.'],
@@ -2236,12 +2325,39 @@ p.sm { margin: 0; }
     runoff: ['Run-off', 'Pulled up stumps after a cash call', true]
   };
 
+  // Help's glossary, in the order a player meets the terms
+  const GLOSSARY = [
+    ['Stamp', 'Your syndicate’s capacity: the most premium it may write in a year of account.'],
+    ['BOC', 'Business Opportunities Committee: the Lloyd’s panel that hears new syndicate applications.'],
+    ['FAL', 'Funds at Lloyd’s: the capital members put up to back their share of the stamp.'],
+    ['SCR', 'Solvency Capital Requirement: the capital needed to survive a 1-in-200 year, from the Lloyd’s model.'],
+    ['ECA', 'Economic Capital Assessment: the capital Lloyd’s actually requires, your SCR × 1.35.'],
+    ['Funds in Syndicate', 'Profits (or losses) held in your open years of account. They count towards your capital until the year closes.'],
+    ['Names', 'Individual members of Lloyd’s, who join syndicates through a members’ agent.'],
+    ['Members’ agent', 'Advises Names and places their capital on syndicates.'],
+    ['Profit commission', 'Your agency’s cut of members’ profits, once any earlier losses have been made good.'],
+    ['YoA', 'Year of account: all the business a syndicate writes in one calendar year. It stays open for three years.'],
+    ['1.1 / 1.7', 'The 1 January and 1 July renewal dates.'],
+    ['GWP', 'Gross written premium.'],
+    ['COR', 'Combined ratio: losses, commission and costs as a share of premium. Below 100% is a profit.'],
+    ['Binder / coverholder', 'A binding authority lets a coverholder write risks for you. Watch the bordereaux.'],
+    ['Bordereaux', 'The monthly lists of risks and claims a coverholder sends back.'],
+    ['QS', 'Quota share: a reinsurer takes a fixed share of premium and losses.'],
+    ['RDS', 'Realistic Disaster Scenarios: Lloyd’s standard what-if events. Your exposure to each is checked against your appetite.'],
+    ['Cat XL', 'Catastrophe excess of loss: reinsurance you buy that pays out when a catastrophe hits a scenario.'],
+    ['ILW', 'Industry loss warranty: last-minute cover that pays if the industry loss is big enough.'],
+    ['PMD', 'Lloyd’s Performance Management Directorate. Writes letters.'],
+    ['SBF', 'Syndicate Business Forecast: next year’s business plan, submitted each autumn.'],
+    ['Coming into line', 'Each November, members’ capital must cover next year’s ECA.'],
+    ['RITC', 'Reinsurance to close: how a year of account closes after 36 months, passing its liabilities to a later year.']
+  ];
+
   // The road through a game: pre-launch, three years as an active syndicate, then the close.
   // w is a rough share of playing time, used for the journey bar and the time-to-go estimate.
   const JOURNEY = [
     { k: 'triage', g: 'pre', w: 1, label: 'Triage', name: 'Enquiry & Triage', what: 'Pick a business mix and your Active Underwriter.' },
     { k: 'boc', g: 'pre', w: 1, label: 'BOC', name: 'The BOC', what: 'Answer three questions from the Business Opportunities Committee.' },
-    { k: 'capital', g: 'pre', w: 1, label: 'Capital', name: 'Fill the Stamp', what: 'Win members’ lines and add your own capital to fill your £100m stamp.' },
+    { k: 'capital', g: 'pre', w: 1, label: 'Capital', name: 'Fill the Stamp', what: 'Win members’ shares and add your own capital to fill your £100m stamp.' },
     { k: 'tape', g: 'pre', w: 1, label: 'Red tape', name: 'Red Tape Rush', what: 'Sign the forms and win permission to underwrite.' },
     { k: 'y0', g: 'live', w: 3, label: yoaName(0), name: 'Year 1 · YoA ' + yoaName(0), what: 'Your first year of account.' },
     { k: 'y1', g: 'live', w: 3, label: yoaName(1), name: 'Year 2 · YoA ' + yoaName(1), what: 'Renew last year’s books, then the calendar again.' },
@@ -2336,8 +2452,8 @@ p.sm { margin: 0; }
     setTimeout(() => { addEventListener('keydown', onKey); const b = n.querySelector('[data-go]'); if (b) b.focus({ preventScroll: true }); }, 250);
     if (AUTO) setTimeout(finish, 600 / SPEED);
   }
-  function overlay(inner) {
-    const o = el('<div class="overlay"><div class="sheet" role="dialog"></div></div>');
+  function overlay(inner, opaque) {
+    const o = el('<div class="overlay' + (opaque ? ' opaque' : '') + '"><div class="sheet" role="dialog"></div></div>');
     o.firstElementChild.appendChild(typeof inner === 'string' ? el('<div>' + inner + '</div>') : inner);
     stageEl.appendChild(o);
     return o;
@@ -2366,13 +2482,17 @@ p.sm { margin: 0; }
   $('#helpBtn').addEventListener('click', () => {
     const body = el('<div class="helpgrid"><h3>How scoring works</h3>' +
       '<p>Your score is the <b>value your managing agency creates over three years of account</b>. £1k = 1 point. Everyone starts with the same £100m stamp and faces the same three-year market this week.</p>' +
-      '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Syndicate underwriting result\n − Members’ share (their lines)\n = Your aligned share\n − Cost of your own capital (and your share of cash calls)\n + Managing agency fees on members’ lines\n + Profit commission on members’ profits\n = Value to your agency\nAdd the three years, then\n + 500 for each year kept on plan\n − 1,000 per Performance Management letter\n = SCORE</pre>' +
-      '<p>Your stamp is split into lines. Members bring their own FAL and keep their share of the result; you must keep at least 20% yourself. More of your own line means more upside and more risk. Members react to results each November: some walk, some want more.</p>' +
+      '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Syndicate underwriting result\n − Members’ share\n = Your share of the result\n − Cost of your own capital (and your share of cash calls)\n + Managing agency fees on members’ shares\n + Profit commission on members’ profits\n = Value to your agency\nAdd the three years, then\n + £0.5m (500 points) for each year on plan\n − £1.0m (1,000 points) per Performance Management letter\n = SCORE (£1k = 1 point)</pre>' +
+      '<p>Your stamp is split into shares. Members bring their own Funds at Lloyd’s (FAL) and keep their share of the result; you must keep at least 20% yourself. A bigger share of your own means more upside and more risk. Members react to results each November: some walk, some want more.</p>' +
       '<p>Your ECA is your SCR × 1.35, built from your business mix and stamp. Spread books earn a diversification credit. Profits stay in the syndicate until the year closes. Fall below 60% of your ECA after a catastrophe and Lloyd’s calls for more capital.</p>' +
-      '<div><button class="btn primary" data-close>Got it</button></div></div>');
-    const o = overlay(body);
+      '<p><b>On plan</b> means premium within 85–115% of your stamp and no more than ' + E.ON_PLAN.drift + '% of it in different classes from your plan. The GWP and Mix gauges turn green when you’re there.</p>' +
+      '<h3>Glossary</h3><dl class="glossary">' + GLOSSARY.map(([t, d]) => '<dt>' + esc(t) + '</dt><dd>' + esc(d) + '</dd>').join('') + '</dl>' +
+      '<div class="stickfoot"><button class="btn primary" data-close>Got it</button></div></div>');
+    // over a running clock the card is opaque, like the Pause card
+    const o = overlay(body, !!(scene && scene.pausable));
+    const was = paused;
     paused = true;
-    const close = () => { o.remove(); paused = false; };
+    const close = () => { o.remove(); paused = was; };
     body.querySelector('[data-close]').addEventListener('click', close);
     o.addEventListener('click', (e) => { if (e.target === o) close(); });
   });
@@ -2441,7 +2561,7 @@ p.sm { margin: 0; }
     const name = sceneRoot && sceneRoot.dataset.scene;
     if (!name || name === 'title' || name === 'roadmap' || stageEl.querySelector('.rmsheet')) return;
     const body = el('<div class="rmsheet"><h3>Where you are</h3>' + roadmapHTML(Journey.k) + '<div class="stickfoot"><button class="btn primary" data-close>Back to the game</button></div></div>');
-    const o = overlay(body);
+    const o = overlay(body, !!(scene && scene.pausable));
     const was = paused;
     paused = true;
     const close = () => { o.remove(); paused = was; };
@@ -2528,7 +2648,7 @@ p.sm { margin: 0; }
       mixId: null, split: null, au: null,
       conf: 0, loading: 0, delayMonths: 0, atlasUntil: 0,
       capital: [], qs: false, racehorse: false, eca: 0, fal: 0, capacity: 0,
-      tape: {}, pmd: 0, pmdNotes: [], pmdFlags: {},
+      tape: {}, pmd: 0, pmdNotes: [], pmdFlags: {}, pmdAt: [],
       y: 0, years: [], next: null, entries: [], walked: [], streak: 0, hotLeft: 0,
       ilw: {}, reinsCall: {}, armedReins: false, favours: { lunch: true, reins: true, poach: true },
       lines: [], members: [], aligned: 1, alignedFal: 0, memberNews: {}, darling: false,
@@ -2544,10 +2664,12 @@ p.sm { margin: 0; }
     return Object.assign({
       market: G.market, au: G.au, qs: G.qs,
       years: G.years.map((Y) => ({ fal: Y.fal, alignedFal: Y.alignedFal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], outwardsCost: Y.outwardsCost || 0, members: Y.members || [] })),
-      ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd,
+      ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd, pmdAt: G.pmdAt,
       cashCallChoice: (info) => G.cashChoices[info.month] || 'pay'
     }, extra || {});
   }
+  // what the projections should credit: shields by year, ILWs and the Reinsurance Call
+  const protOpts = () => ({ years: G.years, ilw: G.ilw, reinsCall: G.reinsCall });
   // the opening: fill the first year's stamp with members' lines and the agency's own capital
   function recomputeCapital() {
     G.eca = E.capitalFor(G.split, G.loading, G.qs, E.PLAN_GWP).eca;
@@ -2556,6 +2678,9 @@ p.sm { margin: 0; }
     G.fill = f;
     G.fal = f.fal; G.capacity = f.capacity; G.aligned = f.aligned; G.members = f.members;
   }
+
+  // expected margin after average catastrophes sits between about 5% and 8.5% across the mixes
+  const netBar = (p) => Math.min(1, Math.max(0.08, (p.margin - p.catLoad - 0.04) / 0.05));
 
   // ---------- scenes ----------
   const SCENES = {};
@@ -2620,7 +2745,7 @@ p.sm { margin: 0; }
         const p = E.mixProfile(m.split);
         const dots = Object.keys(m.split).map((c) => '<i style="background:' + clsColor(c) + '" title="' + esc(E.CLASSES[c].name) + '"></i>').join('');
         return '<button class="mixcard" data-mix="' + m.id + '" aria-pressed="false"><span class="dots">' + dots + '</span><span class="mname">' + esc(m.name) + '</span><span class="mtag">' + esc(m.tag) + '</span>' +
-          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(Math.min(1, Math.max(0.05, (p.margin - 0.06) / 0.15)) * 100) + '%"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%"></b></span></button>';
+          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(netBar(p) * 100) + '%" title="Expected margin after average catastrophes: ' + pct(p.margin - p.catLoad, 1) + '"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%"></b></span></button>';
       }).join('');
       const auCards = Object.keys(E.AUS).map((id) => {
         const a = E.AUS[id];
@@ -2750,7 +2875,7 @@ p.sm { margin: 0; }
       // stats
       const p = E.mixProfile(G.split);
       stats.innerHTML =
-        '<div class="stat"><span class="eyebrow">Quiet-year margin</span><span class="v num">' + pct(p.margin, 1) + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, Math.max(0.03, (p.margin - 0.06) / 0.15)) * 100) + '%"></i></div></div>' +
+        '<div class="stat"><span class="eyebrow">Expected margin</span><span class="v num">' + pct(p.margin - p.catLoad, 1) + '</span><small class="statsub">after average catastrophes · a quiet year: ' + pct(p.margin, 1) + '</small><div class="meter"><i style="width:' + Math.round(netBar(p) * 100) + '%"></i></div></div>' +
         '<div class="stat"><span class="eyebrow">Volatility</span><span class="v">' + (p.vol > 0.15 ? 'Wild' : p.vol > 0.12 ? 'Lively' : p.vol > 0.08 ? 'Steady' : 'Sleepy') + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%;background:var(--bad)"></i></div></div>' +
         '<div class="stat"><span class="eyebrow">Capital (ECA)</span><span class="v num">£' + p.eca.toFixed(0) + 'm</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%;background:var(--crane)"></i></div></div>' +
         '<div class="stat' + (p.div > 0.15 ? ' shimmer' : '') + '"><span class="eyebrow">Diversification credit</span><span class="v num">' + pct(p.div, 0) + '</span><div class="meter"><i style="width:' + Math.round((p.div / 0.25) * 100) + '%;background:var(--good)"></i></div></div>';
@@ -2803,7 +2928,8 @@ p.sm { margin: 0; }
         '<div class="panelists">' + Object.keys(PANEL).map((k) => '<div class="panelist" data-p="' + k + '"><div class="face">' + face(k) + '</div><span class="pname">' + PANEL[k].name + '</span><span class="prole">' + PANEL[k].role + '</span></div>').join('') + '</div>' +
         '<div class="table" id="table"><p class="question" id="qText"></p><div class="qmeta"><span class="pen" id="pen"></span><span class="num" id="qTime">15s</span><span id="qNo"></span></div></div>' +
         '<div class="answers" id="answers"></div>' +
-        '<div class="meterwrap"><span>Council confidence</span><div class="applause"><i id="appl"></i></div><span id="confTxt">0</span></div>' +
+        '<div class="meterwrap"><span>BOC confidence</span><div class="applause"><i id="appl"></i></div><span id="confTxt">0</span></div>' +
+        '<p class="bocrule">Confidence 2 or more: no capital loading. 0 or 1: your capital need rises 10%. Below 0: it rises 25%, and permission comes late, so you lose 8 seconds at the 1.1 rush.</p>' +
         '</div></section>');
       this.root = root;
       this.onKey = (e) => { if (this.state === 'ask' && ['1', '2', '3'].includes(e.key)) this.answer(+e.key - 1); };
@@ -2874,6 +3000,7 @@ p.sm { margin: 0; }
       const c = this.conf;
       G.loading = c >= 2 ? 0 : c >= 0 ? 0.1 : 0.25;
       G.rushPenalty = c < 0 ? 8 : 0;
+      G.rushWhy = c < 0 ? ['8s: the BOC’s doubts delayed your permission'] : [];
       const mix = E.MIX_BY_ID[G.mixId];
       const sub = G.loading === 0 ? 'No capital loading' : 'Capital loading +' + Math.round(G.loading * 100) + '%' + (G.rushPenalty ? ' · late permission: less time at 1.1' : '');
       const br = this.root.querySelector('.boardroom');
@@ -2924,7 +3051,7 @@ p.sm { margin: 0; }
       const fw = o.field.clientWidth, fh = o.field.clientHeight;
       const size = fw < 400 ? 92 : 112;
       const line = offer.kind === 'line';
-      const amtTxt = line ? Math.round(offer.line * 100) + '% line' : offer.qs ? '−25% ECA' : '£' + offer.amt.toFixed(0) + 'm';
+      const amtTxt = line ? Math.round(offer.line * 100) + '% share' : offer.qs ? '−25% ECA' : '£' + offer.amt.toFixed(0) + 'm';
       const rateTxt = line ? 'fee ' + +(offer.fee * 100).toFixed(2) + '% · PC ' + +(offer.pc * 100).toFixed(1) + '%' : offer.qs ? 'cedes 25%' : Math.round(offer.rate * 100) + '% a year';
       const n = el('<button class="token' + (line ? ' line' : '') + (offer.trap ? ' trap' : '') + (offer.qs ? ' qs' : '') + '" style="--tc:' + (offer.color || SRC_COLOR[offer.src]) + '" title="' + esc(offer.hint || offer.label) + '"><b>' + amtTxt + '</b><span>' + esc(offer.label) + '</span><em>' + rateTxt + '</em></button>');
       o.field.appendChild(n);
@@ -2997,10 +3124,10 @@ p.sm { margin: 0; }
       const root = el('<section class="scene">' +
         '<div class="stephead"><div><span class="eyebrow">Step 3 · Making it Happen</span><h2>Fill the Stamp</h2></div>' +
         '<div class="right"><div class="timer" id="gTimer"><span class="num">24s</span><span class="track"><span class="fill"></span></span></div><button class="btn primary" id="gDone">Lock it in</button></div>' +
-        '<p>Flick offers into your stamp (or tap them) before rival hands snatch them. <b>Members’ lines</b> bring their own capital and pay you a fee and profit commission. <b>Your own capital</b> keeps more of the upside but costs a return. Lloyd’s wants at least 20% of the stamp to be yours.</p></div>' +
+        '<p>Flick offers into your stamp (or tap them) before rival hands snatch them. A full £100m stamp needs <b class="num">£' + E.capitalFor(G.split, G.loading, false, E.PLAN_GWP).eca.toFixed(0) + 'm</b> of <b>Funds at Lloyd’s (FAL)</b>, your <b>Economic Capital Assessment (ECA)</b>. <b>Members’ shares</b> bring their own FAL and pay you fees and profit commission. <b>Your share</b> uses your agency’s capital: more upside, but it costs a return. Keep at least 20%.</p></div>' +
         '<div class="grab"><div class="field" id="field"></div>' +
-        '<div class="vault stampvault" id="vault"><div class="stampbar" id="stampbar"></div><div class="target" id="vtarget"><span>Stamp</span></div><div class="minal" id="vmin"><span>Yours 20%</span></div><div class="vlabel"><span id="vPct">0%</span><small id="vAmt"></small></div></div></div>' +
-        '<div class="grabstats"><span>Stamp <b id="gsStamp"></b></span><span>Your line <b id="gsAligned"></b></span><span>Your FAL <b id="gsFal"></b> of <b id="gsEca"></b> ECA</span><span>Fees <b id="gsFees"></b> a year</span><span>Your capital cost <b id="gsCost"></b> a year</span><span id="gsFeed" class="muted"></span></div>' +
+        '<div class="vault stampvault" id="vault"><div class="stampbar" id="stampbar"></div><div class="target" id="vtarget"><span>Stamp</span></div><div class="minal" id="vmin"><span>Your 20% minimum</span></div><div class="vlabel"><span id="vPct">0%</span><small id="vAmt"></small></div></div></div>' +
+        '<div class="grabstats"><span>Stamp <b id="gsStamp"></b></span><span>Your share <b id="gsAligned"></b></span><span>FAL <b id="gsFal"></b> of <b id="gsEca"></b></span><span>Your capital <b id="gsMine"></b> costs <b id="gsCost"></b> a year</span><span>Fees <b id="gsFees"></b> a year</span><span id="gsFeed" class="muted"></span></div>' +
         '</section>');
       this.root = root;
       root.querySelector('#gDone').addEventListener('click', () => this.finish());
@@ -3021,7 +3148,7 @@ p.sm { margin: 0; }
         } : null,
         canGrab: (o) => {
           if (o.kind !== 'line' || lineTot() + o.line <= E.MAX_THIRD + 1e-9) return true;
-          toast('Lloyd’s says no', 'At least 20% of the stamp must be your own capital. That line would take members past 80%.', 'var(--bad)', 3);
+          toast('Lloyd’s says no', 'At least 20% of the stamp must be your own capital. That share would take members past 80%.', 'var(--bad)', 3);
           return false;
         },
         onGrab: (o) => {
@@ -3031,7 +3158,7 @@ p.sm { margin: 0; }
             if (ex) ex.line = Math.round((ex.line + o.line) * 1000) / 1000;
             else G.lines.push({ kind: o.src, label: o.label, line: o.line, color: o.color, fee: o.fee, pc: o.pc });
             if (o.trap === 'racehorse') { G.racehorse = true; toast('The founder’s racehorse', 'The family office is in, and so is the racehorse. As a bloodstock binder. Obviously.', 'var(--warn)'); }
-            else toast(o.label + ': ' + Math.round(o.line * 100) + '% line', 'They bring their own FAL, keep their share of the result, and pay you fees and profit commission.', o.color, 2.4);
+            else toast(o.label + ': ' + Math.round(o.line * 100) + '% share', 'They bring their own FAL, keep their share of the result, and pay you fees and profit commission.', o.color, 2.4);
           } else {
             G.capital.push({ src: o.src, label: o.label, amt: o.amt, rate: o.rate });
             if (o.trap === 'hurdle') toast('Expensive money', 'This one wants ' + Math.round(o.rate * 100) + '% a year.', 'var(--bad)');
@@ -3057,12 +3184,13 @@ p.sm { margin: 0; }
       r.querySelector('#vtarget').style.bottom = (100 / S).toFixed(2) + '%';
       r.querySelector('#vmin').style.bottom = ((E.MIN_ALIGNED / S) * 100).toFixed(2) + '%';
       r.querySelector('#vPct').textContent = Math.round(f.filled * 100) + '%';
-      r.querySelector('#vAmt').textContent = 'Yours ' + Math.round(f.aligned * 100) + '% · members ' + Math.round(f.third * 100) + '%';
+      r.querySelector('#vAmt').textContent = 'Your share ' + Math.round(f.aligned * 100) + '% · members ' + Math.round(f.third * 100) + '%';
       const fees = f.members.reduce((s, x) => s + x.fee * x.share, 0) * f.capacity;
       r.querySelector('#gsStamp').textContent = '£' + f.capacity.toFixed(0) + 'm';
       r.querySelector('#gsAligned').textContent = Math.round(f.aligned * 100) + '%';
-      r.querySelector('#gsFal').textContent = '£' + G.alignedFal.toFixed(1) + 'm';
-      r.querySelector('#gsEca').textContent = '£' + G.eca.toFixed(1) + 'm' + (G.qs ? ' (after QS)' : '');
+      r.querySelector('#gsFal').textContent = '£' + f.fal.toFixed(1) + 'm';
+      r.querySelector('#gsEca').textContent = '£' + G.eca.toFixed(1) + 'm needed' + (G.qs ? ' after QS' : '');
+      r.querySelector('#gsMine').textContent = '£' + G.alignedFal.toFixed(1) + 'm';
       r.querySelector('#gsFees').textContent = '£' + fees.toFixed(2) + 'm';
       r.querySelector('#gsCost').textContent = '£' + G.capital.reduce((s, c) => s + c.amt * c.rate, 0).toFixed(1) + 'm';
     },
@@ -3157,10 +3285,10 @@ p.sm { margin: 0; }
         const missed = fm.state === 'missed';
         G.tape[fm.f.id] = missed ? 'missed' : 'signed';
         if (!missed) continue;
-        if (fm.f.id === 'pra') G.rushPenalty = (G.rushPenalty || 0) + 6;
+        if (fm.f.id === 'pra') { G.rushPenalty = (G.rushPenalty || 0) + 6; (G.rushWhy = G.rushWhy || []).push('6s: the PRA form was late'); }
         if (fm.f.id === 'atlas') G.atlasBlock = true;
         if (fm.f.id === 'lcm') G.loading += 0.05;
-        if (['sbf', 'cyberx', 'principles'].includes(fm.f.id)) { G.pmd++; G.pmdNotes.push(fm.f.title + ' missed'); }
+        if (['sbf', 'cyberx', 'principles'].includes(fm.f.id)) { G.pmd++; G.pmdNotes.push(fm.f.title + ' missed'); G.pmdAt.push(0); }
       }
       recomputeCapital();
       setTimeout(() => this.permission(), 700 / SPEED);
@@ -3214,7 +3342,8 @@ p.sm { margin: 0; }
       if (y === 0) {
         recomputeCapital();
         G.cashTopUps = {};
-        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca, fal: G.fal, alignedFal: G.alignedFal, capital: G.capital.map((c) => Object.assign({}, c)), members: G.members.map((x) => Object.assign({}, x)), outwards: [], outwardsCost: 0 }];
+                // ECA scales with the stamp: a part-filled stamp needs only its share of the plan's ECA
+        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca * G.fill.filled, fal: G.fal, alignedFal: G.alignedFal, capital: G.capital.map((c) => Object.assign({}, c)), members: G.members.map((x) => Object.assign({}, x)), outwards: [], outwardsCost: 0 }];
         const ids = Object.keys(E.RIVALS);
         for (const id of ids) G.rivalRuns[id] = E.rivalRun(id, SEASON, G.market);
         G.ghost = LB.ghostCurve();
@@ -3232,8 +3361,8 @@ p.sm { margin: 0; }
         '<div class="pl-bar" id="plBar"><div class="pl-band" title="Hurricane season" style="left:41.67%;width:50%"></div>' + months + pins + '<div class="pl-head" id="plHead"></div></div></div>' +
         '<div class="derby" id="derby"></div>' +
         '<div class="hud">' +
-        '<div class="gauge"><span class="eyebrow">Capital <b id="hCap"></b></span><div class="bar2"><i id="hCapBar"></i><span class="line" id="hCapLine"></span></div></div>' +
-        '<div class="gauge"><span class="eyebrow">GWP <b id="hGwp"></b></span><div class="bar2"><i id="hGwpBar" style="background:var(--crane)"></i><span class="line" id="hGwpLine" style="background:var(--ink-2)"></span></div></div>' +
+        '<button class="gauge tapgauge" id="capGauge" aria-label="Your capital against Lloyd’s requirement"><span class="eyebrow">Capital <b id="hCap"></b></span><div class="bar2"><i id="hCapBar"></i><span class="line" id="hCapLine" title="Solvency line: 60% of ECA"></span><span class="line eca" id="hEcaLine" title="ECA"></span></div></button>' +
+        '<button class="gauge tapgauge" id="gwpGauge" aria-label="Premium written against your stamp"><span class="eyebrow">GWP <b id="hGwp"></b></span><div class="bar2"><span class="band" style="left:' + (E.ON_PLAN.lo / 1.3 * 100).toFixed(2) + '%;width:' + ((E.ON_PLAN.hi - E.ON_PLAN.lo) / 1.3 * 100).toFixed(2) + '%" title="On plan: 85–115% of the stamp"></span><i id="hGwpBar" style="background:var(--crane)"></i><span class="line" id="hGwpLine" style="background:var(--ink-2)"></span><span class="line" style="left:' + (1.2 / 1.3 * 100).toFixed(2) + '%;background:var(--bad)" title="120%: PMD letter"></span></div></button>' +
         '<button class="gauge mixgauge" id="mixGauge" aria-label="Your business mix against plan"><span class="eyebrow">Mix <b id="hDrift"></b></span><span class="mixbars"><em>Plan</em><span class="mb" id="hPlan"></span><em>Written</em><span class="mb" id="hBound"></span></span></button>' +
         '<button class="perilbtn" id="rdsBtn" aria-label="Open the RDS Board">' + icon('storm') + '<span id="rdsTxt">RDS</span></button>' +
         '</div>' +
@@ -3245,7 +3374,14 @@ p.sm { margin: 0; }
       this.root = root;
       root.querySelectorAll('.actions [data-line]').forEach((b) => b.addEventListener('click', () => this.decide(+b.dataset.line)));
       root.querySelector('#mixGauge').addEventListener('click', (e) => { e.stopPropagation(); this.mixInfo(); });
-      root.querySelector('#rdsBtn').addEventListener('click', () => { if (this.phase === 'ff' || this.phase === 'rush' || this.phase === 'mid17') this.openRDS({ mode: 'view' }); });
+      // the pins explain themselves on tap, so they work on touch screens too
+      root.querySelectorAll('.pl-pin').forEach((p) => p.addEventListener('click', (e) => { e.stopPropagation(); toast(p.textContent, p.title, 'var(--brass)', 3); }));
+      root.querySelector('#capGauge').addEventListener('click', (e) => { e.stopPropagation(); this.capInfo(); });
+      root.querySelector('#gwpGauge').addEventListener('click', (e) => { e.stopPropagation(); this.gwpInfo(); });
+      root.querySelector('#rdsBtn').addEventListener('click', () => {
+        if (this.phase === 'rush' || this.phase === 'mid17') toast('The Room doesn’t wait', 'The RDS line on each slip shows your exposure.', 'var(--warn)');
+        else if (this.phase === 'ff') this.openRDS({ mode: 'view' });
+      });
       root.querySelectorAll('.favour').forEach((n) => this.wireFavour(n));
       this.onKey = (e) => {
         if (paused || this.over) return;
@@ -3418,14 +3554,18 @@ p.sm { margin: 0; }
       const i = Math.max(0, Math.min(res.uwCurve.length - 1, Math.floor(abs) - 1));
       const uwNow = abs < 1 ? 0 : res.uwCurve[i] || 0;
       const capNow = Y.fal + falExtra() + uwNow, scale = Y.eca * 1.6;
+      this.cap = { fal: Y.fal, mine: Y.alignedFal != null ? Y.alignedFal : Y.fal, held: uwNow, calls: falExtra(), now: capNow };
       this.root.querySelector('#hCap').textContent = '£' + capNow.toFixed(0) + 'm';
       const cb = this.root.querySelector('#hCapBar');
       cb.style.width = Math.max(0, Math.min(100, (capNow / scale) * 100)) + '%';
-      cb.style.background = capNow < Y.eca * E.SOLVENCY_LINE ? 'var(--bad)' : capNow < Y.eca ? 'var(--warn)' : 'var(--good)';
+      cb.style.background = capNow < Y.eca * E.SOLVENCY_LINE ? 'var(--bad)' : capNow < Y.eca - 0.05 ? 'var(--warn)' : 'var(--good)';
       this.root.querySelector('#hCapLine').style.left = ((Y.eca * E.SOLVENCY_LINE) / scale) * 100 + '%';
-      const bt = yoaTot(this.y);
+      this.root.querySelector('#hEcaLine').style.left = (Y.eca / scale) * 100 + '%';
+      const bt = yoaTot(this.y), gr = bt / Y.capacity;
       this.root.querySelector('#hGwp').textContent = '£' + bt.toFixed(0) + '/' + Y.capacity.toFixed(0) + 'm';
-      this.root.querySelector('#hGwpBar').style.width = Math.min(100, (bt / (Y.capacity * 1.3)) * 100) + '%';
+      const gb = this.root.querySelector('#hGwpBar');
+      gb.style.width = Math.min(100, (bt / (Y.capacity * 1.3)) * 100) + '%';
+      gb.style.background = gr > 1.2 ? 'var(--bad)' : gr > E.ON_PLAN.hi ? 'var(--warn)' : gr >= E.ON_PLAN.lo ? 'var(--good)' : 'var(--crane)';
       this.root.querySelector('#hGwpLine').style.left = (1 / 1.3) * 100 + '%';
       // plan and written side by side, in plan order; classes outside the plan are hatched
       const md = this.mixData();
@@ -3434,10 +3574,12 @@ p.sm { margin: 0; }
       const dr = Math.round(md.drift), hd = this.root.querySelector('#hDrift');
       hd.innerHTML = md.bt ? dr + '% off<span class="wide"> plan</span>' : 'nothing yet';
       // stay neutral until enough is written to judge (the Q1 review ignores the mix below 30% of plan)
-      hd.style.color = !md.bt || md.bt < Y.capacity * 0.3 ? '' : dr <= 10 ? 'var(--good)' : dr <= 35 ? 'var(--warn)' : '#ffb3a6';
+      hd.style.color = !md.bt || md.bt < Y.capacity * 0.3 ? '' : dr <= E.ON_PLAN.drift ? 'var(--good)' : dr <= 35 ? 'var(--warn)' : '#ffb3a6';
       const wr = this.worstRDS();
       const rb = this.root.querySelector('#rdsBtn');
-      this.root.querySelector('#rdsTxt').textContent = wr ? 'RDS ' + Math.round(wr.pct * 100) + '%' : 'RDS';
+      this.root.querySelector('#rdsTxt').innerHTML = wr ? 'RDS ' + Math.round(wr.pct * 100) + '%<small>of appetite</small>' : 'RDS';
+      const rdsWhat = wr ? 'Biggest disaster scenario: ' + E.RDS[wr.r].name + ' at ' + Math.round(wr.pct * 100) + '% of your appetite' : 'Realistic Disaster Scenarios: nothing on risk yet';
+      rb.title = rdsWhat; rb.setAttribute('aria-label', rdsWhat + '. Open the RDS Board');
       rb.classList.toggle('over', !!wr && wr.pct > 1);
       rb.style.setProperty('--heat', wr ? Math.min(1, wr.pct).toFixed(2) : 0);
       if (this.phase === 'ff') { const fm = this.root.querySelector('#ffMonth'); if (fm) fm.textContent = MONTHS[Math.min(11, this.month)] + ' ' + yoaName(this.y); }
@@ -3453,9 +3595,45 @@ p.sm { margin: 0; }
       return { rows, bt, drift: bt ? rows.reduce((s, r) => s + Math.abs(r.wrote - r.plan), 0) * 50 : 0 };
     },
     drift() { return this.mixData().drift; },
-    mixInfo() {
-      const old = this.root.querySelector('.mixpop'); if (old) { old.remove(); return; }
+    // a small card under a HUD gauge; tapping the same gauge again closes it
+    hudPop(anchor, cls, html) {
+      const old = this.root.querySelector('.popover.' + cls);
       this.root.querySelectorAll('.popover').forEach((p) => p.remove());
+      if (old) return null;
+      const p = el('<div class="popover hudpop ' + cls + '" role="dialog">' + html + '<div class="row"><button class="btn ghost" data-a="close">Close</button></div></div>');
+      const hud = this.root.querySelector('.hud');
+      hud.style.position = 'relative';
+      hud.appendChild(p);
+      p.style.top = 'calc(100% + 6px)';
+      p.style.left = Math.max(0, Math.min(anchor.offsetLeft, hud.clientWidth - p.offsetWidth)) + 'px';
+      p.querySelector('[data-a="close"]').addEventListener('click', () => p.remove());
+      const off = (e) => {
+        if (p.isConnected && (p.contains(e.target) || anchor.contains(e.target))) return;
+        p.remove(); removeEventListener('pointerdown', off, true);
+      };
+      setTimeout(() => addEventListener('pointerdown', off, true), 0);
+      return p;
+    },
+    capInfo() {
+      const Y = this.Y, c = this.cap || { fal: Y.fal, mine: Y.fal, held: 0, calls: 0, now: Y.fal };
+      const row = (l, v, cls) => '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + l + '</td><td class="num">' + v + '</td></tr>';
+      this.hudPop(this.root.querySelector('#capGauge'), 'cappop', '<h4>Capital · YoA ' + yoaName(this.y) + '</h4><table>' +
+        row('Funds at Lloyd’s (FAL)' + (c.fal - c.mine > 0.05 ? '<small> yours ' + fmtM(c.mine) + ', members ' + fmtM(c.fal - c.mine) + '</small>' : ''), fmtM(c.fal)) +
+        row('Funds in Syndicate<small> results held in your open years</small>', fmtM(c.held, true)) +
+        (c.calls > 0.05 ? row('Cash calls paid', fmtM(c.calls)) : '') +
+        row('Capital now', fmtM(c.now), 'tot') +
+        row('ECA<small> what Lloyd’s requires for this stamp (SCR × 1.35)</small>', fmtM(Y.eca)) +
+        row('Solvency line<small> 60% of ECA</small>', fmtM(Y.eca * E.SOLVENCY_LINE)) + '</table>' +
+        '<p>Fall below the solvency line after a catastrophe and Lloyd’s makes a cash call. In November, your capital must cover next year’s ECA (coming into line).</p>');
+    },
+    gwpInfo() {
+      const Y = this.Y, bt = yoaTot(this.y), edges = [85, 115, 120].includes(Math.round((bt / Y.capacity) * 100));
+      const pc = (x) => (edges ? (x * 100).toFixed(1) : Math.round(x * 100)) + '%';
+      this.hudPop(this.root.querySelector('#gwpGauge'), 'gwppop', '<h4>Premium · YoA ' + yoaName(this.y) + '</h4>' +
+        '<p>Gross written premium (GWP) so far: <b class="num">' + fmtM(bt) + '</b> of your <b class="num">£' + Y.capacity.toFixed(0) + 'm</b> stamp (' + pc(bt / Y.capacity) + ').</p>' +
+        '<ul class="rules"><li><b>85–115%</b> (shaded): on plan. With your mix within ' + E.ON_PLAN.drift + '%, the year earns <b>+£0.5m (+500 points)</b>.</li><li><b>Over 120%</b> (red tick): a PMD letter, <b>−£1.0m (−1,000 points)</b>.</li><li><b>130%</b>: the end of the bar. No more lines this year.</li></ul>');
+    },
+    mixInfo() {
       const md = this.mixData(), dr = Math.round(md.drift);
       const pc = (x) => Math.round(x * 100) + '%';
       const rows = md.rows.map((r) => {
@@ -3463,17 +3641,9 @@ p.sm { margin: 0; }
         return '<tr><td><i style="background:' + clsColor(r.k) + '"></i>' + esc(E.CLASSES[r.k].short) + (r.off ? ' <small>not in plan</small>' : '') + '</td><td class="num">' + pc(r.plan) + '</td><td class="num">' + (md.bt ? pc(r.wrote) : '–') + '</td>' +
           '<td class="num ' + (d > 2 ? 'over' : d < -2 ? 'under' : '') + '">' + (md.bt ? (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d) : '') + '</td></tr>';
       }).join('');
-      const p = el('<div class="popover mixpop" role="dialog"><h4>Your mix vs plan · YoA ' + yoaName(this.y) + '</h4>' +
+      this.hudPop(this.root.querySelector('#mixGauge'), 'mixpop', '<h4>Your mix vs plan · YoA ' + yoaName(this.y) + '</h4>' +
         '<table><thead><tr><th>Class</th><th>Plan</th><th>Written</th><th>Gap</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        '<p>' + (md.bt ? '<b>' + dr + '%</b> of the premium you’ve written is in different classes from your plan.' : 'Nothing written yet this year.') + ' Within 10%: the on-plan bonus. Over 35% at the Q1 review: a PMD letter.</p>' +
-        '<div class="row"><button class="btn ghost" data-a="close">Close</button></div></div>');
-      const hud = this.root.querySelector('.hud'), g = this.root.querySelector('#mixGauge');
-      hud.style.position = 'relative';
-      hud.appendChild(p);
-      p.style.top = 'calc(100% + 6px)';
-      p.style.left = Math.max(0, Math.min(g.offsetLeft, hud.clientWidth - p.offsetWidth)) + 'px';
-      p.querySelector('[data-a="close"]').addEventListener('click', () => p.remove());
-      setTimeout(() => { const off = (e) => { if (!p.contains(e.target)) { p.remove(); removeEventListener('pointerdown', off, true); } }; addEventListener('pointerdown', off, true); }, 0);
+        '<p>' + (md.bt ? '<b>' + dr + '%</b> of the premium you’ve written is in different classes from your plan.' : 'Nothing written yet this year.') + ' Within ' + E.ON_PLAN.drift + '% (green), with premium at 85–115% of the stamp: on plan, <b>+£0.5m (+500 points)</b>. Over 35% at the Q1 review: a PMD letter.</p>');
     },
     rdsState(abs) {
       const at = abs == null ? Math.floor(this.abs()) : abs;
@@ -3519,6 +3689,7 @@ p.sm { margin: 0; }
       this.deck = E.makeDeck(SEASON, Y.split, G.au, y, '1.1', E.deckScale(Y.capacity, '1.1', renewed, n), 'player', G.market);
       this.deckIdx = 0;
       this.clockMax = this.clock = Math.max(18, 32 - (y === 0 ? (G.rushPenalty || 0) : 0));
+      if (y === 0 && G.rushPenalty) toast('Late permission: −' + (32 - this.clockMax) + 's on the clock', (G.rushWhy || []).join('. ') + '.', 'var(--warn)', 5);
       this.nextAt = this.t + 0.6;
       this.setPhase('rush', '31 December · the 1.1 renewals');
       this.root.querySelector('#clock').hidden = false;
@@ -3587,7 +3758,8 @@ p.sm { margin: 0; }
       if (AUTO) setTimeout(() => {
         if (this.cur && this.cur.d === d && !this.cur.busy) {
           const pol = E.POLICIES[AUTO] || E.POLICIES.skilled;
-          const line = pol(d, { au: G.au, r: Math.random, boundTot: yoaTot(this.y), capacity: this.Y.capacity, rdsLoad: E.rdsExposure(G.entries, this.abs()), appetite: E.rdsAppetite(this.Y.split, this.Y.capacity, this.Y.fal) });
+          const bound = {}; yoaEntries(this.y).forEach((b) => { bound[b.deal.cls] = (bound[b.deal.cls] || 0) + b.P; });
+          const line = pol(d, { au: G.au, r: E.rng('auto|' + d.id), boundTot: yoaTot(this.y), capacity: this.Y.capacity, rdsLoad: E.rdsExposure(G.entries, this.abs()), appetite: E.rdsAppetite(this.Y.split, this.Y.capacity, this.Y.fal), bound, w: E.weights(this.Y.split) });
           this.decide(blocked ? 0 : line);
         }
       }, 700 / SPEED);
@@ -3717,7 +3889,7 @@ p.sm { margin: 0; }
           const box = this.root.querySelector('#box'); box.classList.add('hotbox'); setTimeout(() => box.classList.remove('hotbox'), 15000 / SPEED);
         }
         if (slip) {
-          slamStamp(slip, 'Scratched<small>Synd ' + G.no + ' · ' + (line === 2 ? '20' : '10') + '% line · £' + P.toFixed(1) + 'm</small>', { pos: 'right:6%;top:34%', rot: -8, shake: false, blue: line === 1 });
+          slamStamp(slip, 'Scratched<small>Synd ' + G.no + ' · ' + (line === 2 ? 'Big' : 'Small') + ' line £' + P.toFixed(1) + 'm</small>', { pos: 'right:6%;top:34%', rot: -8, shake: false, blue: line === 1 });
           Sound.kaching();
           const [x, yy] = centre(slip); FX.burst(x, yy, 'coins', line === 2 ? 26 : 14);
           setTimeout(() => {
@@ -3758,8 +3930,8 @@ p.sm { margin: 0; }
       if (!G.pmdFlags[key] && bt > this.Y.capacity * 1.2) { G.pmdFlags[key] = true; this.pmdLetter('your YoA ' + yoaName(this.y) + ' premium is running at ' + pct(bt / this.Y.capacity) + ' of plan.'); }
     },
     pmdLetter(text) {
-      G.pmd++; G.pmdNotes.push(text);
-      const l = el('<div class="letter" role="status"><h4>Lloyd’s Performance Management</h4>Dear Active Underwriter,<br>We note that ' + esc(text) + ' Please explain.<br><b>−1,000 points</b></div>');
+      G.pmd++; G.pmdNotes.push(text); G.pmdAt.push(this.abs());
+      const l = el('<div class="letter" role="status"><h4>Lloyd’s Performance Management</h4>Dear Active Underwriter,<br>We note that ' + esc(text) + ' Please explain.<br><b>−£1.0m (−1,000 points)</b></div>');
       this.root.querySelector('#box').appendChild(l);
       Sound.thud();
       setTimeout(() => l.remove(), 6000 / Math.min(SPEED, 2));
@@ -3786,9 +3958,9 @@ p.sm { margin: 0; }
       const a = 1 - mem.reduce((s, x) => s + x.share, 0);
       const segs = [['Your agency', a, 'var(--brass)']].concat(mem.map((x) => [x.short, x.share, x.color]));
       const n = this.root.querySelector('#stampStrip');
-      n.innerHTML = '<span class="eyebrow">Stamp £' + Y.capacity.toFixed(0) + 'm · yours ' + Math.round(a * 100) + '%</span><span class="ssbar">' + segs.map(([l, w, c]) => '<i style="flex:' + w + ';background:' + c + '" title="' + esc(l + ' ' + Math.round(w * 100) + '%') + '"></i>').join('') + '</span>' +
+      n.innerHTML = '<span class="eyebrow">Stamp £' + Y.capacity.toFixed(0) + 'm · your share ' + Math.round(a * 100) + '%</span><span class="ssbar">' + segs.map(([l, w, c]) => '<i style="flex:' + w + ';background:' + c + '" title="' + esc(l + ' ' + Math.round(w * 100) + '%') + '"></i>').join('') + '</span>' +
         '<span class="sslegend">' + segs.map(([l, w, c]) => '<em><i style="background:' + c + '"></i>' + esc(l) + ' ' + Math.round(w * 100) + '%</em>').join('') + '</span>';
-      n.onclick = () => toast('Your stamp', mem.length ? 'Members bring their own FAL and pay you fees and profit commission. They react to your results each November.' : 'All yours: every pound of profit, and every pound of loss.', 'var(--brass)', 4);
+      n.onclick = () => toast('Your stamp', mem.length ? 'Members bring their own Funds at Lloyd’s (FAL), keep their share of the result and pay you fees and profit commission. They react to your results each November.' : 'All yours: every pound of profit, and every pound of loss.', 'var(--brass)', 4);
     },
 
     // ---- the bookcase: one shelf per year of account ----
@@ -3847,11 +4019,15 @@ p.sm { margin: 0; }
       worst.alertMsg = pick(['Bordereaux are three months late.', 'The book grew 60% overnight.', 'Claims notifications have doubled.', 'The coverholder has changed its name. Again.']);
       G.alerts.push(worst);
       if (worst.node) { worst.node.classList.add('smoking'); worst.node.appendChild(el('<span class="smoke"></span>')); }
-      toast('Portfolio alert', worst.deal.label + ': ' + worst.alertMsg + (G.au === 'forensic' ? ' The Forensic says audit it (free).' : ' Tap the smoking binder.'), 'var(--bad)', 6);
+      toast('Portfolio alert', worst.deal.label + ': ' + worst.alertMsg + (G.au === 'forensic' ? ' The Forensic says audit it (free).' : ' Audit, exit or ignore it.'), 'var(--bad)', 6);
       this.alerting = worst; this.alertT = 10;
       this.setPhase('alert', MONTHS[this.month] + ' · portfolio alert');
       const box = this.root.querySelector('#slotArea');
-      box.innerHTML = '<div class="ffpanel"><span class="eyebrow">Portfolio alert</span><div class="ffmonth">' + esc(worst.deal.label) + '</div><p>' + esc(worst.alertMsg) + ' Tap the smoking binder on your shelf: audit it, or exit the book. <b class="num" id="alT">10s</b></p></div>';
+      box.innerHTML = '<div class="ffpanel alertpanel"><span class="eyebrow">Portfolio alert</span><div class="ffmonth">' + esc(worst.deal.label) + '</div><p>' + esc(worst.alertMsg) + ' Decide in <b class="num" id="alT">10s</b>, or it is ignored.</p>' +
+        '<div class="alopts"><button class="btn primary" data-a="audit"><b>Audit · ' + (G.au === 'forensic' ? 'free' : '£0.3m') + '</b><small>Keeps the book and stops it getting worse</small></button>' +
+        '<button class="btn danger" data-a="exit"><b>Exit the book</b><small>No more premium or losses from it</small></button>' +
+        '<button class="btn" data-a="ignore"><b>Ignore</b><small>Its loss ratio rises 35% this year</small></button></div></div>';
+      box.querySelectorAll('.alopts [data-a]').forEach((b) => b.addEventListener('click', () => this.resolveAlert(worst, b.dataset.a)));
       if (AUTO) setTimeout(() => this.resolveAlert(worst, worst.deal.q > 1.25 ? 'exit' : 'audit'), 600 / SPEED);
       return true;
     },
@@ -3986,7 +4162,7 @@ p.sm { margin: 0; }
       this.root.querySelector('#rdsBtn').classList.remove('hot');
       const st = this.rdsState();
       const S = this.sheet('<span class="eyebrow">' + MONTHS[Math.min(11, this.month)] + ' ' + yoaName(this.y) + ' · Realistic Disaster Scenarios</span><h3>RDS Board</h3>' +
-        '<p class="muted sm">Your gross loss if each scenario happened in full, against the appetite in your business plan (the white line). Solid bars are net of your shields.</p>' +
+        '<p class="muted sm">Realistic Disaster Scenarios (RDS) are Lloyd’s standard what-if events. Each bar is your gross loss if that scenario happened in full, against the appetite in your business plan (the white line). Solid bars are net of your shields.</p>' +
         '<div class="rdsboard">' + this.rdsRowsHTML(st) + '</div>' +
         '<div class="boardfoot stickfoot"><span class="muted sm">' + (G.armedReins ? 'Reinsurance Call armed: it halves the next catastrophe hit.' : (this.Y.outwards || []).length ? 'Shields on: ' + this.Y.outwards.map((r) => esc(E.RDS[r].name)).join(', ') + '.' : 'No shields this year.') + '</span><button class="btn" data-close>Close</button></div>', 'rdssheet');
       const close = () => S.close();
@@ -4002,7 +4178,7 @@ p.sm { margin: 0; }
       const st = this.rdsState(at);
       const cost = (r) => E.shieldCost(r, (st.rows.find((x) => x.r === r) || { gross: 0 }).gross);
       const S = this.sheet('<span class="eyebrow">1 January ' + yoaName(y) + ' · outwards</span><h3>Buy your cat XL</h3>' +
-        '<p class="muted sm">Drag a shield onto an RDS row, or tap the row. Each shield halves your losses from that scenario for the year. It’s priced at the expected recovery plus a margin: the price is shown on each row.</p>' +
+        '<p class="muted sm">A catastrophe excess of loss (cat XL) treaty is reinsurance you buy for the year. Drag a shield onto a disaster scenario (RDS) row, or tap the row. Each shield halves your losses from that scenario for the year. It’s priced at the expected recovery plus a margin: the price is shown on each row.</p>' +
         '<div class="stickbar"><div class="shields" id="shields"></div><div class="boardfoot"><span class="sm" id="outCost"></span><button class="btn primary" id="outDone"></button></div></div>' +
         '<div class="rdsboard" id="rdsb"></div>', 'rdssheet');
       const toggle = (r) => {
@@ -4079,7 +4255,7 @@ p.sm { margin: 0; }
       if (e.warn) {
         const ilw = gross > 0 ? '<button class="btn brass" id="ilw">' + icon('shield') + ' Buy an ILW · ' + fmtM(gross * E.ILW_COST) + '</button>' : '';
         const call = G.favours.reins && !G.armedReins && gross > 0 ? '<button class="btn" id="call">Make the Reinsurance Call</button>' : '';
-        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? ' · your shield halves it' : ' · no shield on this one') + '. An ILW halves this loss.' : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span>' +
+        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? ' · your shield halves it' : ' · no shield on this one') + '. An industry loss warranty (ILW) halves this loss.' : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span>' +
           '<div class="cbtns">' + ilw + call + '<button class="btn danger" id="brace">Brace · <span class="num" id="cd">10s</span></button></div></div>';
       } else {
         foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? '. Your shield halves it.' : '. No shield on this one.') : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span></div>';
@@ -4113,17 +4289,18 @@ p.sm { margin: 0; }
       const { e, S } = C, R = E.RDS[e.rds];
       e.done = true;
       this.overlayTick = null;
-      if (G.armedReins) { G.reinsCall[e.key] = true; G.armedReins = false; }
+      const hitBooks = G.entries.filter((b) => {
+        const end = b.alert === 'exit' ? b.alertMonth : b.start + 12;
+        return e.month >= b.start && e.month < end && b.deal.rds[e.rds];
+      });
+      const gross = hitBooks.reduce((s, b) => s + b.P * b.deal.rds[e.rds], 0);
+      // the Reinsurance Call is only used up by a catastrophe that actually reaches you
+      const reinsKept = G.armedReins && gross <= 0;
+      if (G.armedReins && gross > 0) { G.reinsCall[e.key] = true; G.armedReins = false; }
       const shielded = (this.Y.outwards || []).includes(e.rds);
       const mult = (shielded ? 0.5 : 1) * (G.ilw[e.key] ? 0.5 : 1) * (G.reinsCall[e.key] ? 0.5 : 1);
-      let gross = 0, loss = 0;
-      for (const b of G.entries) {
-        const end = b.alert === 'exit' ? b.alertMonth : b.start + 12;
-        if (e.month < b.start || e.month >= end) continue;
-        const f = b.deal.rds[e.rds]; if (!f) continue;
-        gross += b.P * f; loss += b.P * f * e.sev * mult;
-        b.catHit = true; this.paintBinder(b);
-      }
+      let loss = 0;
+      for (const b of hitBooks) { loss += b.P * b.deal.rds[e.rds] * e.sev * mult; b.catHit = true; this.paintBinder(b); }
       const net = loss * (G.qs ? 1 - E.QS_SHARE : 1);
       e.loss = net; e.gross = gross;
       if (loss > 0 && (shielded || G.ilw[e.key])) G.calledIt = true;
@@ -4152,7 +4329,7 @@ p.sm { margin: 0; }
         } else {
           ll.textContent = R.sober ? 'No exposure to this scenario.' : e.name + ' misses you.';
           ll.classList.add('miss');
-          S.body.querySelector('#cTxt').textContent = 'You had nothing on ' + R.name + '.';
+          S.body.querySelector('#cTxt').textContent = 'You had nothing on ' + R.name + '.' + (reinsKept ? ' Your Reinsurance Call stays armed for the next one.' : '');
           this.tick(R.sober ? R.name.toUpperCase() + ' · ' + G.no + ' HAS NO EXPOSURE' : e.name.toUpperCase() + ' MISSES ' + G.no + '. THE ROOM EXHALES.');
         }
         this.updateRace();
@@ -4198,18 +4375,22 @@ p.sm { margin: 0; }
       if (y === 1 && G.racehorse) toast('The racehorse retires', 'The bloodstock binder won’t renew. The founder is “devastated”.', 'var(--warn)', 4);
       const books = yoaEntries(y - 1).filter((e) => e.alert !== 'exit' && !e.deal.forced);
       if (!books.length) { toast('Nothing to renew', 'Last year’s book is empty. Straight to the 1.1 rush.', 'var(--warn)'); this.startRush(); return; }
-      const cards = books.map((e) => ({ e, tl: E.bookTrafficLight(e, G.market, this.lineCat(e)), offer: E.renewalOffer(e, G.market, y), state: 'renew' }));
+      const cards = books.map((e) => {
+        const cat = this.lineCat(e), C = E.CLASSES[e.deal.cls];
+        return { e, tl: E.bookTrafficLight(e, G.market, cat), norm: C.lr + C.cat, catPart: cat / Math.max(0.1, e.P), offer: E.renewalOffer(e, G.market, y), state: 'renew' };
+      });
       const premOf = (c) => (c.state === 'shred' ? 0 : E.round1(c.e.P * (c.state === 'grow' ? 1.5 : 1) * (1 + c.offer.offeredRate / 100)));
       const LW = { good: 'good', warn: 'so-so', bad: 'bad' };
       const S = this.sheet('<span class="eyebrow">15 December ' + yoaName(y - 1) + ' · renewal review</span><h3>What do we renew at 1.1?</h3>' +
-        '<p class="muted sm">Now you can see how last year’s books really ran. <b>Drag the dogs into the shredder</b>. Tap a card to cycle Renew → Grow (half as much again) → Shred.</p>' +
+        '<p class="muted sm">Now you can see how last year’s books really ran: each card shows its loss ratio (LR) against the norm for its class, and the catastrophe part of it. <b>Drag the dogs into the shredder</b>. Tap a card to cycle Renew → Grow (half as much again) → Shred.</p>' +
         '<div class="rsum" id="rsum"></div><div class="rgrid" id="rgrid"></div>' +
         '<div class="shredrow"><div class="shredder" id="shredder">' + icon('shred') + '<span>Shredder</span></div>' +
         '<div class="rfoot"><div class="timer" id="rTimer"><span class="num">25s</span><span class="track"><span class="fill"></span></span></div><button class="btn primary" id="rDone">Send to the brokers →</button></div></div>', 'reviewsheet');
       const grid = S.body.querySelector('#rgrid');
       const card = (c, i) => '<button class="rcard ' + c.state + '" data-i="' + i + '" style="--c:' + clsColor(c.e.deal.cls) + '"><span class="spine"></span>' +
         '<span class="rt"><i class="light ' + c.tl.light + '"></i><b>' + esc(c.e.deal.label) + '</b></span>' +
-        '<span class="rm">' + esc(E.CLASSES[c.e.deal.cls].short) + ' · LR ' + Math.round(c.tl.lr * 100) + '% (' + LW[c.tl.light] + ') · offer ' + (c.offer.offeredRate > 0 ? '+' : '') + c.offer.offeredRate + '%</span>' +
+        '<span class="rm">' + esc(E.CLASSES[c.e.deal.cls].short) + ' · LR ' + Math.round(c.tl.lr * 100) + '% vs ' + Math.round(c.norm * 100) + '% norm' + (c.catPart >= 0.005 ? ' (cat ' + Math.round(c.catPart * 100) + '%)' : '') + ' · ' + LW[c.tl.light] + ' · offer ' + (c.offer.offeredRate > 0 ? '+' : '') + c.offer.offeredRate + '%</span>' +
+        (c.e.catHit && c.offer.offeredRate > 0 ? '<span class="rhint">Hit by a catastrophe, rates now +' + c.offer.offeredRate + '%</span>' : '') +
         '<span class="rst">' + (c.state === 'shred' ? 'Not renewed' : (c.state === 'grow' ? 'Grow · ' : 'Renew · ') + '£' + premOf(c).toFixed(1) + 'm') + '</span></button>';
       const paintSum = () => {
         const tot = cards.reduce((s, c) => s + premOf(c), 0);
@@ -4286,7 +4467,7 @@ p.sm { margin: 0; }
       const y = this.y, Y = this.Y;
       this.setPhase('sbf', '1 September · SBF day');
       const out = G.market.years[y].outlook;
-      const proj = E.projectYoA(G.entries, G.market, y, 12 * y + 8, G.au);
+      const proj = E.projectYoA(G.entries, G.market, y, 12 * y + 8, G.au, protOpts());
       const split0 = Object.assign({}, Y.split);
       const plan = { ask: 'hold', split: Object.assign({}, Y.split) };
       const byOutlook = Object.keys(E.CLASSES).sort((a, b) => out[b] - out[a]);
@@ -4294,8 +4475,8 @@ p.sm { margin: 0; }
       const outsider = byOutlook.find((c) => !split0[c]);
       const chips = byOutlook.filter((c) => split0[c]).concat(byOutlook.filter((c) => !split0[c]).slice(0, 2));
       const sign = (v) => (v > 0 ? '+' : '') + v + '%';
-      const S = this.sheet('<span class="eyebrow">1 September ' + yoaName(y) + ' · Syndicate Business Forecast</span><h3>Plan YoA ' + yoaName(y + 1) + '</h3>' +
-        '<div class="desk"><div class="dk-col"><div class="dk-proj"><span class="eyebrow">YoA ' + yoaName(y) + ' projected</span><b class="num" style="color:' + corColor(proj) + '">' + Math.round(proj * 100) + '%</b><small>combined ratio. PMD caps growth above 95% and blocks it above 105%.</small></div>' +
+      const S = this.sheet('<span class="eyebrow">1 September ' + yoaName(y) + ' · Syndicate Business Forecast (SBF)</span><h3>Plan YoA ' + yoaName(y + 1) + '</h3>' +
+        '<div class="desk"><div class="dk-col"><div class="dk-proj"><span class="eyebrow">YoA ' + yoaName(y) + ' projected</span><b class="num" style="color:' + corColor(proj) + '">' + Math.round(proj * 100) + '%</b><small>combined ratio (COR: losses and costs as a share of premium). Lloyd’s Performance Management (PMD) caps growth above 95%, blocks it above 105%, and cuts the stamp by 20% above 115%.</small></div>' +
         '<div class="dk-out"><span class="eyebrow">Market outlook for ' + yoaName(y + 1) + '</span><div class="ochips">' +
         chips.map((c) => '<span class="ochip ' + (out[c] >= 3 ? 'up' : out[c] <= -3 ? 'down' : '') + '" style="--c:' + clsColor(c) + '"><i></i>' + esc(E.CLASSES[c].short) + ' <b class="num">' + sign(out[c]) + '</b></span>').join('') + '</div>' +
         '<p class="monte">Back from Monte Carlo: everyone says ' + esc(E.CLASSES[hot].name) + ' is ' + (out[hot] > 0 ? 'up ' + out[hot] + '%' : 'flat') + '. Nobody mentions ' + esc(E.CLASSES[soft].name) + '.</p></div></div>' +
@@ -4313,7 +4494,7 @@ p.sm { margin: 0; }
       const paint = () => {
         const cb = S.body.querySelector('#capbtns');
         cb.innerHTML = Object.keys(E.CAPACITY_STEPS).map((k) => {
-          const stamp = Math.round(Y.plan * E.CAPACITY_STEPS[k]);
+          const stamp = Math.round(Y.capacity * E.CAPACITY_STEPS[k]);
           const eca = E.capitalFor(plan.split, G.loading, G.qs, stamp).eca;
           return '<button class="capbtn' + (plan.ask === k ? ' on' : '') + '" data-k="' + k + '" aria-pressed="' + (plan.ask === k) + '"><b>' + STEP_LABEL[k][0] + '</b><span class="num">' + STEP_LABEL[k][1] + ' · £' + stamp + 'm</span><small class="num">ECA £' + eca.toFixed(0) + 'm</small></button>';
         }).join('');
@@ -4354,7 +4535,7 @@ p.sm { margin: 0; }
         if (done) return; done = true;
         this.overlayTick = null;
         const v = E.pmdVerdict(proj, E.CAPACITY_STEPS[plan.ask]);
-        const stamp = Math.round(Y.plan * v.mult);
+        const stamp = Math.round(Y.capacity * v.mult);
         G.next = { capacity: stamp, split: plan.split, verdict: v, ask: plan.ask };
         if (Object.keys(plan.split).some((k) => (plan.split[k] || 0) > (split0[k] || 0) && out[k] >= 8)) G.cycleSurf = true;
         S.body.querySelectorAll('.capbtn, .dkrow button').forEach((b) => { b.disabled = true; });
@@ -4391,7 +4572,7 @@ p.sm { margin: 0; }
     openCIL() {
       const y = this.y, Y = this.Y;
       this.setPhase('cil', '30 November · coming into line');
-      const nx = G.next || { capacity: Y.plan, split: Object.assign({}, Y.split), verdict: null, ask: 'hold' };
+      const nx = G.next || { capacity: Y.capacity, split: Object.assign({}, Y.split), verdict: null, ask: 'hold' };
       G.next = nx;
       const mem = Y.members || [];
       if (!mem.length) { nx.members = []; return this.cilCapital(nx); }
@@ -4400,14 +4581,21 @@ p.sm { margin: 0; }
     // third-party members look at the year and decide: stay, leave, cut, or ask for a bigger line
     memberReview(nx) {
       const y = this.y, Y = this.Y;
-      const info = E.memberReturn(G.entries, G.market, y, G.au, Y, G.qs);
+      const info = E.memberReturn(G.entries, G.market, y, G.au, Y, G.qs, protOpts());
       const review = E.memberReview(Y.members, info);
       const key = (x) => x.kind + '|' + x.label;
       const accept = {};
       const SAY = {
         leaves: { names: 'Walking away. Their members’ agent has “concerns”.', ils: 'Out. The fund’s investors didn’t sign up for this.', corporate: 'Leaving the stamp.' },
-        cuts: 'Halving their line. Patience has limits.',
+        cuts: 'Halving their share. Patience has limits.',
         stays: { family: G.racehorse ? 'Loyal as ever. The racehorse sends its regards.' : 'Loyal as ever.', other: 'Staying on the same line.' }
+      };
+      const pcf = (x) => Math.round(x * 100) + '%';
+      const rule = (k) => {
+        const M = E.MEMBERS[k]; if (!M) return '';
+        if (M.stays) return 'Always stays.';
+        const down = M.halve != null ? 'Halves its share below ' + (M.halve < 0 ? '−' : '') + pcf(Math.abs(M.halve)) : 'Leaves below ' + pcf(M.leave || 0) + (M.catLimit ? ', or if catastrophes cost over ' + pcf(M.catLimit) + ' of FAL' : '');
+        return down + '. Asks for ' + pcf(M.growBy) + ' more above ' + pcf(M.grow) + '.';
       };
       const S = this.sheet('<span class="eyebrow">30 November ' + yoaName(y) + ' · coming into line</span><h3>Member review</h3>' +
         '<p class="muted sm">Your members’ projected return on their capital this year, after your fees and profit commission: <b class="num" style="color:' + (info.ret < 0 ? '#ffb3a6' : 'var(--good)') + '">' + (info.ret >= 0 ? '+' : '') + Math.round(info.ret * 100) + '%</b>' +
@@ -4417,16 +4605,16 @@ p.sm { margin: 0; }
         const box = S.body.querySelector('#mrev');
         box.innerHTML = review.map((x, i) => {
           const k = key(x), on = accept[k];
-          const said = x.action === 'leaves' ? (SAY.leaves[x.kind] || SAY.leaves.corporate) : x.action === 'cuts' ? SAY.cuts : x.action === 'offers' ? 'Wants a bigger line. More fees and commission for you, but less of the upside.' : (x.kind === 'family' ? SAY.stays.family : SAY.stays.other);
+          const said = x.action === 'leaves' ? (SAY.leaves[x.kind] || SAY.leaves.corporate) : x.action === 'cuts' ? SAY.cuts : x.action === 'offers' ? 'Wants a bigger share. More fees and commission for you, but less of the upside.' : (x.kind === 'family' ? SAY.stays.family : SAY.stays.other);
           const to = x.action === 'offers' ? (on ? x.to : x.share) : x.to;
           return '<div class="mcard ' + x.action + (on ? ' accepted' : '') + '" style="--mc:' + x.color + '"><span class="mn"><i></i><b>' + esc(x.label) + '</b></span>' +
-            '<span class="ml num">' + Math.round(x.share * 100) + '% → <b>' + Math.round(to * 100) + '%</b>' + (x.action === 'offers' && !on ? ' (offered ' + Math.round(x.to * 100) + '%)' : '') + '</span><em>' + esc(said) + '</em>' +
+            '<span class="ml num">' + Math.round(x.share * 100) + '% → <b>' + Math.round(to * 100) + '%</b>' + (x.action === 'offers' && !on ? ' (offered ' + Math.round(x.to * 100) + '%)' : '') + '</span><em>' + esc(said) + '</em><small class="mrule">' + esc(rule(x.kind)) + '</small>' +
             (x.action === 'offers' ? '<span class="mbtns"><button class="btn' + (on ? ' brass' : '') + '" data-i="' + i + '" data-a="1">' + (on ? 'Accepted' : 'Accept') + '</button><button class="btn' + (on ? '' : ' ghostish') + '" data-i="' + i + '" data-a="0">Decline</button></span>' : '') + '</div>';
         }).join('');
         box.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => { accept[key(review[+b.dataset.i])] = b.dataset.a === '1'; Sound.tick(); paint(); }));
         const next = E.applyReview(review, (x) => !!accept[key(x)]);
         const a = 1 - next.reduce((s2, x) => s2 + x.share, 0);
-        S.body.querySelector('#mSum').innerHTML = 'Next year your own line is <b class="num">' + Math.round(a * 100) + '%</b> of the stamp' + (a > 1 - Y.members.reduce((s2, x) => s2 + x.share, 0) + 0.005 ? ': you must fund the gap your members leave.' : '.');
+        S.body.querySelector('#mSum').innerHTML = 'Next year your share is <b class="num">' + Math.round(a * 100) + '%</b> of the stamp' + (a > 1 - Y.members.reduce((s2, x) => s2 + x.share, 0) + 0.005 ? ': you must fund the gap your members leave.' : '.');
       };
       paint();
       const done = () => {
@@ -4465,7 +4653,7 @@ p.sm { margin: 0; }
       const scale = Math.max(avail, need) * 1.15;
       const pctW = (v) => Math.max(0, Math.min(100, (v / scale) * 100)).toFixed(1) + '%';
       const S = this.sheet('<span class="eyebrow">30 November ' + yoaName(y) + ' · coming into line</span><h3>Come into line</h3>' +
-        '<p class="muted sm">' + (aNext < 0.999 ? 'Your members bring their own FAL. Your own line is ' + Math.round(aNext * 100) + '% of next year’s stamp, so your capital, plus your share of the funds held in your open years, must cover <b class="num">' + fmtM(need) + '</b> of next year’s ' + fmtM(eca) + ' ECA.' :
+        '<p class="muted sm">' + (aNext < 0.999 ? 'Your members bring their own FAL. Your share is ' + Math.round(aNext * 100) + '% of next year’s stamp, so your capital, plus your share of the funds held in your open years, must cover <b class="num">' + fmtM(need) + '</b> of next year’s ' + fmtM(eca) + ' ECA.' :
           'Your Funds at Lloyd’s, plus the funds held in your open years, must cover next year’s ECA of <b class="num">' + fmtM(eca) + '</b> for a <b class="num">£' + nx.capacity + 'm</b> stamp.') + '</p>' +
         '<div class="cil" id="cil"><div class="cilbar"><i class="f" style="width:' + pctW(Math.min(myFal, avail)) + '"></i><i class="h" style="left:' + pctW(Math.min(myFal, avail)) + ';width:' + pctW(Math.max(0, avail - myFal)) + '"></i><span class="ap" style="left:' + pctW(need) + '"><em>' + (aNext < 0.999 ? 'Your ECA' : 'ECA') + '</em></span></div>' +
         '<div class="cillegend"><span><i class="f"></i>' + (aNext < 0.999 || aNow < 0.999 ? 'Your FAL ' : 'FAL ') + fmtM(myFal) + '</span><span><i class="h"></i>' + (aNow < 0.999 ? 'Your share of funds held ' : 'Held in the syndicate ') + fmtM(mine, true) + '</span><span>Total <b class="num">' + fmtM(avail) + '</b></span></div></div>' +
@@ -4498,7 +4686,7 @@ p.sm { margin: 0; }
       }
       const short = need - avail;
       const shrunk = Math.max(10, Math.round(nx.capacity * Math.min(1, avail / need)));
-      act.innerHTML = '<p class="verdict">You’re <b class="num" style="color:#ffb3a6">' + fmtM(short) + '</b> short' + (aNext > aNow + 0.005 ? ', partly because members left and their line is now yours to fund' : '') + '. Raise it in a 12-second capital grab, or shrink next year’s stamp to £' + shrunk + 'm.</p><div class="resactions"><button class="btn primary" id="raise">Raise ' + fmtM(short) + ' →</button><button class="btn" id="shrink">Shrink to £' + shrunk + 'm</button></div>';
+      act.innerHTML = '<p class="verdict">You’re <b class="num" style="color:#ffb3a6">' + fmtM(short) + '</b> short' + (aNext > aNow + 0.005 ? ', partly because members left and their share is now yours to fund' : '') + '. Raise it in a 12-second capital grab, or shrink next year’s stamp to £' + shrunk + 'm.</p><div class="resactions"><button class="btn primary" id="raise">Raise ' + fmtM(short) + ' →</button><button class="btn" id="shrink">Shrink to £' + shrunk + 'm</button></div>';
       act.querySelector('#shrink').addEventListener('click', () => { nx.final = shrunk; finish('Next year’s stamp shrinks to £' + shrunk + 'm to fit your capital.', 'Plan shrunk<small>£' + shrunk + 'm stamp</small>', false); });
       act.querySelector('#raise').addEventListener('click', () => this.miniGrab(S, nx, short, avail, need, finish));
       this.focusLater(act.querySelector('#raise'));
@@ -4546,12 +4734,14 @@ p.sm { margin: 0; }
     buildNextYear() {
       const Y = this.Y, nx = G.next || {};
       const split = nx.split || Object.assign({}, Y.split);
-      const plan = nx.capacity || Y.plan;
+      const plan = nx.capacity || Y.capacity;
       const members = (nx.members || Y.members || []).map((x) => Object.assign({}, x));
-      const eca = nx.eca || E.capitalFor(split, G.loading, G.qs, plan).eca;
+      // a stamp cut back at coming into line needs only its share of the planned ECA, and so do the members' FAL
+      const capacity = nx.final || plan;
+      const eca = (nx.eca || E.capitalFor(split, G.loading, G.qs, plan).eca) * capacity / plan;
       const alignedFal = nx.alignedFal != null ? nx.alignedFal : Y.alignedFal != null ? Y.alignedFal : Y.fal;
       G.years[this.y + 1] = {
-        split, plan, capacity: nx.final || plan, eca, alignedFal, fal: alignedFal + members.reduce((s2, x) => s2 + x.share, 0) * eca,
+        split, plan, capacity, eca, alignedFal, fal: alignedFal + members.reduce((s2, x) => s2 + x.share, 0) * eca,
         capital: nx.capital || Y.capital.map((c) => Object.assign({}, c)), members, outwards: [], outwardsCost: 0
       };
       G.next = null;
@@ -4578,7 +4768,7 @@ p.sm { margin: 0; }
       for (let k = 0; k <= y; k++) {
         const P = yoaTot(k);
         const dev = k < y ? this.devFor(k, 0.5) : { amt: 0, byCls: {} };
-        const cor = P > 0 ? E.projectYoA(G.entries, G.market, k, abs, G.au) + dev.amt / P : 0;
+        const cor = P > 0 ? E.projectYoA(G.entries, G.market, k, abs, G.au, protOpts()) + dev.amt / P : 0;
         rows.push('<tr><td>YoA ' + yoaName(k) + '</td><td class="num">' + fmtM(P) + '</td><td class="num" style="color:' + (P ? corColor(cor) : 'inherit') + '">' + (P ? Math.round(cor * 100) + '%' : '–') + '</td><td>' + (12 * (y - k + 1)) + ' months' + (k === y - 2 ? ' · closes next' : '') + '</td></tr>');
         for (const c in dev.byCls) {
           const prem = yoaEntries(k).filter((b) => b.deal.cls === c && b.alert !== 'exit').reduce((s, b) => s + b.P, 0);
@@ -4598,23 +4788,29 @@ p.sm { margin: 0; }
       if (G.ghost) lanes.push([G.ghost.label, this.curveAt(G.ghost.curve, abs)]);
       lanes.sort((a, b) => b[1] - a[1]);
       const yearEv = G.market.years[y].events.filter((e) => e.done && e.loss > 0).sort((a, b) => b.loss - a.loss)[0];
-      const thisCor = yoaTot(y) ? E.projectYoA(G.entries, G.market, y, abs, G.au) : 1;
+      const thisCor = yoaTot(y) ? E.projectYoA(G.entries, G.market, y, abs, G.au, protOpts()) : 1;
       const hl = yearEv && yearEv.loss > 5 ? (E.RDS[yearEv.rds].sober ? G.name + ' counts the cost of ' + yearEv.name.toLowerCase() : yearEv.name + ' costs ' + G.no + ' ' + fmtM(yearEv.loss))
         : thisCor < 0.9 ? G.name + ' posts a ' + Math.round(thisCor * 100) + '% year'
         : thisCor > 1.05 ? 'Tough year at Box ' + G.no
         : 'Quiet year in the Room for ' + G.name;
-      const nextLine = y < 2 && G.years[y] ? (() => { const nx = G.next || {}; const aN = 1 - (nx.members || this.Y.members || []).reduce((s2, x) => s2 + x.share, 0); return '<p class="sm">YoA ' + yoaName(y + 1) + ': <b class="num">£' + (nx.final || nx.capacity || this.Y.plan) + 'm</b> stamp · your FAL <b class="num">' + fmtM(nx.alignedFal != null ? nx.alignedFal : this.Y.alignedFal) + '</b> · your line <b class="num">' + Math.round(aN * 100) + '%</b>' + (nx.verdict ? ' · PMD: ' + esc(nx.verdict.stamp) : '') + '.</p>'; })() : '';
+      const nextLine = y < 2 && G.years[y] ? (() => { const nx = G.next || {}; const aN = 1 - (nx.members || this.Y.members || []).reduce((s2, x) => s2 + x.share, 0); return '<p class="sm">YoA ' + yoaName(y + 1) + ': <b class="num">£' + (nx.final || nx.capacity || this.Y.capacity) + 'm</b> stamp · your FAL <b class="num">' + fmtM(nx.alignedFal != null ? nx.alignedFal : this.Y.alignedFal) + '</b> · your share <b class="num">' + Math.round(aN * 100) + '%</b>' + (nx.verdict ? ' · PMD: ' + esc(nx.verdict.stamp) : '') + '.</p>'; })() : '';
       // the agency's take on this year so far: its own line, plus fees and commission from members
       const Yn = this.Y, memN = Yn.members || [], thirdN = memN.reduce((s2, x) => s2 + x.share, 0);
-      const uwEst = E.memberReturn(G.entries, G.market, y, G.au, Yn, G.qs).uw;
+      const uwEst = E.memberReturn(G.entries, G.market, y, G.au, Yn, G.qs, protOpts()).uw;
       const feesN = memN.reduce((s2, x) => s2 + x.fee * x.share, 0) * Yn.capacity;
       const pcN = thirdN > 0 ? memN.reduce((s2, x) => s2 + x.pc * x.share, 0) / thirdN * Math.max(0, thirdN * uwEst - feesN) : 0;
       const takeN = (1 - thirdN) * uwEst + feesN + pcN - Yn.capital.reduce((s2, c) => s2 + c.amt * c.rate, 0);
       const mnews = (G.memberNews[y] || []).map((n) => esc(n.label) + ({ leaves: ' leaves the stamp', cuts: ' halves its line to ' + Math.round(n.to * 100) + '%', offers: n.accepted ? ' grows to ' + Math.round(n.to * 100) + '%' : ' offered more; you declined' })[n.action] + '.');
-      const takeLine = '<p class="sm">Your take on YoA ' + yoaName(y) + ' so far: <b class="num" style="color:' + (takeN >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + fmtM(takeN, true) + '</b>' + (thirdN > 0 ? ' (your ' + Math.round((1 - thirdN) * 100) + '% line, plus ' + fmtM(feesN + pcN) + ' of fees and commission) of a projected ' + fmtM(uwEst, true) + ' syndicate result.' : ' of a projected ' + fmtM(uwEst, true) + ' result.') + '</p>';
+      const takeLine = '<p class="sm">Projected value to you from YoA ' + yoaName(y) + ': <b class="num" style="color:' + (takeN >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + fmtM(takeN, true) + '</b>' + (thirdN > 0 ? ' (your ' + Math.round((1 - thirdN) * 100) + '% share, plus ' + fmtM(feesN + pcN) + ' of fees and commission) of a projected ' + fmtM(uwEst, true) + ' syndicate result.' : ' of a projected ' + fmtM(uwEst, true) + ' result.') + '</p>';
+      // the on-plan bonus: premium within 85–115% of the stamp and the mix close to plan
+      const Pn = res.per[y], gpc = Pn && Yn.capacity ? Pn.boundTot / Yn.capacity : 0, OP = E.ON_PLAN;
+      // one decimal place where whole numbers would hide which side of a limit the premium is on
+      const gp = (x) => { const r = Math.round(x * 100); return r === Math.round(OP.lo * 100) || r === Math.round(OP.hi * 100) ? (x * 100).toFixed(1) + '%' : r + '%'; };
+      const why = Pn ? [gpc < OP.lo || gpc > OP.hi ? 'premium is ' + gp(gpc) + ' of the stamp (85–115% needed)' : '', Pn.drift > OP.drift ? Math.round(Pn.drift) + '% of it is in different classes (' + OP.drift + '% at most)' : ''].filter(Boolean) : [];
+      const planLine = Pn ? '<p class="sm planline ' + (Pn.onPlan ? 'on' : 'off') + '">' + (Pn.onPlan ? '<b>On plan</b> for YoA ' + yoaName(y) + ': premium ' + gp(gpc) + ' of the stamp, mix ' + Math.round(Pn.drift) + '% off. <b class="num">+£0.5m (+500 points)</b>.' : '<b>Off plan</b> for YoA ' + yoaName(y) + ': ' + why.join(', and ') + '. No on-plan bonus this year.') + '</p>' : '';
       const S = this.sheet('<div class="annual"><div class="ledger mini"><div class="mast">The Lime Street Ledger</div><div class="dateline"><span>31 December ' + yoaName(y) + '</span><span>Year-end edition</span></div><h2>' + esc(hl) + '</h2></div>' +
         '<div class="an-grid"><div><span class="eyebrow">Your open years</span><table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>Proj. COR</th><th>Age</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>' +
-        takeLine + (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
+        takeLine + planLine + (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
         '<div><span class="eyebrow">The Derby after ' + (12 * (y + 1)) + ' months</span><ol class="standings">' + lanes.map(([n, v]) => '<li class="' + (n === 'You' ? 'me' : '') + '"><span>' + esc(n) + '</span><b class="num">' + fmtM(v, true) + '</b></li>').join('') + '</ol>' +
         (memN.length || mnews.length ? '<span class="eyebrow">Member news</span><ul class="devlist">' + (mnews.length ? mnews.map((n) => '<li>' + n + '</li>').join('') : '<li>All your members are staying on.</li>') + '</ul>' : '') +
         '<span class="eyebrow">Rival news</span><ul class="devlist">' + news.map((n) => '<li>' + esc(n) + '</li>').join('') + '</ul></div></div>' +
@@ -4737,7 +4933,7 @@ p.sm { margin: 0; }
     ];
     if (G.qs) rows.push(['Outward QS share', -t.qsTake]);
     const members = t.uw - t.alignedUW;
-    if (Math.abs(members) > 0.05 || t.fees > 0.05) rows.push(['Members’ share', -members], ['Your aligned share', t.alignedUW, 'total']);
+    if (Math.abs(members) > 0.05 || t.fees > 0.05) rows.push(['Members’ share', -members], ['Your share of the result', t.alignedUW, 'total']);
     rows.push(['Cost of your capital', -t.capCost]);
     if (t.fees > 0.05 || t.pc > 0.05) rows.push(['Managing agency fees', t.fees], ['Profit commission', t.pc]);
     rows.push(['Value to your agency', res.value, 'total'], ['On-plan bonus', res.onPlanYears * 0.5], ['PMD letters', -res.pmd], ['Score (£m)', res.score / 1000, 'total']);
@@ -4782,7 +4978,7 @@ p.sm { margin: 0; }
     return [G.name + ' "disappointed" with first three years', 'Sources say the BOC is "not surprised".'];
   }
   function yoaTableHTML(res) {
-    return '<table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>COR</th><th>Your line</th><th>Your take</th><th></th></tr></thead><tbody>' + res.per.map((P, k) =>
+    return '<table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>COR</th><th>Your share</th><th>Your value</th><th></th></tr></thead><tbody>' + res.per.map((P, k) =>
       '<tr><td>YoA ' + yoaName(k) + '</td><td class="num">' + (P.skipped ? '–' : fmtM(P.gwp)) + '</td><td class="num">' + (P.skipped || !P.gwp ? '–' : Math.round(P.cor * 100) + '%') + '</td><td class="num">' + (P.skipped ? '–' : Math.round(P.aligned * 100) + '%') + '</td>' +
       '<td class="num" style="color:' + (P.skipped ? 'inherit' : P.value >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + (P.skipped ? '–' : fmtM(P.value, true)) + '</td>' +
       '<td class="muted">' + (P.skipped ? 'Never written' : res.runoff !== null ? 'Run-off' : k === 0 ? 'Closed (RITC)' : 'Projected') + (P.onPlan ? ' · on plan' : '') + '</td></tr>').join('') + '</tbody></table>';
@@ -4818,26 +5014,26 @@ p.sm { margin: 0; }
       if (own.length < 3) badges.push('declined');
       if (res.runoff !== null) badges.push('runoff');
       G.badges = badges;
-      const grade = E.grade(res.roc, res.runoff);
+      const grade = E.grade(res.score, res.runoff);
       const [hl, deck] = headline(res);
       const mix = E.MIX_BY_ID[G.mixId];
       const quote = pick(QUOTES[G.au]);
       const cats = G.market.events.filter((e) => e.done && !e.second).length;
       const para = 'Syndicate ' + G.no + ', a ' + mix.name + ' start-up, wrote ' + fmtM(res.gwp) + ' of premium over ' + (res.runoff !== null ? 'its short life' : 'three years of account') + ', backed by ' + fmtM(G.years[0].fal) + ' of Funds at Lloyd’s at launch.' +
         (cats ? ' It lived through ' + cats + (cats > 1 ? ' catastrophes.' : ' catastrophe.') : '') +
-        (res.alignedAvg < 0.999 ? ' Members took ' + Math.round((1 - res.alignedAvg) * 100) + '% of the stamp on average; the syndicate made ' + fmtM(res.uwAll, true) + ', of which the agency kept ' + fmtM(res.value, true) + ' after fees and profit commission.' : ' The agency kept the whole stamp to itself.') +
+        (res.alignedAvg < 0.999 ? ' Members took ' + Math.round((1 - res.alignedAvg) * 100) + '% of the stamp on average; the syndicate made ' + fmtM(res.uwAll, true) + '; your agency kept ' + fmtM(res.value, true) + ', including ' + fmtM(res.fees + res.pc) + ' of fees and profit commission.' : ' The agency kept the whole stamp to itself.') +
         (res.cashCalls.length ? ' It needed ' + (res.cashCalls.length > 1 ? res.cashCalls.length + ' cash calls' : 'a cash call') + ' along the way.' : '') + (G.pmd ? ' Performance Management wrote ' + G.pmd + (G.pmd > 1 ? ' letters.' : ' letter.') : '');
       const root = el('<section class="scene scroll"><div class="results-grid">' +
         '<article class="ledger' + (REDUCED ? '' : ' spin') + '" id="ledger"><div class="mast">The Lime Street Ledger</div>' +
         '<div class="dateline"><span>31 December ' + yoaName(2) + ' · Late edition</span><span>Price: one Lutine Bell</span></div>' +
         '<h2>' + esc(hl) + '</h2><p class="deck">' + esc(deck) + '</p>' +
         '<div class="cols"><div class="photo">' + face(G.au, res.score >= 0 ? 'grin' : 'worried') + '</div><div class="body"><p>' + esc(para) + '</p><p>“' + esc(quote.replace(/\.$/, ',')) + '” said ' + esc(E.AUS[G.au].name) + ', Active Underwriter.</p></div></div>' +
-        '<div class="figs"><div><b class="num">' + (res.gwp ? Math.round(res.cor * 100) + '%' : '–') + '</b><span>Combined ratio</span></div><div><b class="num">' + pct(res.roc, 1) + '</b><span>Return on capital</span></div><div><b class="num">' + fmtPts(res.score) + '</b><span>Score</span></div></div></article>' +
-        '<div class="scorebox"><div class="bigscore"><span class="n num" id="bigN">0</span><span class="g">' + esc(grade) + '</span></div>' +
+        '<div class="figs"><div><b class="num">' + (res.gwp ? Math.round(res.cor * 100) + '%' : '–') + '</b><span>Combined ratio</span></div><div><b class="num">' + pct(res.roc, 1) + '</b><span>Syndicate RoC</span></div><div><b class="num">' + fmtM(res.value, true) + '</b><span>Your value</span></div><div><b class="num">' + fmtPts(res.score) + '</b><span>Score</span></div></div></article>' +
+        '<div class="scorebox"><div class="bigscore"><span class="n num" id="bigN">0</span><small class="pts">points · £1k = 1 point</small><span class="g">' + esc(grade) + '</span></div>' +
         '<div class="panel"><span class="eyebrow">Year by year</span>' + yoaTableHTML(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">Badges</span><div class="badges">' + (badges.length ? badges.map((b, i) => '<span class="badge' + (BADGES[b][2] ? ' shame' : '') + '" style="--dl:' + (0.6 + i * 0.15) + 's" title="' + esc(BADGES[b][1]) + '">' + esc(BADGES[b][0]) + '</span>').join('') : '<span class="muted">No badges this time. The Room is a hard school.</span>') + '</div></div>' +
-        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON_LABEL + '</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
+        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
         '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy result</button></div>' +
         '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '</div></div></section>');
@@ -4892,7 +5088,7 @@ p.sm { margin: 0; }
     },
     copy() {
       const r = this.res;
-      const text = 'Lime Street Launch · ' + SEASON_LABEL + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', own line ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
+      const text = 'Lime Street Launch · ' + SEASON_LABEL + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', your share ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
       const box = this.root.querySelector('#copyBox');
       const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'Your result is highlighted below.', 'var(--crane)'); };
       try {

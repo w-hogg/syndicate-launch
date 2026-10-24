@@ -18,7 +18,7 @@ After you press Start, **The road to the Room** gives an overview of every step 
 |---|---|---|
 | 1. Enquiry & Triage | Pick one of 10 business mix types, drag chips to tweak the split (up to 4 classes), and choose your Active Underwriter | Triage templates and the SBF class split |
 | 2. The BOC | Slide answers across the table to a three-person panel, then press and hold to stamp | Business Opportunities Committee, then Council in-principle approval |
-| 3. Making it Happen | **Fill the Stamp**: flick members' lines (Names via members' agents, a corporate investor, an ILS fund, a family office) and your agency's own capital into your £100m stamp, keeping at least 20% yourself. Then scribble signatures on the red tape | Syndicate capacity split into members' lines; each member's FAL covers its share of the ECA (SCR × 1.35); managing agent's fee and profit commission on third-party lines; PRA/SM&CR, ATLAS coverholder approval, SBF |
+| 3. Making it Happen | **Fill the Stamp**: flick members' shares (Names via members' agents, a corporate investor, an ILS fund, a family office) and your agency's own capital into your £100m stamp, keeping at least 20% yourself. Then scribble signatures on the red tape | Syndicate capacity split between members; each member's Funds at Lloyd's (FAL) covers its share of the ECA (SCR × 1.35); managing agent's fee and profit commission on third-party capital; PRA/SM&CR, ATLAS coverholder approval, SBF |
 
 **Three years of account (about 1½ minutes each)**
 
@@ -27,22 +27,25 @@ A planner bar runs January to December, with pins for 1.1, the Q1 review, 1.4 an
 | Beat | What you do | The real thing it mirrors |
 |---|---|---|
 | Renewal review (years 2 and 3) | Last year's books show traffic lights and the broker's offered rate. Drag the dogs into the shredder, or tap to cycle Renew → Grow → Shred | Renewal strategy before 1.1 |
-| 1.1 rush | A flip clock counts down to midnight on 31 December. Brokers bring portfolios (binders, consortia, QSs, lineslips); drag each slip left to decline, down for a small line or right for a big line. Every slip shows which RDS it adds to | Most of the market renews on 1 January |
+| 1.1 rush | A flip clock counts down to midnight on 31 December. Brokers bring portfolios (binders, consortia, QSs, lineslips); drag each slip left to decline, down for a small line or right for a big line. Every slip shows which RDS it adds to, and whether it helps your mix or moves you off plan. The clock doesn't stop for the RDS Board | Most of the market renews on 1 January |
 | Outwards | Place two annual cat XL shields on your RDS rows | Buying the reinsurance programme at 1.1 |
 | Q1 review | Lloyd's checks your RDS against appetite and your mix against plan | PMD quarterly monitoring |
+| Portfolio alerts | A coverholder misbehaves: audit it (£0.3m), exit the book, or ignore it and its loss ratio rises 35% | Binder oversight and bordereaux |
 | Catastrophes | Forecast storms give you 10 seconds to buy a last-minute ILW or make the Reinsurance Call; earthquakes, cyber and man-made losses arrive without warning | Lloyd's RDS: compulsory natural and man-made scenarios, specialist scenarios and syndicate-defined ones |
 | 1.7 window | A few mid-year slips, mostly property cat | The 1 July renewals |
-| SBF day (1 September) | Read the market outlook, choose next year's stamp (Shrink, Hold, Grow, Go large), move up to two chips, and get PMD's stamp | The Syndicate Business Forecast |
+| SBF day (1 September) | Read the market outlook, choose next year's stamp (Shrink, Hold, Grow, Go large, all based on this year's actual stamp), move up to two chips, and get PMD's stamp. PMD caps growth above a 95% projected combined ratio, blocks it above 105% and cuts the stamp by 20% above 115% | The Syndicate Business Forecast |
 | Coming into line (30 November) | If your FAL plus funds held in the syndicate covers next year's ECA, you're in line. If not, a 12-second capital grab, or shrink the plan | Members coming into line |
-| Annual report (31 December) | Projected combined ratio per open year, reserve development, rival news and the Derby standings | Year-end reporting |
+| Annual report (31 December) | Projected combined ratio per open year (crediting your shields, ILWs and Reinsurance Calls), whether the year is on plan and why, reserve development, member and rival news, and the Derby standings | Year-end reporting |
 
 **The close (about 45 seconds)**: pull the lever on a three-reel slot machine. Your first year of account closes by reinsurance to close (RITC) after 36 months; the other two are projected. Then read your front page in *The Lime Street Ledger*.
+
+The **Capital**, **GWP** and **Mix** gauges show their reference marks (the solvency line and ECA, the on-plan band and the 120% PMD line, the plan mix) and open a short explanation when tapped. **Help** (?) explains the scoring and has a glossary of every Lloyd's term in the game.
 
 **Controls:** drag, tap or use the keyboard:
 - `←` / `↓` / `→` decide on a slip
 - `R` reads the small print
 - `1` / `2` / `3` play a Favour
-- `P` opens the RDS Board
+- `P` opens the RDS Board (between renewal windows)
 - `Esc` pauses
 
 ## Catastrophes and RDS
@@ -72,20 +75,25 @@ Your score is the value **your managing agency** creates over three years of acc
 For each year of account:
   Gross written premium − commission − attritional losses − cat losses (after outwards)
   − reserve development − expenses and outwards spend  = syndicate underwriting result
-  − members' share of that result                      = your aligned share
+  − members' share of that result                      = your share of the result
   − cost of your own capital (and your share of any cash call)
-  + managing agency fees on members' lines
+  + managing agency fees on members' shares
   + profit commission on members' profits (after their losses are made good)
                                                         = value to your agency
 Add the three years, then
-  + 500 for each year kept on plan − 1,000 per PMD letter = score
+  + £0.5m (500 points) for each year on plan
+  − £1.0m (1,000 points) per PMD letter                 = score (£1k = 1 point)
 ```
 
-**Your stamp is split into lines.** Third-party members bring their own FAL, keep their share of the profit or loss, and pay you a fee and profit commission. Lloyd's wants at least 20% of the stamp to be your own. A big line of your own means more upside and more risk; a small one means steadier fee income. Every November, at coming into line, members react to the year: after a bad one some walk away and you must fund their line, and after a good one some ask for a bigger line, which you can accept or decline.
+**Your stamp is split into shares.** Third-party members bring their own FAL, keep their share of the profit or loss, and pay you a fee and profit commission. Lloyd's wants at least 20% of the stamp to be your own. A big share of your own means more upside and more risk; a small one means steadier fee income. Every November, at coming into line, members react to the year by their own rules (shown on each card): after a bad one some walk away and you must fund their share, and after a good one some ask for a bigger share, which you can accept or decline.
+
+**On plan** means a year's premium is within 85–115% of its stamp and no more than 20% of it is in different classes from the plan. The GWP and Mix gauges turn green when you're there, and the annual report says whether you made it.
+
+**Grades** go on the final score: Lloyd's darling (45,000+), Solid franchise (28,000+), Keep calm and carry on (15,000+), PMD on speed-dial (0+) and Remediation plan (below 0). A careful player lands roughly 15/35/30/15/5% across them.
 
 Profits stay in the syndicate until a year closes, so your share counts towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash, and you pay your share of it. Pay up, or go into run-off and end the game.
 
-**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, follows the rate cycle) finishes with a positive score about **9 times in 10** whatever their own line. A casual player does so about 8 times in 10, with a lower score. Random swiping succeeds about 1 time in 4. Keeping all of the stamp yourself gives the highest average (about 38,000 for a careful player); keeping 20% gives about 20,000, but a gentler worst case.
+**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle) finishes with a positive score **more than 9 times in 10** whatever their own share. A casual player does so 8 to 9 times in 10, with a lower score. Random swiping succeeds about 1 time in 4. Keeping all of the stamp yourself gives the highest average (about 38,000 for a careful player); keeping 20% gives about 20,000, but a gentler worst case.
 
 ## Fair competition
 
