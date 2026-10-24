@@ -681,6 +681,61 @@ p.sm { margin: 0; }
 .rtag.closed b { color: var(--brass-2); }
 .reel .stamp { font-size: 0.95rem; padding: 2px 7px; border-width: 3px; }
 
+/* ---------- journey bar: pre-launch, active syndicate, close ---------- */
+.journey { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 4px 16px; padding: 6px 0 8px; border-top: 1px solid #ffffff10; }
+.jbar { display: flex; gap: 8px; min-width: 0; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; color: inherit; font: inherit; text-align: left; }
+.jbar:hover .jseg::before { background: #2a3d52; }
+.jg { display: grid; gap: 3px; min-width: 0; }
+.jg.pre { --jc: var(--brass); --jt: var(--brass-2); } .jg.live { --jc: var(--crane); --jt: var(--crane-2); } .jg.close { --jc: var(--good); --jt: #9be3c0; }
+.jgl { font: 700 0.56rem/1 var(--f-ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--jt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jsegs { display: flex; gap: 2px; min-width: 0; }
+.jseg { position: relative; display: grid; gap: 3px; min-width: 0; }
+.jseg::before { content: ""; display: block; height: 6px; border-radius: 3px; background: var(--steel-2); }
+.jseg i { position: absolute; left: 0; top: 0; height: 6px; width: 0; border-radius: 3px; background: var(--jc); transition: width .35s; }
+.jseg.now i { box-shadow: 0 0 8px var(--jc); }
+.jseg em { font: 600 0.56rem/1 var(--f-ui); font-style: normal; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jseg.done em { color: var(--ink-2); } .jseg.now em { color: var(--ink); }
+.jcap { font: 600 0.68rem/1.2 var(--f-ui); color: var(--ink-3); text-align: right; white-space: nowrap; }
+.jcap b { color: var(--ink); font-weight: 700; }
+@media (max-width: 640px) {
+  .journey { grid-template-columns: minmax(0, 1fr); gap: 3px; padding: 4px 0 6px; }
+  .jcap { order: -1; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+  .jseg em { display: none; }
+  .jbar { gap: 5px; }
+  .jgl { letter-spacing: 0.06em; }
+}
+
+/* ---------- the road ahead ---------- */
+.roadmap { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .scene .roadmap { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr); align-items: start; } }
+.rmcard { display: grid; gap: 10px; min-width: 0; padding: 12px 14px; border-radius: 14px; background: var(--steel); border: 1px solid var(--girder); border-top: 4px solid var(--jc); }
+.rmcard.pre { --jc: var(--brass); --jt: var(--brass-2); } .rmcard.live { --jc: var(--crane); --jt: var(--crane-2); } .rmcard.close { --jc: var(--good); --jt: #9be3c0; }
+.rmcard header { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; }
+.rmcard header b { font: 800 1.25rem/1 var(--f-display); text-transform: uppercase; color: var(--jt); }
+.rmcard header span { font-size: var(--t-xs); color: var(--ink-3); }
+.rmsteps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: rm; }
+.rmsteps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 2px 10px; align-items: start; counter-increment: rm; }
+.rmsteps li::before { content: counter(rm); grid-row: span 2; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--night-2); border: 2px solid var(--jc); font: 800 0.8rem/1 var(--f-display); }
+.rmsteps li b, .rmbeats li b { font: 700 0.84rem/1.2 var(--f-ui); }
+.rmsteps li span, .rmbeats li span { font-size: var(--t-xs); color: var(--ink-2); line-height: 1.35; }
+.rmsteps li.here::before { background: var(--jc); color: #0c131b; box-shadow: 0 0 10px var(--jc); }
+.rmsteps li.done::before { content: "✓"; background: var(--jc); color: #0c131b; opacity: .65; }
+.rmsteps li.done b, .rmyear.done { opacity: .7; }
+.rmsteps li.here b::after { content: " · you are here"; color: var(--jt); font-weight: 600; }
+.rmyears { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rmyear { display: grid; gap: 3px; text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--night-2); border: 1px solid var(--girder); }
+.rmyear b { font: 800 1.05rem/1 var(--f-display); }
+.rmyear small { font-size: 0.64rem; color: var(--ink-3); }
+.rmyear.here { border-color: var(--crane); box-shadow: 0 0 0 1px var(--crane) inset, 0 0 12px #3b7bff55; }
+.rmyear.here small { color: var(--crane-2); }
+.rmnote { margin: 0; font-size: var(--t-xs); color: var(--ink-3); }
+.rmbeats { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.rmbeats li { display: grid; gap: 2px; align-content: start; padding: 6px 8px; border-radius: 8px; background: var(--night-2); border-left: 3px solid var(--jc); }
+.rmscore { margin: 12px 0; font-size: var(--t-s); color: var(--ink-2); max-width: 75ch; }
+.rmscore b { color: var(--ink); }
+.rmsheet { display: grid; gap: 10px; }
+.rmsheet .rmscore { margin: 0; }
+
 /* ---------- 3-year close ---------- */
 .closewrap { flex: 1; display: grid; place-items: center; align-content: center; gap: 18px; }
 .slot { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 14px; align-items: center; width: min(620px, 100%); }
@@ -762,6 +817,7 @@ p.sm { margin: 0; }
     <button class="iconbtn" id="muteBtn" aria-label="Turn sound off"></button>
   </header>
   <main class="stage" id="stage"></main>
+  <footer class="journey" id="journey" hidden></footer>
   <div class="toasts" id="toasts" aria-live="polite"></div>
 </div>
 <div class="flash" id="flash"></div>
@@ -2022,6 +2078,31 @@ p.sm { margin: 0; }
     runoff: ['Run-off', 'Pulled up stumps after a cash call', true]
   };
 
+  // The road through a game: pre-launch, three years as an active syndicate, then the close.
+  // w is a rough share of playing time, used for the journey bar and the time-to-go estimate.
+  const JOURNEY = [
+    { k: 'triage', g: 'pre', w: 1, label: 'Triage', name: 'Enquiry & Triage', what: 'Pick a business mix and your Active Underwriter.' },
+    { k: 'boc', g: 'pre', w: 1, label: 'BOC', name: 'The BOC', what: 'Answer three questions from the Business Opportunities Committee.' },
+    { k: 'capital', g: 'pre', w: 1, label: 'Capital', name: 'Capital Grab', what: 'Raise Funds at Lloyd’s to cover your ECA.' },
+    { k: 'tape', g: 'pre', w: 1, label: 'Red tape', name: 'Red Tape Rush', what: 'Sign the forms and win permission to underwrite.' },
+    { k: 'y0', g: 'live', w: 3, label: yoaName(0), name: 'Year 1 · YoA ' + yoaName(0), what: 'Your first year of account.' },
+    { k: 'y1', g: 'live', w: 3, label: yoaName(1), name: 'Year 2 · YoA ' + yoaName(1), what: 'Renew last year’s books, then the calendar again.' },
+    { k: 'y2', g: 'live', w: 3, label: yoaName(2), name: 'Year 3 · YoA ' + yoaName(2), what: 'Three years open at once.' },
+    { k: 'close', g: 'close', w: 1.5, label: 'Close', name: 'Reinsurance to close', what: 'Close your first year, project the others, and see the leaderboard.' }
+  ];
+  const JGROUPS = { pre: ['Pre-launch', 'About 2 minutes'], live: ['Active syndicate', 'Three years, about 1½ minutes each'], close: ['The close', 'Under a minute', 'Close'] };
+  const YEAR_BEATS = [
+    ['Renewal review', 'Years 2 and 3: renew, grow or shred last year’s books'],
+    ['1.1 rush', 'Brokers queue at your box until midnight on 31 December'],
+    ['Outwards', 'Put cat XL shields on your biggest disaster scenarios'],
+    ['Q1 review', 'Lloyd’s checks your exposure and your mix'],
+    ['Catastrophes', 'Some come with a forecast, some without warning'],
+    ['1.7 window', 'A few mid-year renewals, mostly property cat'],
+    ['SBF day', 'Years 1 and 2: plan next year, grow or shrink'],
+    ['Coming into line', 'Years 1 and 2: make sure your capital covers next year'],
+    ['Annual report', 'How each open year is shaping up, and the Derby']
+  ];
+
   // ---------- pointer drag helper (tap and keyboard fall back to onTap) ----------
   // opts.ignore: selector for child controls that keep their own clicks (pointer capture would swallow them)
   function draggable(node, opts) {
@@ -2084,6 +2165,7 @@ p.sm { margin: 0; }
     sceneRoot.dataset.scene = name;
     stageEl.appendChild(sceneRoot);
     if (scene.mounted) scene.mounted();
+    Journey.sync(name);
   }
   function interstitial(key, next) {
     const [title, body] = FACTS[key];
@@ -2135,6 +2217,80 @@ p.sm { margin: 0; }
     body.querySelector('[data-close]').addEventListener('click', close);
     o.addEventListener('click', (e) => { if (e.target === o) close(); });
   });
+
+  // ---------- journey bar: where you are in the game ----------
+  const JW_TOTAL = JOURNEY.reduce((s, j) => s + j.w, 0);
+  const Journey = {
+    el: $('#journey'), k: undefined, f: -1,
+    init() {
+      const groups = Object.keys(JGROUPS).map((g) => {
+        const steps = JOURNEY.filter((j) => j.g === g);
+        return '<span class="jg ' + g + '" style="flex:' + steps.reduce((s, j) => s + j.w, 0) + '"><span class="jgl">' + esc(JGROUPS[g][2] || JGROUPS[g][0]) + '</span><span class="jsegs">' +
+          steps.map((j) => '<span class="jseg" data-k="' + j.k + '" style="flex:' + j.w + '" title="' + esc(j.name) + '"><i></i><em>' + esc(j.label) + '</em></span>').join('') + '</span></span>';
+      }).join('');
+      this.el.innerHTML = '<button class="jbar" id="jbar" aria-label="Show the road ahead">' + groups + '</button><span class="jcap" id="jcap"></span>';
+      this.el.querySelector('#jbar').addEventListener('click', () => showRoadmap());
+    },
+    sync(name) {
+      this.el.hidden = name === 'title';
+      const map = { build: 'triage', pitch: 'boc', grab: 'capital', tape: 'tape', close: 'close', results: 'done' };
+      if (name === 'roadmap') this.set(null, 0);
+      else if (name === 'year') this.set('y' + G.y, 0);
+      else if (map[name]) this.set(map[name], name === 'close' ? 0.4 : 0.5);
+    },
+    set(k, f) {
+      if (k === this.k && Math.abs(f - this.f) < 0.005) return;
+      this.k = k; this.f = f;
+      const idx = k === 'done' ? JOURNEY.length : k ? JOURNEY.findIndex((j) => j.k === k) : -1;
+      let doneW = 0;
+      JOURNEY.forEach((j, i) => {
+        const seg = this.el.querySelector('.jseg[data-k="' + j.k + '"]');
+        seg.className = 'jseg' + (i < idx ? ' done' : i === idx ? ' now' : '');
+        seg.firstElementChild.style.width = (i < idx ? 100 : i === idx ? Math.max(6, f * 100) : 0) + '%';
+        doneW += i < idx ? j.w : i === idx ? j.w * f : 0;
+      });
+      const left = Math.round(((JW_TOTAL - doneW) / JW_TOTAL) * 7);
+      const togo = left >= 1 ? 'about ' + left + ' min to go' : 'nearly there';
+      let cap;
+      if (idx < 0) cap = 'The road ahead · <b>about 7 minutes</b>';
+      else if (k === 'done') cap = '<b>Game complete</b>';
+      else {
+        const j = JOURNEY[idx];
+        if (j.g === 'pre') cap = 'Pre-launch · <b>step ' + (idx + 1) + ' of 4: ' + esc(j.name) + '</b>';
+        else if (j.g === 'live') cap = 'Active syndicate · <b>year ' + (idx - 3) + ' of 3</b> (YoA ' + esc(j.label) + ')';
+        else cap = '<b>The close</b>';
+        cap += ' · ' + togo;
+      }
+      this.el.querySelector('#jcap').innerHTML = cap;
+    }
+  };
+  Journey.init();
+
+  // the road ahead: shown after Start, and from the journey bar at any time
+  function roadmapHTML(here) {
+    const hi = here === 'done' ? JOURNEY.length : JOURNEY.findIndex((j) => j.k === here);
+    const st = (j) => (j.k === here ? 'here' : JOURNEY.indexOf(j) < hi ? 'done' : '');
+    const steps = (g) => JOURNEY.filter((j) => j.g === g);
+    const card = (g, body) => '<section class="rmcard ' + g + '"><header><b>' + esc(JGROUPS[g][0]) + '</b><span>' + esc(JGROUPS[g][1]) + '</span></header>' + body + '</section>';
+    const list = (g) => '<ol class="rmsteps">' + steps(g).map((j) => '<li class="' + st(j) + '"><b>' + esc(j.name) + '</b><span>' + esc(j.what) + '</span></li>').join('') + '</ol>';
+    const live = '<div class="rmyears">' + steps('live').map((j, i) => '<span class="rmyear ' + st(j) + '"><b>YoA ' + esc(j.label) + '</b><small>Year ' + (i + 1) + (j.k === here ? ' · you are here' : st(j) === 'done' ? ' · done' : '') + '</small></span>').join('') + '</div>' +
+      '<p class="rmnote">Each year runs through the syndicate calendar:</p><ol class="rmbeats">' + YEAR_BEATS.map(([b, d]) => '<li><b>' + esc(b) + '</b><span>' + esc(d) + '</span></li>').join('') + '</ol>';
+    return '<div class="roadmap">' + card('pre', list('pre')) + card('live', live) + card('close', list('close')) + '</div>' +
+      '<p class="rmscore"><b>How you win:</b> create the most value for your capital providers over three years, which is underwriting profit minus the cost of your capital. Everyone faces the same market this week.</p>';
+  }
+  function showRoadmap() {
+    const name = sceneRoot && sceneRoot.dataset.scene;
+    if (!name || name === 'title' || name === 'roadmap' || stageEl.querySelector('.rmsheet')) return;
+    const body = el('<div class="rmsheet"><h3>Where you are</h3>' + roadmapHTML(Journey.k) + '<div class="stickfoot"><button class="btn primary" data-close>Back to the game</button></div></div>');
+    const o = overlay(body);
+    const was = paused;
+    paused = true;
+    const close = () => { o.remove(); paused = was; };
+    body.querySelector('[data-close]').addEventListener('click', close);
+    body.querySelector('[data-close]').focus({ preventScroll: true });
+    o.addEventListener('click', (e) => { if (e.target === o) close(); });
+  }
+
   const muteBtn = $('#muteBtn');
   const paintMute = () => { muteBtn.innerHTML = icon(Sound.muted ? 'soundOff' : 'soundOn'); muteBtn.setAttribute('aria-label', Sound.muted ? 'Turn sound on' : 'Turn sound off'); };
   muteBtn.addEventListener('click', () => { Sound.init(); Sound.setMuted(!Sound.muted); paintMute(); });
@@ -2262,7 +2418,7 @@ p.sm { margin: 0; }
         Sound.init(); Sound.bell(1);
         const card = root.querySelector('.title-card');
         if (!REDUCED) card.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.6)', opacity: 0 }], { duration: 500 / SPEED, easing: 'ease-in', fill: 'forwards' });
-        setTimeout(() => interstitial('enquiry', () => go('build')), 380 / SPEED);
+        setTimeout(() => go('roadmap'), 380 / SPEED);
       };
       root.querySelector('#startBtn').addEventListener('click', start);
       this.onKey = (e) => { if (e.key === 'Enter' && document.activeElement === document.body) start(); };
@@ -2270,6 +2426,27 @@ p.sm { margin: 0; }
       if (AUTO) setTimeout(start, 300);
       return root;
     },
+    exit() { removeEventListener('keydown', this.onKey); }
+  };
+
+  // ----- The road ahead: an overview before the first step -----
+  SCENES.roadmap = {
+    enter() {
+      setStep('The road ahead');
+      this.done = false;
+      const root = el('<section class="scene scroll"><div class="stephead"><div><span class="eyebrow">Before you start</span><h2>The road to the Room</h2></div>' +
+        '<p>About seven minutes. First you launch the syndicate, then you run it for three years of account. Nothing moves on until you press Continue, and Pause (Esc) stops the clock. The bar at the bottom shows where you are: tap it any time to see this again.</p></div>' +
+        roadmapHTML(null) +
+        '<div class="readyrow"><button class="btn primary" id="roadGo">Let’s begin <span class="kbd">Enter</span></button></div></section>');
+      this.root = root;
+      const goOn = () => { if (this.done) return; this.done = true; removeEventListener('keydown', this.onKey); interstitial('enquiry', () => go('build')); };
+      root.querySelector('#roadGo').addEventListener('click', goOn);
+      this.onKey = (e) => { if (e.key === 'Enter' && document.activeElement === document.body) { e.preventDefault(); goOn(); } };
+      setTimeout(() => { if (!this.done) addEventListener('keydown', this.onKey); }, 250);
+      if (AUTO) setTimeout(goOn, 500 / SPEED);
+      return root;
+    },
+    mounted() { this.root.querySelector('#roadGo').focus({ preventScroll: true }); },
     exit() { removeEventListener('keydown', this.onKey); }
   };
 
@@ -2858,7 +3035,7 @@ p.sm { margin: 0; }
       this.Y = G.years[y];
       this.phase = 'start'; this.month = 0; this.mt = 0; this.t = 0; this.cur = null; this.deck = []; this.deckIdx = 0;
       this.flags = {}; this.raceT = 0; this.talkT = 10 + rand() * 6; this.overlayTick = null; this.alerting = null; this.over = false;
-      this.tickQ = []; this.tickBusy = false;
+      this.tickQ = []; this.tickBusy = false; this.ffStarted = false;
       G.favours.lunch = true;
       const months = MONTHS.map((m, i) => '<div class="pl-m" data-m="' + i + '"><span>' + m + '</span></div>').join('');
       const pins = PINS.filter((p) => !((p.label === 'SBF' || p.label === 'CIL') && y === 2)).map((p) => '<span class="pl-pin ' + p.cls + '" style="left:' + (p.at * 100).toFixed(2) + '%" title="' + esc(p.tip) + '">' + p.label + '</span>').join('');
@@ -2918,9 +3095,19 @@ p.sm { margin: 0; }
       this.phase = p;
       const ph = this.root.querySelector('#plPhase');
       if (ph && label) ph.textContent = label;
+      this.journey();
+    },
+    // the journey bar: a quarter of each year is the renewals, the rest is the calendar
+    journey() {
+      const ph = this.phase;
+      let pre = 1;
+      if (!this.ffStarted) pre = ph === 'review' ? 0.1 : ph === 'rush' ? 0.15 + 0.75 * (1 - Math.max(0, this.clock) / (this.clockMax || 1)) : ph === 'outwards' ? 0.95 : 0;
+      const months = this.ffStarted ? Math.max(0, Math.min(1, (this.abs() - 12 * this.y) / 12)) : 0;
+      Journey.set('y' + this.y, 0.25 * pre + 0.75 * months);
     },
     paintPlanner() {
       const r = this.root;
+      this.journey();
       const f = Math.min(1, (this.abs() - 12 * this.y) / 12);
       r.querySelector('#plHead').style.left = (f * 100).toFixed(2) + '%';
       r.querySelectorAll('.pl-m').forEach((d) => {
@@ -2945,6 +3132,7 @@ p.sm { margin: 0; }
 
     // ---- fast-forward and the beats of the year ----
     startFF() {
+      this.ffStarted = true;
       this.setPhase('ff', MONTHS[Math.min(11, this.month)] + ' ' + yoaName(this.y));
       this.setActions(false);
       this.showFF();
@@ -3143,6 +3331,7 @@ p.sm { margin: 0; }
       if (this.phase === 'rush') c.textContent = s > 0 ? '23:59:' + String(60 - s).padStart(2, '0') : '00:00:00';
       else c.textContent = '1 JUL · ' + s + 's';
       c.classList.toggle('hot', this.clock < 6);
+      if (this.phase === 'rush') this.journey();
     },
     endWindow() {
       const left = this.deck.length - this.deckIdx + (this.cur && !this.cur.busy ? 1 : 0);
@@ -4188,6 +4377,7 @@ p.sm { margin: 0; }
     },
     done() {
       this.revealed = true;
+      Journey.set('close', 0.8);
       const res = this.res;
       const dev = res.per.reduce((s, P) => s + P.res, 0);
       const line = this.root.querySelector('#resLine');

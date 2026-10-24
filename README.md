@@ -8,6 +8,8 @@ You choose a business mix, pitch to the Business Opportunities Committee, raise 
 
 The game waits for you between steps: every "In reality" card has a Continue button (Enter or Space), and the Pause button (or `Esc`) stops the clock during timed parts.
 
+After you press Start, **The road to the Room** gives an overview of every step ahead. A **journey bar** along the bottom of the screen then shows where you are: pre-launch (gold), the three years as an active syndicate (blue) and the close (green), with an estimate of the time left. Tap the bar at any time to see the full road with your completed steps ticked off; the game pauses while it's open.
+
 ## How a game runs (about 7 minutes)
 
 **The opening (about 2 minutes)**
