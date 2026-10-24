@@ -561,6 +561,17 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .helpgrid h3 { margin-top: 6px; }
 .rcard .rhint { display: block; font-size: 0.64rem; font-weight: 700; color: var(--brass-2); }
 .planline.on b:first-child { color: var(--good); } .planline.off b:first-child { color: var(--warn); }
+.fbpanel { display: grid; gap: 8px; border-color: var(--brass); }
+.fbq { font: 800 1.05rem/1.2 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.fbchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fbchip { border: 1px solid var(--girder); background: var(--night-2); color: var(--ink-2); border-radius: 999px; padding: 7px 11px; font: 600 0.74rem/1 var(--f-ui); cursor: pointer; }
+.fbchip:hover { border-color: var(--brass); color: var(--ink); }
+#fbText { width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px; background: var(--slip); color: var(--slip-ink); border: 0; border-radius: 8px; padding: 10px; font: 400 0.92rem/1.4 var(--f-slip); }
+#fbText:focus { outline: 3px solid var(--brass); outline-offset: 1px; }
+.fbrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+a.btn { text-decoration: none; }
+.fbnote { font-size: 0.74rem; color: var(--ink-3); flex: 1 1 220px; }
+.fbpanel.sent .fbnote { color: var(--good); font-weight: 700; }
 .statsub { display: block; font-size: 0.64rem; color: var(--ink-3); margin-top: 1px; }
 .bocrule { margin: 4px 0 0; font-size: 0.72rem; color: var(--ink-3); text-align: center; }
 .alertpanel p { margin: 4px 0 8px; }
@@ -2245,6 +2256,10 @@ p.sm { margin: 0; }
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const SEASON = params.get('season') || '3c-' + E.seasonKey(new Date());
   const SEASON_LABEL = SEASON.replace(/^[^-]+-/, '');
+  // feedback goes by email; the recipient comes only from the link you share (?feedback=name@company.com), never from this file
+  const FB_RAW = (params.get('feedback') || '').trim();
+  const FEEDBACK_TO = /^[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(FB_RAW) ? FB_RAW : '';
+  const FB_STARTERS = ['It was unclear when ', 'It would be more fun if ', 'More realistic would be ', 'I got stuck at ', 'I loved '];
   const BASE_YEAR = (parseInt((SEASON.match(/(\d{4})-W/) || [])[1], 10) || new Date().getFullYear()) + 1;
   const yoaName = (y) => String(BASE_YEAR + y);
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -2778,9 +2793,10 @@ p.sm { margin: 0; }
     stageEl.appendChild(n);
     let done = false;
     const finish = () => { if (done) return; done = true; n.remove(); removeEventListener('keydown', onKey); next(); };
-    const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finish(); } };
+    const onKey = (e) => { if (e.target.closest && e.target.closest('textarea, input')) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finish(); } };
     n.querySelector('[data-go]').addEventListener('click', finish);
-    setTimeout(() => { addEventListener('keydown', onKey); const b = n.querySelector('[data-go]'); if (b) b.focus({ preventScroll: true }); }, 250);
+    // a card dismissed within 250ms must not leave its key handler behind
+    setTimeout(() => { if (done) return; addEventListener('keydown', onKey); const b = n.querySelector('[data-go]'); if (b) b.focus({ preventScroll: true }); }, 250);
     if (AUTO) setTimeout(finish, 600 / SPEED);
   }
   function overlay(inner, opaque) {
@@ -3073,6 +3089,7 @@ p.sm { margin: 0; }
   SCENES.build = {
     enter() {
       setStep('Step 1 · Enquiry & Triage');
+      if (!G.startedAt) G.startedAt = Date.now();
       this.done = false;
       const mixCards = E.MIXES.map((m) => {
         const p = E.mixProfile(m.split);
@@ -5409,6 +5426,14 @@ p.sm { margin: 0; }
     if (res.pmd >= 3) return ['PMD schedules "friendly chat" with ' + G.no, 'Performance Management would like to discuss the plan. And the other plan. And the RDS.'];
     return [G.name + ' "disappointed" with first three years', 'Sources say the BOC is "not surprised".'];
   }
+  // the feedback email: the player's words, then the game in one line so they don't have to describe it
+  function feedbackBody(res, grade, text) {
+    const mins = G.startedAt ? Math.max(1, Math.round((Date.now() - G.startedAt) / 60000)) : null;
+    const ctx = ['Score ' + fmtPts(res.score) + ' (' + grade + ')', E.MIX_BY_ID[G.mixId].name, E.AUS[G.au].name, 'own share ' + Math.round(res.alignedAvg * 100) + '%',
+      G.pmd + (G.pmd === 1 ? ' PMD letter' : ' PMD letters'), res.runoff !== null ? 'ended in run-off' : null, 'week ' + SEASON_LABEL, mins ? mins + ' min played' : null, innerWidth + '×' + innerHeight + ' screen'];
+    return text.trim() + '\n\n---\nLime Street Launch · ' + ctx.filter(Boolean).join(' · ');
+  }
+  const feedbackMail = (body) => 'mailto:' + FEEDBACK_TO + '?subject=' + encodeURIComponent('Lime Street Launch feedback · ' + SEASON_LABEL) + '&body=' + encodeURIComponent(body);
   function yoaTableHTML(res) {
     return '<table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>COR</th><th>Your share</th><th>Your value</th><th></th></tr></thead><tbody>' + res.per.map((P, k) =>
       '<tr><td>YoA ' + yoaName(k) + '</td><td class="num">' + (P.skipped ? '–' : fmtM(P.gwp)) + '</td><td class="num">' + (P.skipped || !P.gwp ? '–' : Math.round(P.cor * 100) + '%') + '</td><td class="num">' + (P.skipped ? '–' : Math.round(P.aligned * 100) + '%') + '</td>' +
@@ -5464,16 +5489,22 @@ p.sm { margin: 0; }
         '<div class="cols"><div class="photo">' + face(G.au, res.score >= 0 ? 'grin' : 'worried') + '</div><div class="body"><p>' + esc(para) + '</p><p>“' + esc(quote.replace(/\.$/, ',')) + '” said ' + esc(E.AUS[G.au].name) + ', Active Underwriter.</p></div></div>' +
         '<div class="figs"><div><b class="num">' + (res.gwp ? Math.round(res.cor * 100) + '%' : '–') + '</b><span>Combined ratio</span></div><div><b class="num">' + pct(res.roc, 1) + '</b><span>Syndicate RoC</span></div><div><b class="num">' + fmtM(res.value, true) + '</b><span>Your value</span></div><div><b class="num">' + fmtPts(res.score) + '</b><span>Score</span></div></div></article>' +
         '<div class="scorebox"><div class="bigscore"><span class="n num" id="bigN">0</span><small class="pts">points · £1k = 1 point</small><span class="g">' + esc(grade) + '</span></div>' +
+        '<div class="panel fbpanel" id="fbPanel"><span class="eyebrow">Make it better</span><label class="fbq" for="fbText">One thing that would make this game better?</label>' +
+        '<div class="fbchips">' + FB_STARTERS.map((s, i) => '<button class="fbchip" data-s="' + i + '">' + esc(s.trim()) + '…</button>').join('') + '</div>' +
+        '<textarea id="fbText" rows="3" maxlength="600" placeholder="e.g. I’d like more time at the 1.1 rush, and a hint about what the BOC is looking for."></textarea>' +
+        '<div class="fbrow"><a class="btn primary" id="fbMail" href="#">Email it</a><button class="btn" id="fbCopy">Copy</button><span class="fbnote" id="fbNote">' +
+        (FEEDBACK_TO ? 'Goes to ' + esc(FEEDBACK_TO) + ', with your score and setup attached.' : 'Your email opens ready to send, with your score and setup attached. Add the address of whoever shared the game.') + '</span></div></div>' +
         '<div class="panel"><span class="eyebrow">Year by year</span>' + yoaTableHTML(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">Badges</span><div class="badges">' + (badges.length ? badges.map((b, i) => '<span class="badge' + (BADGES[b][2] ? ' shame' : '') + '" style="--dl:' + (0.6 + i * 0.15) + 's" title="' + esc(BADGES[b][1]) + '">' + esc(BADGES[b][0]) + '</span>').join('') : '<span class="muted">No badges this time. The Room is a hard school.</span>') + '</div></div>' +
         '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
-        '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy result</button></div>' +
+        '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy result</button><button class="btn" id="fbJump">Feedback</button></div>' +
         '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '</div></div></section>');
       this.root = root; this.res = res; this.rivalRuns = rivalRuns; this.grade = grade;
       root.querySelector('#again').addEventListener('click', () => { newGame(); interstitial('enquiry', () => go('build')); });
       root.querySelector('#copy').addEventListener('click', () => this.copy());
+      this.wireFeedback(root, res, grade);
       this.entry = {
         season: SEASON, score: res.score, syndicateNo: G.no, syndicateName: String(G.name).slice(0, 28), mixType: G.mixId, split: G.split, au: G.au,
         badges: badges.slice(0, 8), cor: Math.round(res.cor * 1000) / 1000, roc: Math.round(res.roc * 1000) / 1000, per: res.per.map((P) => E.round1(P.value)), runoff: res.runoff, aligned: Math.round(res.alignedAvg * 100) / 100,
@@ -5520,14 +5551,42 @@ p.sm { margin: 0; }
         this.renderLB();
       }));
     },
+    // the feedback panel: starter chips, a draft kept on this device, and a live mailto link
+    wireFeedback(root, res, grade) {
+      const ta = root.querySelector('#fbText'), mail = root.querySelector('#fbMail'), panel = root.querySelector('#fbPanel'), note = root.querySelector('#fbNote');
+      const body = () => feedbackBody(res, grade, ta.value);
+      const refresh = () => { mail.href = feedbackMail(body()); store.set('lsl-fb-draft', ta.value); };
+      const thanks = () => { panel.classList.add('sent'); note.textContent = 'Thanks! That goes straight into the next version.'; store.set('lsl-fb-draft', ''); };
+      const needText = (e) => {
+        if (ta.value.trim().length >= 3) return false;
+        e.preventDefault(); ta.focus();
+        toast('Add a line first', 'One sentence is plenty. Tap a starter if you like.', 'var(--warn)');
+        return true;
+      };
+      ta.value = store.get('lsl-fb-draft', '') || '';
+      refresh();
+      ta.addEventListener('input', refresh);
+      root.querySelectorAll('.fbchip').forEach((c) => c.addEventListener('click', () => {
+        const s = FB_STARTERS[+c.dataset.s];
+        ta.value = (ta.value.trim() ? ta.value.replace(/\s+$/, '') + '\n' : '') + s;
+        ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+        refresh();
+      }));
+      mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); setTimeout(thanks, 300); });
+      root.querySelector('#fbCopy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.'); thanks(); });
+      root.querySelector('#fbJump').addEventListener('click', () => { panel.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' }); ta.focus({ preventScroll: true }); });
+    },
+    copyText(text, title, msg) {
+      const box = this.root.querySelector('#copyBox');
+      const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'The text is highlighted below.', 'var(--crane)'); };
+      try {
+        navigator.clipboard.writeText(text).then(() => toast(title, msg, 'var(--good)'), fallback);
+      } catch (e) { fallback(); }
+    },
     copy() {
       const r = this.res;
       const text = 'Lime Street Launch · ' + SEASON_LABEL + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', your share ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
-      const box = this.root.querySelector('#copyBox');
-      const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'Your result is highlighted below.', 'var(--crane)'); };
-      try {
-        navigator.clipboard.writeText(text).then(() => toast('Copied', 'Paste it into Teams and wait for the replies.', 'var(--good)'), fallback);
-      } catch (e) { fallback(); }
+      this.copyText(text, 'Copied', 'Paste it into Teams and wait for the replies.');
     }
   };
 

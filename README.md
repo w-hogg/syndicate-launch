@@ -109,6 +109,12 @@ Profits stay in the syndicate until a year closes, so your share counts towards 
 
 **How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle, handles the in-tray well) finishes with a positive score **about 9 times in 10** whatever their own share. A casual player does so 3 to 4 times in 5, with a lower score. Random swiping succeeds about 1 time in 5. Keeping all of the stamp yourself gives the highest average (about 34,000 for a careful player); keeping 20% gives about 19,000, but a gentler worst case.
 
+## Feedback
+
+The results screen asks one question: **"One thing that would make this game better?"** Tap a starter ("I got stuck at…", "I loved…") or just type, then press **Email it**. Your email app opens with the suggestion written in and a one-line summary of the game attached (score, mix, Active Underwriter, time played, screen size), so there's nothing else to describe. **Copy** puts the same text on the clipboard for webmail, Teams or Slack. Drafts are kept on the device until sent.
+
+No address is built into the page: the email opens with the To field empty. To have feedback come to you, add your address to the link you share, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
+
 ## Fair competition
 
 The three-year market (each year's modifier, the catastrophes, the rate cycle, the in-tray events and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. Opened as a plain file, it keeps a leaderboard on your device and offers a "Copy result" line to paste into chat.
