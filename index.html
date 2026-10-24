@@ -736,6 +736,38 @@ p.sm { margin: 0; }
 .rmsheet { display: grid; gap: 10px; }
 .rmsheet .rmscore { margin: 0; }
 
+/* ---------- members on the stamp ---------- */
+.token.line { border-style: dashed; }
+.token.line b { font-size: 1.1rem; }
+.token.nope { animation: nope .4s ease-in-out; }
+@keyframes nope { 20%, 60% { translate: -8px 0; } 40%, 80% { translate: 8px 0; } }
+.stampvault .stampbar { position: absolute; inset: 0; display: flex; flex-direction: column-reverse; pointer-events: none; }
+.stampvault .vseg { display: block; flex: none; width: 100%; border-top: 1px solid #0c131b88; transition: height .45s cubic-bezier(.3,1.4,.5,1); }
+.stampvault .vseg.aligned { background: linear-gradient(180deg, var(--brass-2), var(--brass)); }
+.stampvault .vseg.surplus { background: repeating-linear-gradient(135deg, #d3a64955 0 5px, transparent 5px 10px); }
+.stampvault .minal { position: absolute; left: 0; right: 0; border-top: 2px dotted var(--brass-2); }
+.stampvault .minal span { position: absolute; left: 4px; top: -16px; font: 700 0.58rem/1 var(--f-ui); color: var(--brass-2); background: var(--night); padding: 2px 4px; border-radius: 3px; }
+.stampstrip { display: grid; gap: 4px; width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--girder); background: var(--steel); text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
+.stampstrip .eyebrow { font-size: 0.58rem; }
+.stampstrip .ssbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--night-2); }
+.stampstrip .ssbar i { display: block; height: 100%; border-right: 1px solid #0c131b; }
+.stampstrip .sslegend { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 600 0.6rem/1.2 var(--f-ui); color: var(--ink-2); }
+.stampstrip .sslegend em { font-style: normal; display: inline-flex; align-items: center; gap: 4px; }
+.stampstrip .sslegend i { width: 7px; height: 7px; border-radius: 2px; }
+@media (max-width: 959px) { .stampstrip { grid-column: 1 / -1; } .stampstrip .sslegend { display: none; } }
+.mrev { display: grid; gap: 6px; }
+.mcard { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--night-2); border: 1px solid var(--girder); border-left: 4px solid var(--mc); }
+.mcard .mn { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--t-s); }
+.mcard .mn i { width: 9px; height: 9px; border-radius: 50%; background: var(--mc); flex: none; }
+.mcard .ml { font-size: var(--t-s); color: var(--ink-2); text-align: right; }
+.mcard em { grid-column: 1 / -1; font-style: normal; font-size: var(--t-xs); color: var(--ink-2); }
+.mcard.leaves, .mcard.cuts { border-color: #7a2a1e; border-left-color: var(--mc); }
+.mcard.leaves .ml b, .mcard.cuts .ml b { color: #ffb3a6; }
+.mcard.offers.accepted .ml b { color: var(--good); }
+.mcard .mbtns { grid-column: 1 / -1; display: flex; gap: 6px; }
+.mcard .mbtns .btn { min-height: 34px; font-size: 0.7rem; padding: 0 12px; }
+.btn.ghostish { background: transparent; }
+
 /* ---------- 3-year close ---------- */
 .closewrap { flex: 1; display: grid; place-items: center; align-content: center; gap: 18px; }
 .slot { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 14px; align-items: center; width: min(620px, 100%); }
@@ -1069,6 +1101,77 @@ p.sm { margin: 0; }
   const CAPACITY_STEPS = { shrink: 0.8, hold: 1, grow: 1.25, large: 1.5 };
   const fixedCosts = (cap, au) => FIXED_COSTS * (0.6 + 0.4 * cap / PLAN_GWP) + (au === 'rainmaker' ? 1.5 : 0);
 
+  // ---------- members on the stamp ----------
+  // The stamp is split into lines: the agency's own (aligned) corporate member and third-party members, who bring their
+  // own FAL, take their share of the result and pay the agency a fee on their line and profit commission on their profit.
+  const MIN_ALIGNED = 0.2;    // the BOC expects at least a fifth of the stamp to be the agency's own capital
+  const MAX_THIRD = 1 - MIN_ALIGNED;
+  // Reactions at coming into line, on the members' return for the year: leave below `leave`, halve below `halve`,
+  // ask for a bigger line (growBy) above `grow`. The ILS fund also leaves when catastrophes exceed catLimit of FAL.
+  const MEMBERS = {
+    names: { label: 'Names via members’ agents', short: 'Names', color: '#e9d3a0', line: [0.08, 0.12], fee: 0.01, pc: 0.175, leave: 0, grow: 0.38, growBy: 0.5, note: 'Follow performance closely.' },
+    corporate: { label: 'Kestrel Insurance Group', short: 'Kestrel', color: '#9fd0ff', line: [0.2, 0.25], fee: 0.0075, pc: 0.15, halve: -0.05, grow: 0.42, growBy: 0.25, note: 'Patient corporate capital.' },
+    ils: { label: 'London Bridge 2 ILS fund', short: 'ILS fund', color: '#f0a35c', line: [0.15, 0.2], fee: 0.005, pc: 0.2, leave: 0, catLimit: 0.35, grow: 0.35, growBy: 0.5, note: 'Walks after a big catastrophe.' },
+    family: { label: 'Family office', short: 'Family', color: '#c9e08a', line: [0.1, 0.15], fee: 0.01, pc: 0.1, stays: true, note: 'Loyal. Also owns a racehorse.' }
+  };
+  const round3 = (x) => Math.round(x * 1000) / 1000;
+  const memberOf = (kind, share, label) => { const M = MEMBERS[kind]; return { kind, label: label || M.label, short: !label || label === M.label ? M.short : label.split(' ')[0], color: M.color, fee: M.fee, pc: M.pc, share: round3(share) }; };
+  // Fill a stamp: lines are shares of the planned stamp and bring their own FAL; the agency's capital covers the rest.
+  function stampFill(alignedFal, eca, lines, plan) {
+    const L = Math.min(MAX_THIRD, lines.reduce((s, x) => s + x.line, 0));
+    const filled = Math.min(1, (eca > 0 ? alignedFal / eca : 0) + L);
+    const aligned = filled > 0 ? (filled - L) / filled : 1;
+    const members = lines.map((x) => Object.assign(memberOf(x.kind, filled > 0 ? x.line / filled : 0, x.label), { line: x.line }));
+    return { filled, capacity: (plan || PLAN_GWP) * filled, aligned, third: 1 - aligned, members, fal: alignedFal + L * eca, surplus: Math.max(0, alignedFal - (filled - L) * eca) };
+  }
+  // A standard set of members for automated players: corporate, ILS and Names in proportion
+  function startMembers(third) {
+    if (third < 0.05) return [];
+    return [memberOf('corporate', third * 0.4), memberOf('ils', third * 0.3), memberOf('names', third * 0.3)];
+  }
+  // The members' view of a year at coming into line: their return on capital after fees and profit commission, and the catastrophe hit
+  function memberReturn(entries, market, y, au, Y, qs) {
+    const mem = (Y && Y.members) || [];
+    const third = mem.reduce((s, x) => s + x.share, 0);
+    let gwp = 0; for (const e of entries) if (e.yoa === y) gwp += e.P;
+    const uw = gwp > 0 ? gwp * (1 - projectYoA(entries, market, y, 12 * y + 10, au)) * (qs ? 1 - QS_SHARE : 1) : 0;
+    let cat = 0;
+    for (const ev of market.years[y].events) for (const e of entries) {
+      if (ev.month < e.start || ev.month >= e.start + 12) continue;
+      cat += e.P * (e.deal.rds[ev.rds] || 0) * ev.sev * 0.8;
+    }
+    const catHit = cat / Math.max(1, (Y && Y.fal) || 1);
+    if (third <= 0) return { ret: 0, catHit, uw };
+    const fees = mem.reduce((s, x) => s + x.fee * x.share, 0) * (Y.capacity || 0);
+    const pool = third * uw - fees;
+    const pcRate = mem.reduce((s, x) => s + x.pc * x.share, 0) / third;
+    return { ret: (pool > 0 ? pool * (1 - pcRate) : pool) / Math.max(1, third * (Y.eca || 1)), catHit, uw };
+  }
+  function memberReview(members, info) {
+    return members.map((x) => {
+      const M = MEMBERS[x.kind] || {};
+      let action = 'stays', to = x.share;
+      if (M.stays) action = 'stays';
+      else if (M.catLimit != null && info.catHit > M.catLimit) { action = 'leaves'; to = 0; }
+      else if (M.leave != null && info.ret < M.leave) { action = 'leaves'; to = 0; }
+      else if (M.halve != null && info.ret < M.halve) { action = 'cuts'; to = x.share / 2; }
+      else if (M.grow != null && info.ret > M.grow) { action = 'offers'; to = x.share * (1 + M.growBy); }
+      return Object.assign({}, x, { action, to: round3(to) });
+    });
+  }
+  // Departures and cuts always happen; an offer happens if accept(member, thirdSoFar) says yes and the 80% limit allows.
+  function applyReview(review, accept) {
+    const out = review.filter((x) => (x.action === 'offers' ? x.share : x.to) > 0).map((x) => Object.assign(memberOf(x.kind, x.action === 'offers' ? x.share : x.to, x.label), { offer: x.action === 'offers' ? x.to : null }));
+    let third = out.reduce((s, x) => s + x.share, 0);
+    for (const x of out) {
+      if (x.offer == null) continue;
+      const d = Math.min(x.offer - x.share, MAX_THIRD - third);
+      if (d > 0.005 && accept(x, third)) { x.share = round3(x.share + d); third += d; }
+      delete x.offer;
+    }
+    return out;
+  }
+
   // ---------- the market over three years ----------
   const yearStart = (y) => y * 12;
   function weekMarket(season) {
@@ -1158,35 +1261,38 @@ p.sm { margin: 0; }
   function capitalOffers(seed, need, capAdj, mini) {
     const r = rng('capital|' + seed);
     const c = capAdj || 0;
+    // aligned capital (amt is a share of the ECA, at a cost a year) and members' lines (a share of the stamp)
     const full = [
-      { src: 'corporate', label: 'Corporate parent', amt: 0.22, rate: 0.07 },
-      { src: 'names', label: 'Names via members’ agents', amt: 0.12, rate: 0.09 },
-      { src: 'pe', label: 'PE vehicle via London Bridge 2', amt: 0.42, rate: 0.12 },
-      { src: 'names', label: 'Names via members’ agents', amt: 0.12, rate: 0.09 },
-      { src: 'family', label: 'Family office', amt: 0.18, rate: 0.06, trap: 'racehorse', hint: 'Cheap money, but the founder’s racehorse comes with it.' },
+      { src: 'agency', label: 'Your agency’s balance sheet', amt: 0.2, rate: 0.07 },
+      { member: 'names' },
+      { member: 'corporate' },
+      { src: 'corporate', label: 'Corporate parent', amt: 0.25, rate: 0.07 },
+      { member: 'ils' },
       { src: 'qs', label: 'Outward QS reinsurer', amt: 0, rate: 0, qs: true, hint: 'Cuts the capital you need by 25%, takes 25% of your result.' },
-      { src: 'corporate', label: 'Corporate parent', amt: 0.18, rate: 0.07 },
-      { src: 'pe', label: 'PE vehicle via London Bridge 2', amt: 0.45, rate: 0.18, trap: 'hurdle', hint: 'Wants a 25% hurdle. Priced like it.' },
-      { src: 'names', label: 'Names via members’ agents', amt: 0.12, rate: 0.09 },
-      { src: 'pe', label: 'PE vehicle via London Bridge 2', amt: 0.35, rate: 0.12 },
-      { src: 'names', label: 'Names via members’ agents', amt: 0.1, rate: 0.09 }
+      { member: 'family', trap: 'racehorse', hint: 'A loyal line, but the founder’s racehorse comes with it.' },
+      { src: 'pe', label: 'PE money for your corporate member', amt: 0.35, rate: 0.18, trap: 'hurdle', hint: 'Fills the hole fast. Wants 18% a year.' },
+      { member: 'names' },
+      { src: 'agency', label: 'Your agency’s balance sheet', amt: 0.2, rate: 0.07 },
+      { member: 'corporate', label: 'Heron Mutual' },
+      { src: 'corporate', label: 'Corporate parent', amt: 0.2, rate: 0.07 }
     ];
     const smallList = [
-      { src: 'names', label: 'Names via members’ agents', amt: 0.35, rate: 0.09 },
+      { src: 'agency', label: 'Your agency’s balance sheet', amt: 0.35, rate: 0.08 },
       { src: 'corporate', label: 'Corporate parent', amt: 0.45, rate: 0.08 },
-      { src: 'pe', label: 'PE vehicle via London Bridge 2', amt: 0.8, rate: 0.13 },
-      { src: 'names', label: 'Names via members’ agents', amt: 0.3, rate: 0.09 },
+      { src: 'pe', label: 'PE money for your corporate member', amt: 0.8, rate: 0.13 },
+      { src: 'agency', label: 'Your agency’s balance sheet', amt: 0.3, rate: 0.08 },
       { src: 'pe', label: 'Emergency PE money', amt: 1.1, rate: 0.18, trap: 'hurdle', hint: 'Expensive, but it fills the hole.' }
     ];
     const list = mini ? smallList : full;
-    const gap = mini ? 2.0 : 2.2;
-    return list.map((o, i) => Object.assign({}, o, {
-      id: 'cap' + i,
-      amt: round1(Math.max(0.5, o.amt * need * (0.9 + 0.2 * r()))),
-      rate: o.qs ? 0 : Math.max(0.03, o.rate + c),
-      appearAt: i * gap + r() * 0.5,
-      life: 6.5 + r() * 2
-    }));
+    const gap = 2.0;
+    return list.map((o, i) => {
+      const t = { id: 'cap' + i, appearAt: i * gap + r() * 0.5, life: 6.5 + r() * 2 };
+      if (o.member) {
+        const M = MEMBERS[o.member];
+        return Object.assign({}, o, t, { kind: 'line', src: o.member, label: o.label || M.label, line: round3(M.line[0] + (M.line[1] - M.line[0]) * r()), fee: M.fee, pc: M.pc, color: M.color, hint: o.hint || M.note });
+      }
+      return Object.assign({}, o, t, { kind: o.qs ? 'qs' : 'aligned', amt: round1(Math.max(0.5, o.amt * need * (0.9 + 0.2 * r()))), rate: o.qs ? 0 : Math.max(0.03, o.rate + c) });
+    });
   }
 
   // ---------- deals ----------
@@ -1324,7 +1430,7 @@ p.sm { margin: 0; }
     for (const l of lines) if (l.b.alert === 'audit' && au !== 'forensic') { per[l.b.yoa].audits += 0.3; }
     const evByMonth = {};
     m.events.forEach(e => { (evByMonth[e.month] = evByMonth[e.month] || []).push(e); });
-    let cumUW = 0, worstUW = 0, cashCallCost = 0, runoff = null;
+    let cumUW = 0, worstUW = 0, cashCallCost = 0, runoff = null, agencyCum = 0, agencyCash = 0;
     const cashCalls = [];
     const falNow = (y) => (o.years[Math.min(y, nYears - 1)] || {}).fal || 0;
     let falExtra = 0;
@@ -1334,6 +1440,9 @@ p.sm { margin: 0; }
       if (y >= nYears) break;
       let uw = 0;
       const Yo = o.years[y];
+      const mem = Yo.members || [];
+      const third = mem.reduce((s, x) => s + x.share, 0), a = 1 - third;
+      const pcR = third > 0 ? mem.reduce((s, x) => s + x.pc * x.share, 0) / third : 0;
       if (mo % 12 === 0) {
         const fx = fixedCosts(Yo.capacity || PLAN_GWP, au);
         per[y].fixed = fx;
@@ -1364,21 +1473,23 @@ p.sm { margin: 0; }
       }
       cumUW += net(uw);
       worstUW = Math.min(worstUW, cumUW);
+      // the agency's running take for the race: its aligned share, profit commission and fees
+      agencyCum += (a + pcR * third) * net(uw) + mem.reduce((s, x) => s + x.fee * x.share, 0) * (Yo.capacity || 0) / 12;
       // solvency check after an event month: FAL plus funds held in the syndicate (open-year profits or losses)
       if (evByMonth[mo]) {
         const capitalNow = falNow(y) + falExtra + cumUW;
         const line = SOLVENCY_LINE * (Yo.eca || 0);
         if (capitalNow < line) {
           const topUp = line - capitalNow;
-          const choice = o.cashCallChoice ? o.cashCallChoice({ month: mo, year: y, topUp, capitalNow, line, cost: topUp * CASH_CALL_COST }) : 'pay';
-          cashCalls.push({ month: mo, year: y, topUp, choice });
+          const choice = o.cashCallChoice ? o.cashCallChoice({ month: mo, year: y, topUp, capitalNow, line, cost: topUp * CASH_CALL_COST, aligned: a }) : 'pay';
+          cashCalls.push({ month: mo, year: y, topUp, choice, aligned: a });
           if (choice === 'runoff') runoff = mo;
-          else { falExtra += topUp; const cc = topUp * CASH_CALL_COST; cashCallCost += cc; per[y].cashCallCost += cc; }
+          else { falExtra += topUp; const cc = topUp * CASH_CALL_COST; cashCallCost += cc; per[y].cashCallCost += cc; agencyCash += a * cc; }
         }
       }
       const capAccrued = o.years.slice(0, y).reduce((s, Y) => s + Y.capital.reduce((a, c) => a + c.amt * c.rate, 0), 0)
         + Yo.capital.reduce((a, c) => a + c.amt * c.rate, 0) * ((mo % 12) + 1) / 12;
-      curve.push(round1(cumUW - capAccrued - cashCallCost));
+      curve.push(round1(agencyCum - capAccrued - agencyCash));
       uwCurve.push(cumUW);
       if (runoff !== null) break;
     }
@@ -1402,7 +1513,7 @@ p.sm { margin: 0; }
       }
       P.bound[l.b.deal.cls] = (P.bound[l.b.deal.cls] || 0) + l.b.P;
     }
-    let total = 0, onPlanYears = 0, gwpAll = 0, lossAll = 0;
+    let total = 0, onPlanYears = 0, gwpAll = 0, lossAll = 0, deficit = 0;
     for (let y = 0; y < nYears; y++) {
       const P = per[y], Yo = o.years[y];
       if (runoff !== null && 12 * y > runoff) { P.skipped = true; continue; }
@@ -1412,8 +1523,18 @@ p.sm { margin: 0; }
       P.uwGross = P.gwp - P.comm - P.attr - P.cat - P.res - P.expenses;
       P.qsTake = o.qs ? P.uwGross * QS_SHARE : 0;
       P.uw = P.uwGross - P.qsTake;
-      P.capCost = Yo.capital.reduce((a, c) => a + c.amt * c.rate, 0) * yearFrac + P.cashCallCost;
-      P.value = P.uw - P.capCost;
+      // the agency's take: its aligned share, fees on members' lines, and profit commission once members' losses are made good
+      const mem = Yo.members || [];
+      const third = mem.reduce((s, x) => s + x.share, 0), a = 1 - third;
+      const pcR = third > 0 ? mem.reduce((s, x) => s + x.pc * x.share, 0) / third : 0;
+      P.aligned = a;
+      P.fees = mem.reduce((s, x) => s + x.fee * x.share, 0) * (Yo.capacity || 0) * yearFrac;
+      const pool = third * P.uw - P.fees;
+      if (third > 0 && pool + deficit > 0) { P.pc = pcR * (pool + deficit); deficit = 0; } else { P.pc = 0; if (third > 0) deficit += pool; }
+      P.membersTake = third * P.uw - P.fees - P.pc;
+      P.alignedUW = a * P.uw;
+      P.capCost = Yo.capital.reduce((s, c) => s + c.amt * c.rate, 0) * yearFrac + a * P.cashCallCost;
+      P.value = P.alignedUW - P.capCost + P.fees + P.pc;
       P.cor = P.gwp > 0 ? (P.comm + P.attr + P.cat + P.res + P.expenses) / P.gwp : 0;
       P.fal = Yo.fal;
       P.roc = Yo.fal > 0 ? P.uw / Yo.fal : 0;
@@ -1431,8 +1552,11 @@ p.sm { margin: 0; }
     if (runoff !== null) while (curve.length < T) { curve.push(curve[curve.length - 1]); uwCurve.push(uwCurve[uwCurve.length - 1]); }
     const uwAll = per.reduce((s, P) => s + (P.skipped ? 0 : P.uw), 0);
     const falAvg = o.years.reduce((s, Y) => s + (Y.fal || 0), 0) / Math.max(1, nYears);
+    const live = per.filter((P) => !P.skipped && P.aligned != null);
     return {
       per, value: total, score, onPlanYears, pmd, cashCalls, cashCallCost, runoff, curve, uwCurve,
+      uwAll, fees: live.reduce((s, P) => s + P.fees, 0), pc: live.reduce((s, P) => s + P.pc, 0),
+      alignedAvg: live.length ? live.reduce((s, P) => s + P.aligned, 0) / live.length : 1,
       gwp: gwpAll, cor: gwpAll > 0 ? lossAll / gwpAll : 0, roc: falAvg > 0 ? uwAll / (falAvg * nYears) : 0,
       lines: lines.map(l => ({ id: l.b.deal.id, yoa: l.b.yoa, cls: l.b.deal.cls, P: l.b.P, lr: l.lr, cat: l.cat }))
     };
@@ -1543,6 +1667,9 @@ p.sm { margin: 0; }
     const entries = [];
     const years = [];
     let falCarry = 0, capList = [];
+    const alignedTarget = cfg.aligned == null ? 1 : clamp(cfg.aligned, MIN_ALIGNED, 1);
+    let members = startMembers(1 - alignedTarget);
+    const memberNews = [];
     const ilw = {}, reinsCall = {};
     let pmd = 0;
     const pmdWhy = [];
@@ -1552,15 +1679,24 @@ p.sm { margin: 0; }
       const eca = capitalFor(split, loading, !!cfg.qs, capacity).eca;
       // capital: year 1 raised at the start, later years come into line in November
       const blended = (cfg.capitalMode === 'loose' ? 0.10 : 0.085) + Y.capAdj;
-      if (y === 0) { const fal = eca * (cfg.capitalMode === 'loose' ? 1.3 : 1.03); capList = [{ amt: fal, rate: blended }]; falCarry = fal; }
+      // capital: the agency funds its aligned share; members bring FAL for theirs
+      let third = members.reduce((s, x) => s + x.share, 0);
+      if (y === 0) { const fal = (1 - third) * eca * (cfg.capitalMode === 'loose' ? 1.3 : 1.03); capList = [{ amt: fal, rate: blended }]; falCarry = fal; }
       else {
+        // coming into line: members react to last year, then the agency covers its share
+        const prevA = 1 - third;
+        const review = memberReview(members, memberReturn(entries, market, y - 1, cfg.au, years[y - 1], !!cfg.qs));
+        review.forEach((x) => { if (x.action !== 'stays') memberNews.push({ y, kind: x.kind, action: x.action }); });
+        members = applyReview(review, (x, t) => 1 - (t + x.to - x.share) >= alignedTarget - 0.001);
+        third = members.reduce((s, x) => s + x.share, 0);
         const before = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years: years.concat([]), pmd: 0 });
-        const avail = falCarry + (before.uwCurve[12 * y - 2] || 0);
-        const target = eca * (cfg.capitalMode === 'loose' ? 1.25 : 1.03);
+        const avail = falCarry + prevA * (before.uwCurve[12 * y - 2] || 0);
+        const need = (1 - third) * eca;
+        const target = need * (cfg.capitalMode === 'loose' ? 1.25 : 1.03);
         if (avail < target) { capList = capList.concat([{ amt: target - avail, rate: blended + 0.01 }]); falCarry += target - avail; }
-        else if (avail > eca * 1.35) { const rel = avail - eca * 1.15; capList = capList.map(c => ({ amt: c.amt * (1 - rel / falCarry), rate: c.rate })); falCarry -= rel; }
+        else if (avail > need * 1.35 && falCarry > 1) { const rel = Math.min(falCarry * 0.5, avail - need * 1.15); capList = capList.map(c => ({ amt: c.amt * (1 - rel / falCarry), rate: c.rate })); falCarry -= rel; }
       }
-      const fal = falCarry;
+      const fal = falCarry + third * eca;
       const cap = capacity * Math.min(1, fal / eca);
       let boundTot = 0;
       const yearEntries = [];
@@ -1626,7 +1762,7 @@ p.sm { margin: 0; }
         if (ex > fal * 0.25) ilw[e.key] = true;
       }
       if (boundTot > cap * 1.2) { pmd++; pmdWhy.push('gwp'); }
-      years.push({ fal, capital: capList.map(c => Object.assign({}, c)), eca, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost });
+      years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost, members: members.map(x => Object.assign({}, x)) });
       // the business plan for next year
       if (y < YEARS - 1) {
         const proj = projectYoA(entries, market, y, 12 * y + 8, cfg.au);
@@ -1643,24 +1779,24 @@ p.sm { margin: 0; }
       }
     }
     const res = scoreGame(entries, { market, au: cfg.au, qs: !!cfg.qs, years, ilw, reinsCall, pmd, cashCallChoice: () => cfg.cashCall || 'pay' });
-    res.entries = entries; res.years = years; res.pmdWhy = pmdWhy;
+    res.entries = entries; res.years = years; res.pmdWhy = pmdWhy; res.memberNews = memberNews;
     return res;
   }
 
   const RIVALS = {
-    kraken: { name: 'Kraken Re', no: 9174, mix: 'natcat', au: 'rainmaker', policy: 'aggressive', capitalMode: 'loose', outwards: false, ilw: false, audit: false, renew: 'all', plan: 'large',
-      blurb: 'PE-backed Nat Cat. Binds everything.',
+    kraken: { name: 'Kraken Re', no: 9174, mix: 'natcat', au: 'rainmaker', policy: 'aggressive', capitalMode: 'loose', outwards: false, ilw: false, audit: false, renew: 'all', plan: 'large', aligned: 1,
+      blurb: 'PE-owned Nat Cat. Binds everything, keeps it all.',
       talk: ['Nice binder… shame about the bordereaux.', 'We wrote that before you finished reading it.', 'Cat models are for people who can’t feel the wind.', 'Our PE backers say hi.', 'Is that a small line? Adorable.'] },
-    raven: { name: 'Raven', no: 9301, mix: 'mat', au: 'veteran', policy: 'skilled', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'cycle',
+    raven: { name: 'Raven', no: 9301, mix: 'mat', au: 'veteran', policy: 'skilled', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'cycle', aligned: 0.5,
       blurb: 'Veteran MAT house. Leads the consortia.',
       talk: ['We were leading that consortium before you were born.', 'Lovely day for cargo.', 'Read the small print, dear boy. Always.', 'The Room remembers.', 'Lunch? We’ve already had it.'] },
-    firewall: { name: 'Firewall', no: 9099, mix: 'cyber', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: true, ilw: false, audit: false, renew: 'smart', plan: 'grow',
+    firewall: { name: 'Firewall', no: 9099, mix: 'cyber', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: true, ilw: false, audit: false, renew: 'smart', plan: 'grow', aligned: 0.7,
       blurb: 'Cyber pure-play. Rides the cyber cycle.',
       talk: ['Have you tried turning your syndicate off and on again?', 'Our model says you’re 82% likely to regret that.', 'Patch your underwriting.', 'We accept payment in basis points.', 'Latency is a state of mind.'] },
-    hearthstone: { name: 'Hearthstone', no: 9188, mix: 'composite', au: 'forensic', policy: 'cautious', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'static',
-      blurb: 'Names-backed composite. Slow and steady.',
+    hearthstone: { name: 'Hearthstone', no: 9188, mix: 'composite', au: 'forensic', policy: 'cautious', capitalMode: 'tight', outwards: true, ilw: true, audit: true, renew: 'smart', plan: 'static', aligned: 0.3,
+      blurb: 'Names-backed composite. Slow, steady, mostly other people’s money.',
       talk: ['Steady as she goes.', 'Our Names have been here since 1890.', 'We audited your binder for you. You’re welcome.', 'Diversification is a lifestyle.', 'Patience, young syndicate.'] },
-    longtail: { name: 'Longtail', no: 9150, mix: 'castreaty', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: false, ilw: false, audit: true, renew: 'all', plan: 'grow',
+    longtail: { name: 'Longtail', no: 9150, mix: 'castreaty', au: 'quant', policy: 'medium', capitalMode: 'tight', outwards: false, ilw: false, audit: true, renew: 'all', plan: 'grow', aligned: 0.6,
       blurb: 'Casualty treaty specialist. Sleeps well (for now).',
       talk: ['See you at the three-year close.', 'IBNR is just a feeling.', 'Social inflation? Never heard of her.', 'We reserve the right to reserve.', 'Short-tail is for tourists.'] }
   };
@@ -1670,7 +1806,7 @@ p.sm { margin: 0; }
     const rv = RIVALS[rivalId];
     const res = simulateGame({
       season, market, split: MIX_BY_ID[rv.mix].split, au: rv.au, policy: rv.policy, tag: 'rival-' + rivalId,
-      capitalMode: rv.capitalMode, outwards: rv.outwards, ilw: rv.ilw, audit: rv.audit, renew: rv.renew, plan: rv.plan, cashCall: 'pay'
+      capitalMode: rv.capitalMode, outwards: rv.outwards, ilw: rv.ilw, audit: rv.audit, renew: rv.renew, plan: rv.plan, aligned: rv.aligned, cashCall: 'pay'
     });
     res.rival = rivalId;
     return res;
@@ -1680,6 +1816,7 @@ p.sm { margin: 0; }
     hashStr, rng, clamp, round1, seasonKey, YEARS, SEGMENTS, RDS, RDS_GROUPS, RDS_P, CLASSES, LONG_TAIL, PROPERTY,
     MIXES, MIX_BY_ID, AUS, BROKERS, MODIFIERS, RIVALS, NEMESIS, RACEHORSE,
     PLAN_GWP, FIXED_COSTS, ECU, SOLVENCY_LINE, CASH_CALL_COST, QS_SHARE, OUTWARDS_LOAD, ILW_COST, APPETITE, WINDOW_SHARE, CAPACITY_STEPS,
+    MIN_ALIGNED, MAX_THIRD, MEMBERS, stampFill, startMembers, memberReturn, memberReview, applyReview,
     fixedCosts, shieldCost, deckSize, weekMarket, splitKey, weights, capitalFor, mixProfile, capitalOffers, makeDeck, renewalOffer, deckScale, brokerLine, dealLR,
     rdsExposure, rdsAppetite, scoreGame, pmdVerdict, projectYoA, bookTrafficLight, grade, estimateQ, POLICIES, simulateGame, rivalRun
   };
@@ -1693,7 +1830,8 @@ p.sm { margin: 0; }
   const SPEED = Math.min(20, Math.max(0.25, parseFloat(params.get('speed')) || 1));
   const AUTO = params.get('autoplay');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const SEASON = params.get('season') || '3y-' + E.seasonKey(new Date());
+  const SEASON = params.get('season') || '3a-' + E.seasonKey(new Date());
+  const SEASON_LABEL = SEASON.replace(/^[^-]+-/, '');
   const BASE_YEAR = (parseInt((SEASON.match(/(\d{4})-W/) || [])[1], 10) || new Date().getFullYear()) + 1;
   const yoaName = (y) => String(BASE_YEAR + y);
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -2051,7 +2189,7 @@ p.sm { margin: 0; }
   const FACTS = {
     enquiry: ['Step 1 · Enquiry & Triage', 'In reality you’d open with an enquiry to Lloyd’s, then submit <b>qualitative and quantitative triage templates</b>. Here you get some poker chips.'],
     boc: ['Step 2 · The BOC', 'In reality the <b>Business Opportunities Committee</b> meets you in person for about an hour. You get three questions.'],
-    mih: ['Step 3 · Making it Happen', 'After <b>in-principle approval</b> from the Council of Lloyd’s, Lloyd’s, the PRA and the FCA review everything. Capital is set on the <b>Lloyd’s Standard Model</b>, and the ECA is your SCR × 1.35.'],
+    mih: ['Step 3 · Making it Happen', 'After <b>in-principle approval</b> from the Council of Lloyd’s, Lloyd’s, the PRA and the FCA review everything. Capital is set on the <b>Lloyd’s Standard Model</b>, and the ECA is your SCR × 1.35. Your stamp is split into <b>lines</b>: third-party members bring their own FAL and pay you fees and profit commission; your agency funds the rest.'],
     tape: ['Red Tape Rush', 'Every form below is real. The pen is optional.'],
     year0: ['31 December · The 1.1 renewals', 'From triage to <b>permission to underwrite</b> usually takes 2–8 months. Now the big one: most of the market renews on <b>1 January</b>. You have until midnight.'],
     year1: ['Year 2 · Renewal season', 'Your first year of account is still open. Now you find out which books were any good, and decide what to renew at <b>1.1</b>.'],
@@ -2074,6 +2212,7 @@ p.sm { margin: 0; }
     shredder: ['The Shredder', 'Non-renewed three red books'],
     midnight: ['Midnight Scratch', 'Bound a slip in the last 3 seconds before midnight'],
     threepeat: ['Three-Peat', 'Created value in every year of account'],
+    darling: ['Members’ Darling', 'A member asked for a bigger line on your stamp'],
     declined: ['Declined Everything', 'Bound fewer than three portfolios', true],
     runoff: ['Run-off', 'Pulled up stumps after a cash call', true]
   };
@@ -2083,7 +2222,7 @@ p.sm { margin: 0; }
   const JOURNEY = [
     { k: 'triage', g: 'pre', w: 1, label: 'Triage', name: 'Enquiry & Triage', what: 'Pick a business mix and your Active Underwriter.' },
     { k: 'boc', g: 'pre', w: 1, label: 'BOC', name: 'The BOC', what: 'Answer three questions from the Business Opportunities Committee.' },
-    { k: 'capital', g: 'pre', w: 1, label: 'Capital', name: 'Capital Grab', what: 'Raise Funds at Lloyd’s to cover your ECA.' },
+    { k: 'capital', g: 'pre', w: 1, label: 'Capital', name: 'Fill the Stamp', what: 'Win members’ lines and add your own capital to fill your £100m stamp.' },
     { k: 'tape', g: 'pre', w: 1, label: 'Red tape', name: 'Red Tape Rush', what: 'Sign the forms and win permission to underwrite.' },
     { k: 'y0', g: 'live', w: 3, label: yoaName(0), name: 'Year 1 · YoA ' + yoaName(0), what: 'Your first year of account.' },
     { k: 'y1', g: 'live', w: 3, label: yoaName(1), name: 'Year 2 · YoA ' + yoaName(1), what: 'Renew last year’s books, then the calendar again.' },
@@ -2099,7 +2238,7 @@ p.sm { margin: 0; }
     ['Catastrophes', 'Some come with a forecast, some without warning'],
     ['1.7 window', 'A few mid-year renewals, mostly property cat'],
     ['SBF day', 'Years 1 and 2: plan next year, grow or shrink'],
-    ['Coming into line', 'Years 1 and 2: make sure your capital covers next year'],
+    ['Coming into line', 'Years 1 and 2: members react to your results, then your capital must cover your share'],
     ['Annual report', 'How each open year is shaping up, and the Derby']
   ];
 
@@ -2207,8 +2346,9 @@ p.sm { margin: 0; }
   // help: how scoring works
   $('#helpBtn').addEventListener('click', () => {
     const body = el('<div class="helpgrid"><h3>How scoring works</h3>' +
-      '<p>Your score is the <b>value your syndicate creates for its capital providers over three years of account</b>: each year’s underwriting result minus the cost of the capital behind it. £1k = 1 point. Everyone starts with the same £100m stamp and faces the same three-year market this week.</p>' +
-      '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Underwriting result\n − Cost of capital (and any cash call)\n = Value created\nAdd the three years, then\n + 500 for each year kept on plan\n − 1,000 per Performance Management letter\n = SCORE</pre>' +
+      '<p>Your score is the <b>value your managing agency creates over three years of account</b>. £1k = 1 point. Everyone starts with the same £100m stamp and faces the same three-year market this week.</p>' +
+      '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Syndicate underwriting result\n − Members’ share (their lines)\n = Your aligned share\n − Cost of your own capital (and your share of cash calls)\n + Managing agency fees on members’ lines\n + Profit commission on members’ profits\n = Value to your agency\nAdd the three years, then\n + 500 for each year kept on plan\n − 1,000 per Performance Management letter\n = SCORE</pre>' +
+      '<p>Your stamp is split into lines. Members bring their own FAL and keep their share of the result; you must keep at least 20% yourself. More of your own line means more upside and more risk. Members react to results each November: some walk, some want more.</p>' +
       '<p>Your ECA is your SCR × 1.35, built from your business mix and stamp. Spread books earn a diversification credit. Profits stay in the syndicate until the year closes. Fall below 60% of your ECA after a catastrophe and Lloyd’s calls for more capital.</p>' +
       '<div><button class="btn primary" data-close>Got it</button></div></div>');
     const o = overlay(body);
@@ -2276,7 +2416,7 @@ p.sm { margin: 0; }
     const live = '<div class="rmyears">' + steps('live').map((j, i) => '<span class="rmyear ' + st(j) + '"><b>YoA ' + esc(j.label) + '</b><small>Year ' + (i + 1) + (j.k === here ? ' · you are here' : st(j) === 'done' ? ' · done' : '') + '</small></span>').join('') + '</div>' +
       '<p class="rmnote">Each year runs through the syndicate calendar:</p><ol class="rmbeats">' + YEAR_BEATS.map(([b, d]) => '<li><b>' + esc(b) + '</b><span>' + esc(d) + '</span></li>').join('') + '</ol>';
     return '<div class="roadmap">' + card('pre', list('pre')) + card('live', live) + card('close', list('close')) + '</div>' +
-      '<p class="rmscore"><b>How you win:</b> create the most value for your capital providers over three years, which is underwriting profit minus the cost of your capital. Everyone faces the same market this week.</p>';
+      '<p class="rmscore"><b>How you win:</b> create the most value for your managing agency over three years: your own share of the syndicate’s result, plus fees and profit commission from your members, minus the cost of your own capital. Everyone faces the same market this week.</p>';
   }
   function showRoadmap() {
     const name = sceneRoot && sceneRoot.dataset.scene;
@@ -2372,6 +2512,7 @@ p.sm { margin: 0; }
       tape: {}, pmd: 0, pmdNotes: [], pmdFlags: {},
       y: 0, years: [], next: null, entries: [], walked: [], streak: 0, hotLeft: 0,
       ilw: {}, reinsCall: {}, armedReins: false, favours: { lunch: true, reins: true, poach: true },
+      lines: [], members: [], aligned: 1, alignedFal: 0, memberNews: {}, darling: false,
       cashChoices: {}, cashTopUps: {}, runoff: null, alerts: [], decisionTimes: [], calledIt: false,
       shreddedRed: 0, midnightScratch: false, cycleSurf: false, bigLines: 0,
       nemesis: null, rival2: null, rivalRuns: {}, ghost: null, result: null
@@ -2383,17 +2524,18 @@ p.sm { margin: 0; }
   function gameOpts(extra) {
     return Object.assign({
       market: G.market, au: G.au, qs: G.qs,
-      years: G.years.map((Y) => ({ fal: Y.fal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], outwardsCost: Y.outwardsCost || 0 })),
+      years: G.years.map((Y) => ({ fal: Y.fal, alignedFal: Y.alignedFal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], outwardsCost: Y.outwardsCost || 0, members: Y.members || [] })),
       ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd,
       cashCallChoice: (info) => G.cashChoices[info.month] || 'pay'
     }, extra || {});
   }
-  // the opening: capital for the first year of account
+  // the opening: fill the first year's stamp with members' lines and the agency's own capital
   function recomputeCapital() {
-    const cap = E.capitalFor(G.split, G.loading, G.qs, E.PLAN_GWP);
-    G.eca = cap.eca;
-    G.fal = G.capital.reduce((s, c) => s + c.amt, 0);
-    G.capacity = E.PLAN_GWP * Math.min(1, G.eca > 0 ? G.fal / G.eca : 0);
+    G.eca = E.capitalFor(G.split, G.loading, G.qs, E.PLAN_GWP).eca;
+    G.alignedFal = G.capital.reduce((s, c) => s + c.amt, 0);
+    const f = E.stampFill(G.alignedFal, G.eca, G.lines, E.PLAN_GWP);
+    G.fill = f;
+    G.fal = f.fal; G.capacity = f.capacity; G.aligned = f.aligned; G.members = f.members;
   }
 
   // ---------- scenes ----------
@@ -2401,9 +2543,9 @@ p.sm { margin: 0; }
 
   SCENES.title = {
     enter() {
-      setStep('This week: ' + SEASON.replace('3y-', ''));
+      setStep('This week: ' + SEASON_LABEL);
       const m = G.market;
-      const ledText = 'THIS WEEK’S MARKET · ' + SEASON.replace('3y-', '') + ' · ' + m.years[0].modifier.text.toUpperCase() + ' · ' + m.events.filter((e) => !e.second).length + ' CATASTROPHES OVER THREE YEARS. NOBODY KNOWS WHICH. · STAMP CAPACITY £100M · THE ROOM OPENS 1 JANUARY ' + BASE_YEAR + ' ·';
+      const ledText = 'THIS WEEK’S MARKET · ' + SEASON_LABEL + ' · ' + m.years[0].modifier.text.toUpperCase() + ' · ' + m.events.filter((e) => !e.second).length + ' CATASTROPHES OVER THREE YEARS. NOBODY KNOWS WHICH. · STAMP CAPACITY £100M · THE ROOM OPENS 1 JANUARY ' + BASE_YEAR + ' ·';
       const root = el('<section class="scene title-scene">' +
         '<div class="sky"></div><div class="skyline">' + buildingSVG() + '</div>' +
         '<div class="title-card"><span class="eyebrow">A seven-minute game about launching a Lloyd’s syndicate</span>' +
@@ -2762,9 +2904,10 @@ p.sm { margin: 0; }
     F.spawn = (offer) => {
       const fw = o.field.clientWidth, fh = o.field.clientHeight;
       const size = fw < 400 ? 92 : 112;
-      const amtTxt = offer.qs ? '−25% ECA' : '£' + offer.amt.toFixed(0) + 'm';
-      const rateTxt = offer.qs ? 'cedes 25%' : Math.round(offer.rate * 100) + '% a year';
-      const n = el('<button class="token' + (offer.trap ? ' trap' : '') + (offer.qs ? ' qs' : '') + '" style="--tc:' + SRC_COLOR[offer.src] + '" title="' + esc(offer.hint || offer.label) + '"><b>' + amtTxt + '</b><span>' + esc(offer.label) + '</span><em>' + rateTxt + '</em></button>');
+      const line = offer.kind === 'line';
+      const amtTxt = line ? Math.round(offer.line * 100) + '% line' : offer.qs ? '−25% ECA' : '£' + offer.amt.toFixed(0) + 'm';
+      const rateTxt = line ? 'fee ' + +(offer.fee * 100).toFixed(2) + '% · PC ' + +(offer.pc * 100).toFixed(1) + '%' : offer.qs ? 'cedes 25%' : Math.round(offer.rate * 100) + '% a year';
+      const n = el('<button class="token' + (line ? ' line' : '') + (offer.trap ? ' trap' : '') + (offer.qs ? ' qs' : '') + '" style="--tc:' + (offer.color || SRC_COLOR[offer.src]) + '" title="' + esc(offer.hint || offer.label) + '"><b>' + amtTxt + '</b><span>' + esc(offer.label) + '</span><em>' + rateTxt + '</em></button>');
       o.field.appendChild(n);
       const tok = { o: offer, n, age: 0, x: 8 + rand() * Math.max(10, fw - size - 16), y: fh + 10, size, fh, dragging: false, gone: false };
       F.tokens.push(tok);
@@ -2783,6 +2926,7 @@ p.sm { margin: 0; }
     };
     F.grab = (tok) => {
       if (tok.gone || F.closed) return;
+      if (o.canGrab && !o.canGrab(tok.o)) { tok.n.classList.remove('nope'); void tok.n.offsetWidth; tok.n.classList.add('nope'); Sound.blip(false); return; }
       tok.gone = true;
       const [vx, vy] = centre(o.vault); const [tx, ty] = centre(tok.n);
       tok.n.animate([{ transform: 'translate(' + tok.x + 'px,' + tok.y + 'px) scale(1)' }, { transform: 'translate(' + (tok.x + vx - tx) + 'px,' + (tok.y + vy - ty) + 'px) scale(.2)', opacity: 0.2 }], { duration: 380, easing: 'ease-in', fill: 'forwards' });
@@ -2829,16 +2973,15 @@ p.sm { margin: 0; }
       setStep('Step 3 · Making it Happen');
       this.t = 24; this.done = false;
       const ecaNoQs = E.capitalFor(G.split, G.loading, false, E.PLAN_GWP).eca;
-      this.scaleMax = ecaNoQs * 1.7;
-      G.capital = [{ src: 'agency', label: 'Your managing agency', amt: E.round1(ecaNoQs * 0.15), rate: 0.07 + G.market.years[0].capAdj }];
-      G.qs = false; G.racehorse = false;
+      G.capital = [{ src: 'agency', label: 'Your agency’s balance sheet', amt: E.round1(ecaNoQs * E.MIN_ALIGNED), rate: 0.07 + G.market.years[0].capAdj }];
+      G.lines = []; G.qs = false; G.racehorse = false;
       const root = el('<section class="scene">' +
-        '<div class="stephead"><div><span class="eyebrow">Step 3 · Making it Happen</span><h2>Capital Grab</h2></div>' +
+        '<div class="stephead"><div><span class="eyebrow">Step 3 · Making it Happen</span><h2>Fill the Stamp</h2></div>' +
         '<div class="right"><div class="timer" id="gTimer"><span class="num">24s</span><span class="track"><span class="fill"></span></span></div><button class="btn primary" id="gDone">Lock it in</button></div>' +
-        '<p>Flick capital into your vault (or tap it) before rival hands snatch it. Fill to the dashed line: your Funds at Lloyd’s must cover your ECA. Every pound costs you a return.</p></div>' +
+        '<p>Flick offers into your stamp (or tap them) before rival hands snatch them. <b>Members’ lines</b> bring their own capital and pay you a fee and profit commission. <b>Your own capital</b> keeps more of the upside but costs a return. Lloyd’s wants at least 20% of the stamp to be yours.</p></div>' +
         '<div class="grab"><div class="field" id="field"></div>' +
-        '<div class="vault" id="vault"><div class="fillv" id="vfill"></div><div class="target" id="vtarget"><span>ECA</span></div><div class="vlabel"><span id="vPct">0%</span><small id="vAmt"></small></div></div></div>' +
-        '<div class="grabstats"><span>Raised <b id="gsRaised"></b></span><span>ECA <b id="gsEca"></b></span><span>Capital cost <b id="gsCost"></b> a year</span><span>Capacity <b id="gsCap"></b></span><span id="gsFeed" class="muted"></span></div>' +
+        '<div class="vault stampvault" id="vault"><div class="stampbar" id="stampbar"></div><div class="target" id="vtarget"><span>Stamp</span></div><div class="minal" id="vmin"><span>Yours 20%</span></div><div class="vlabel"><span id="vPct">0%</span><small id="vAmt"></small></div></div></div>' +
+        '<div class="grabstats"><span>Stamp <b id="gsStamp"></b></span><span>Your line <b id="gsAligned"></b></span><span>Your FAL <b id="gsFal"></b> of <b id="gsEca"></b> ECA</span><span>Fees <b id="gsFees"></b> a year</span><span>Your capital cost <b id="gsCost"></b> a year</span><span id="gsFeed" class="muted"></span></div>' +
         '</section>');
       this.root = root;
       root.querySelector('#gDone').addEventListener('click', () => this.finish());
@@ -2846,38 +2989,63 @@ p.sm { margin: 0; }
     },
     mounted() {
       const r = this.root;
+      const lineTot = () => G.lines.reduce((s, x) => s + x.line, 0);
+      const autoAligned = Math.max(E.MIN_ALIGNED, Math.min(1, parseFloat(params.get('al')) || 0.5));
       this.field = makeCapitalField({
         field: r.querySelector('#field'), vault: r.querySelector('#vault'),
         offers: E.capitalOffers(SEASON, E.capitalFor(G.split, G.loading, false, E.PLAN_GWP).eca, G.market.years[0].capAdj),
-        auto: AUTO ? (o) => (G.fal < G.eca * 1.05 || o.qs) && !o.trap : null,
+        auto: AUTO ? (o) => {
+          if (o.trap) return false;
+          if (o.kind === 'line') return lineTot() + o.line <= 1 - autoAligned + 0.02;
+          if (o.qs) return true;
+          return G.fill.filled < 0.999 || G.fill.surplus < G.eca * 0.05;
+        } : null,
+        canGrab: (o) => {
+          if (o.kind !== 'line' || lineTot() + o.line <= E.MAX_THIRD + 1e-9) return true;
+          toast('Lloyd’s says no', 'At least 20% of the stamp must be your own capital. That line would take members past 80%.', 'var(--bad)', 3);
+          return false;
+        },
         onGrab: (o) => {
           if (o.qs) { G.qs = true; toast('Outward QS signed', 'Your ECA drops by 25%. The reinsurer takes 25% of your result.', 'var(--seg-mat)'); }
-          else {
+          else if (o.kind === 'line') {
+            const ex = G.lines.find((x) => x.kind === o.src && x.label === o.label);
+            if (ex) ex.line = Math.round((ex.line + o.line) * 1000) / 1000;
+            else G.lines.push({ kind: o.src, label: o.label, line: o.line, color: o.color, fee: o.fee, pc: o.pc });
+            if (o.trap === 'racehorse') { G.racehorse = true; toast('The founder’s racehorse', 'The family office is in, and so is the racehorse. As a bloodstock binder. Obviously.', 'var(--warn)'); }
+            else toast(o.label + ': ' + Math.round(o.line * 100) + '% line', 'They bring their own FAL, keep their share of the result, and pay you fees and profit commission.', o.color, 2.4);
+          } else {
             G.capital.push({ src: o.src, label: o.label, amt: o.amt, rate: o.rate });
-            if (o.trap === 'racehorse') { G.racehorse = true; toast('The founder’s racehorse', 'It’s now in your book. As a bloodstock binder. Obviously.', 'var(--warn)'); }
-            if (o.trap === 'hurdle') toast('Expensive money', 'This PE vehicle wants 18% a year.', 'var(--bad)');
+            if (o.trap === 'hurdle') toast('Expensive money', 'This one wants ' + Math.round(o.rate * 100) + '% a year.', 'var(--bad)');
           }
           this.paint();
         },
         onSnatch: (o) => {
           const who = E.RIVALS[pick([G.nemesis, G.rival2])].name;
-          r.querySelector('#gsFeed').textContent = who + ' snatched ' + (o.qs ? 'the outward QS' : '£' + o.amt.toFixed(0) + 'm of ' + o.label) + '.';
+          r.querySelector('#gsFeed').textContent = who + ' snatched ' + (o.qs ? 'the outward QS' : o.kind === 'line' ? o.label + '’s line' : '£' + o.amt.toFixed(0) + 'm of ' + o.label) + '.';
         }
       });
       this.paint();
     },
     paint() {
       recomputeCapital();
-      const r = this.root;
-      const raised = G.fal;
-      r.querySelector('#vfill').style.height = Math.min(100, (raised / this.scaleMax) * 100) + '%';
-      r.querySelector('#vtarget').style.bottom = (G.eca / this.scaleMax) * 100 + '%';
-      r.querySelector('#vPct').textContent = Math.round((raised / G.eca) * 100) + '%';
-      r.querySelector('#vAmt').textContent = '£' + raised.toFixed(1) + 'm of £' + G.eca.toFixed(1) + 'm';
-      r.querySelector('#gsRaised').textContent = '£' + raised.toFixed(1) + 'm';
-      r.querySelector('#gsEca').textContent = '£' + G.eca.toFixed(1) + 'm' + (G.qs ? ' (after outward QS)' : '');
+      const r = this.root, f = G.fill, S = 1.15;
+      const cover = G.eca > 0 ? G.alignedFal / G.eca : 0;
+      const L = G.lines.reduce((s, x) => s + x.line, 0);
+      const segs = [['aligned', Math.min(cover, Math.max(0, 1 - L)), 'var(--brass)', 'Your agency']]
+        .concat(G.lines.map((x) => [x.kind, x.line, x.color, x.label + ' · ' + Math.round(x.line * 100) + '%']));
+      if (cover > 1 - L + 0.005) segs.push(['surplus', Math.min(0.14, cover - (1 - L)), '', 'Surplus capital: still costs a return']);
+      r.querySelector('#stampbar').innerHTML = segs.map(([k, h, c, t]) => '<i class="vseg ' + k + '" style="height:' + ((h / S) * 100).toFixed(2) + '%' + (c ? ';background:' + c : '') + '" title="' + esc(t) + '"></i>').join('');
+      r.querySelector('#vtarget').style.bottom = (100 / S).toFixed(2) + '%';
+      r.querySelector('#vmin').style.bottom = ((E.MIN_ALIGNED / S) * 100).toFixed(2) + '%';
+      r.querySelector('#vPct').textContent = Math.round(f.filled * 100) + '%';
+      r.querySelector('#vAmt').textContent = 'Yours ' + Math.round(f.aligned * 100) + '% · members ' + Math.round(f.third * 100) + '%';
+      const fees = f.members.reduce((s, x) => s + x.fee * x.share, 0) * f.capacity;
+      r.querySelector('#gsStamp').textContent = '£' + f.capacity.toFixed(0) + 'm';
+      r.querySelector('#gsAligned').textContent = Math.round(f.aligned * 100) + '%';
+      r.querySelector('#gsFal').textContent = '£' + G.alignedFal.toFixed(1) + 'm';
+      r.querySelector('#gsEca').textContent = '£' + G.eca.toFixed(1) + 'm' + (G.qs ? ' (after QS)' : '');
+      r.querySelector('#gsFees').textContent = '£' + fees.toFixed(2) + 'm';
       r.querySelector('#gsCost').textContent = '£' + G.capital.reduce((s, c) => s + c.amt * c.rate, 0).toFixed(1) + 'm';
-      r.querySelector('#gsCap').textContent = '£' + G.capacity.toFixed(0) + 'm';
     },
     update(dt) {
       if (this.done) return;
@@ -2894,9 +3062,8 @@ p.sm { margin: 0; }
       this.done = true;
       this.field.close();
       recomputeCapital();
-      const cover = G.fal / G.eca;
-      if (cover < 1) toast('Under-raised', 'Your capacity shrinks to £' + G.capacity.toFixed(0) + 'm.', 'var(--warn)', 4);
-      else if (cover > 1.25) toast('Over-raised', 'Idle capital still costs you a return.', 'var(--warn)', 4);
+      if (G.fill.filled < 0.995) toast('Stamp not full', 'Your capacity shrinks to £' + G.capacity.toFixed(0) + 'm.', 'var(--warn)', 4);
+      else if (G.fill.surplus > G.eca * 0.25) toast('Over-raised', 'Idle capital still costs you a return.', 'var(--warn)', 4);
       setTimeout(() => go('tape'), 500 / SPEED);
     }
   };
@@ -2982,7 +3149,8 @@ p.sm { margin: 0; }
     permission() {
       const body = el('<div class="docwrap" style="padding:10px 0"><div class="doc" id="ptu"><h3>Permission to underwrite</h3><dl>' +
         '<dt>Syndicate</dt><dd>' + G.no + ' · ' + esc(G.name) + '</dd><dt>Year of account</dt><dd>' + yoaName(0) + '</dd>' +
-        '<dt>Funds at Lloyd’s</dt><dd>£' + G.fal.toFixed(1) + 'm</dd><dt>ECA</dt><dd>£' + G.eca.toFixed(1) + 'm</dd><dt>Capacity</dt><dd>£' + G.capacity.toFixed(0) + 'm</dd></dl></div></div>');
+        '<dt>Funds at Lloyd’s</dt><dd>£' + G.fal.toFixed(1) + 'm (yours £' + G.alignedFal.toFixed(1) + 'm)</dd><dt>ECA</dt><dd>£' + G.eca.toFixed(1) + 'm</dd><dt>Capacity</dt><dd>£' + G.capacity.toFixed(0) + 'm</dd>' +
+        '<dt>Members</dt><dd>Your agency ' + Math.round(G.aligned * 100) + '%' + G.members.map((x) => ' · ' + esc(x.short) + ' ' + Math.round(x.share * 100) + '%').join('') + '</dd></dl></div></div>');
       const o = overlay(body);
       setTimeout(() => {
         slamStamp(body.querySelector('#ptu'), 'Permission to underwrite<small>Council of Lloyd’s</small>', { pos: 'left:12%;top:40%', rot: -8 });
@@ -3027,7 +3195,7 @@ p.sm { margin: 0; }
       if (y === 0) {
         recomputeCapital();
         G.cashTopUps = {};
-        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca, fal: G.fal, capital: G.capital.map((c) => Object.assign({}, c)), outwards: [], outwardsCost: 0 }];
+        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca, fal: G.fal, alignedFal: G.alignedFal, capital: G.capital.map((c) => Object.assign({}, c)), members: G.members.map((x) => Object.assign({}, x)), outwards: [], outwardsCost: 0 }];
         const ids = Object.keys(E.RIVALS);
         for (const id of ids) G.rivalRuns[id] = E.rivalRun(id, SEASON, G.market);
         G.ghost = LB.ghostCurve();
@@ -3052,7 +3220,7 @@ p.sm { margin: 0; }
         '</div>' +
         '<div class="box" id="box"><div class="clock" id="clock" hidden></div><div class="brokerrow" id="brokerRow"></div><div class="slotarea" id="slotArea"></div>' +
         '<div class="actions" id="actions"><button class="btn danger" data-line="0"><span>← Decline</span></button><button class="btn" data-line="1"><span>↓ Small line</span></button><button class="btn primary" data-line="2"><span>Big line →</span></button></div></div>' +
-        '<div class="side"><div class="favours" id="favours">' + fav + '</div><div class="shelf" id="shelf" aria-label="Your book, by year of account"></div></div>' +
+        '<div class="side"><div class="favours" id="favours">' + fav + '</div><div class="shelf" id="shelf" aria-label="Your book, by year of account"></div><button class="stampstrip" id="stampStrip" aria-label="Who is on your stamp"></button></div>' +
         '<div class="ticker" id="ticker" aria-live="off"></div>' +
         '</div></section>');
       this.root = root;
@@ -3075,6 +3243,7 @@ p.sm { margin: 0; }
     mounted() {
       this.renderDerby();
       this.renderShelf();
+      this.renderStamp();
       this.paintPlanner();
       this.updateRace();
       Sound.murmur(true);
@@ -3557,6 +3726,17 @@ p.sm { margin: 0; }
       setTimeout(() => this.resumeFF(), (over.length ? 2600 : 1500) / SPEED);
     },
 
+    // ---- who is on the stamp this year ----
+    renderStamp() {
+      const Y = this.Y, mem = Y.members || [];
+      const a = 1 - mem.reduce((s, x) => s + x.share, 0);
+      const segs = [['Your agency', a, 'var(--brass)']].concat(mem.map((x) => [x.short, x.share, x.color]));
+      const n = this.root.querySelector('#stampStrip');
+      n.innerHTML = '<span class="eyebrow">Stamp £' + Y.capacity.toFixed(0) + 'm · yours ' + Math.round(a * 100) + '%</span><span class="ssbar">' + segs.map(([l, w, c]) => '<i style="flex:' + w + ';background:' + c + '" title="' + esc(l + ' ' + Math.round(w * 100) + '%') + '"></i>').join('') + '</span>' +
+        '<span class="sslegend">' + segs.map(([l, w, c]) => '<em><i style="background:' + c + '"></i>' + esc(l) + ' ' + Math.round(w * 100) + '%</em>').join('') + '</span>';
+      n.onclick = () => toast('Your stamp', mem.length ? 'Members bring their own FAL and pay you fees and profit commission. They react to your results each November.' : 'All yours: every pound of profit, and every pound of loss.', 'var(--brass)', 4);
+    },
+
     // ---- the bookcase: one shelf per year of account ----
     renderShelf() {
       const shelf = this.root.querySelector('#shelf');
@@ -3938,9 +4118,9 @@ p.sm { margin: 0; }
         if (AUTO) setTimeout(finish, 500 / SPEED);
         return;
       }
-      const m = pending.month;
+      const m = pending.month, myShare = pending.aligned != null ? pending.aligned : 1;
       nx.innerHTML = '<div class="cashcall"><h4>Lloyd’s cash call</h4><p>After ' + esc(e.name) + ', your capital (' + fmtM(pending.capitalNow) + ' including funds held in your open years) is below the solvency line (' + fmtM(pending.line) + ', 60% of your ECA).</p>' +
-        '<p>Top up <b>' + fmtM(pending.topUp) + '</b> now. Emergency capital is expensive: it costs <b>' + fmtM(pending.cost) + '</b> of value (−' + fmtPts(pending.cost * 1000) + ' points). Or go into run-off, and the game ends here.</p>' +
+        '<p>Top up <b>' + fmtM(pending.topUp) + '</b> now' + (myShare < 0.999 ? ': your share (' + pct(myShare) + ') is <b>' + fmtM(pending.topUp * myShare) + '</b> and your members pay the rest' : '') + '. Emergency capital is expensive: it costs you <b>' + fmtM(pending.cost * myShare) + '</b> of value (−' + fmtPts(pending.cost * myShare * 1000) + ' points). Or go into run-off, and the game ends here.</p>' +
         '<div class="resactions"><button class="btn brass" id="pay">Pay up</button><button class="btn danger" id="runoff">Run-off</button></div></div>';
       Sound.thud();
       const pay = nx.querySelector('#pay');
@@ -4159,17 +4339,82 @@ p.sm { margin: 0; }
       this.setPhase('cil', '30 November · coming into line');
       const nx = G.next || { capacity: Y.plan, split: Object.assign({}, Y.split), verdict: null, ask: 'hold' };
       G.next = nx;
+      const mem = Y.members || [];
+      if (!mem.length) { nx.members = []; return this.cilCapital(nx); }
+      this.memberReview(nx);
+    },
+    // third-party members look at the year and decide: stay, leave, cut, or ask for a bigger line
+    memberReview(nx) {
+      const y = this.y, Y = this.Y;
+      const info = E.memberReturn(G.entries, G.market, y, G.au, Y, G.qs);
+      const review = E.memberReview(Y.members, info);
+      const key = (x) => x.kind + '|' + x.label;
+      const accept = {};
+      const SAY = {
+        leaves: { names: 'Walking away. Their members’ agent has “concerns”.', ils: 'Out. The fund’s investors didn’t sign up for this.', corporate: 'Leaving the stamp.' },
+        cuts: 'Halving their line. Patience has limits.',
+        stays: { family: G.racehorse ? 'Loyal as ever. The racehorse sends its regards.' : 'Loyal as ever.', other: 'Staying on the same line.' }
+      };
+      const S = this.sheet('<span class="eyebrow">30 November ' + yoaName(y) + ' · coming into line</span><h3>Member review</h3>' +
+        '<p class="muted sm">Your members’ projected return on their capital this year, after your fees and profit commission: <b class="num" style="color:' + (info.ret < 0 ? '#ffb3a6' : 'var(--good)') + '">' + (info.ret >= 0 ? '+' : '') + Math.round(info.ret * 100) + '%</b>' +
+        (info.catHit > 0.05 ? '. Catastrophes cost the syndicate ' + Math.round(info.catHit * 100) + '% of its FAL' : '') + '. Members react before next year’s capital is set.</p>' +
+        '<div class="mrev" id="mrev"></div><div class="cilact"><p class="verdict" id="mSum"></p><button class="btn primary" id="mGo">On to the capital check →</button></div>', 'cilsheet');
+      const paint = () => {
+        const box = S.body.querySelector('#mrev');
+        box.innerHTML = review.map((x, i) => {
+          const k = key(x), on = accept[k];
+          const said = x.action === 'leaves' ? (SAY.leaves[x.kind] || SAY.leaves.corporate) : x.action === 'cuts' ? SAY.cuts : x.action === 'offers' ? 'Wants a bigger line. More fees and commission for you, but less of the upside.' : (x.kind === 'family' ? SAY.stays.family : SAY.stays.other);
+          const to = x.action === 'offers' ? (on ? x.to : x.share) : x.to;
+          return '<div class="mcard ' + x.action + (on ? ' accepted' : '') + '" style="--mc:' + x.color + '"><span class="mn"><i></i><b>' + esc(x.label) + '</b></span>' +
+            '<span class="ml num">' + Math.round(x.share * 100) + '% → <b>' + Math.round(to * 100) + '%</b>' + (x.action === 'offers' && !on ? ' (offered ' + Math.round(x.to * 100) + '%)' : '') + '</span><em>' + esc(said) + '</em>' +
+            (x.action === 'offers' ? '<span class="mbtns"><button class="btn' + (on ? ' brass' : '') + '" data-i="' + i + '" data-a="1">' + (on ? 'Accepted' : 'Accept') + '</button><button class="btn' + (on ? '' : ' ghostish') + '" data-i="' + i + '" data-a="0">Decline</button></span>' : '') + '</div>';
+        }).join('');
+        box.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => { accept[key(review[+b.dataset.i])] = b.dataset.a === '1'; Sound.tick(); paint(); }));
+        const next = E.applyReview(review, (x) => !!accept[key(x)]);
+        const a = 1 - next.reduce((s2, x) => s2 + x.share, 0);
+        S.body.querySelector('#mSum').innerHTML = 'Next year your own line is <b class="num">' + Math.round(a * 100) + '%</b> of the stamp' + (a > 1 - Y.members.reduce((s2, x) => s2 + x.share, 0) + 0.005 ? ': you must fund the gap your members leave.' : '.');
+      };
+      paint();
+      const done = () => {
+        const next = E.applyReview(review, (x) => !!accept[key(x)]);
+        G.memberNews[y] = review.filter((x) => x.action !== 'stays').map((x) => ({ label: x.label, action: x.action, from: x.share, to: x.action === 'offers' ? (accept[key(x)] ? x.to : x.share) : x.to, accepted: !!accept[key(x)] }));
+        if (review.some((x) => x.action === 'offers')) G.darling = true;
+        nx.members = next;
+        this.tick('MEMBER REVIEW · ' + (G.memberNews[y].length ? G.memberNews[y].map((n) => n.label.toUpperCase() + ' ' + ({ leaves: 'LEAVES', cuts: 'CUTS ITS LINE', offers: n.accepted ? 'GROWS' : 'OFFERED MORE' })[n.action]).join(' · ') : 'EVERYONE STAYS'));
+        S.close();
+        this.cilCapital(nx);
+      };
+      const go = S.body.querySelector('#mGo');
+      go.addEventListener('click', done);
+      this.focusLater(go);
+      if (AUTO) setTimeout(() => {
+        const target = Math.max(E.MIN_ALIGNED, Math.min(1, parseFloat(params.get('al')) || 0.5));
+        let third = Y.members.reduce((s2, x) => s2 + x.share, 0);
+        review.forEach((x) => { if (x.action === 'offers' && 1 - (third + x.to - x.share) >= target - 0.001) { accept[key(x)] = true; third += x.to - x.share; } });
+        paint();
+        setTimeout(done, 300 / SPEED);
+      }, 400 / SPEED);
+    },
+    // the agency's own capital must cover its share of next year's ECA
+    cilCapital(nx) {
+      const y = this.y, Y = this.Y;
       const eca = E.capitalFor(nx.split, G.loading, G.qs, nx.capacity).eca;
       const res = this.live();
       const held = res.uwCurve[12 * y + 10] || 0, extra = falExtra();
-      const avail = Y.fal + extra + held;
-      Object.assign(nx, { eca, capital: Y.capital.map((c) => Object.assign({}, c)), fal: Y.fal, final: nx.capacity });
-      const scale = Math.max(avail, eca) * 1.15;
+      const aNow = 1 - (Y.members || []).reduce((s2, x) => s2 + x.share, 0);
+      const members = nx.members || [];
+      const aNext = 1 - members.reduce((s2, x) => s2 + x.share, 0);
+      const myFal = Y.alignedFal != null ? Y.alignedFal : Y.fal;
+      const mine = aNow * (held + extra);
+      const avail = myFal + mine, need = aNext * eca;
+      Object.assign(nx, { eca, members, capital: Y.capital.map((c) => Object.assign({}, c)), alignedFal: myFal, final: nx.capacity });
+      const scale = Math.max(avail, need) * 1.15;
       const pctW = (v) => Math.max(0, Math.min(100, (v / scale) * 100)).toFixed(1) + '%';
       const S = this.sheet('<span class="eyebrow">30 November ' + yoaName(y) + ' · coming into line</span><h3>Come into line</h3>' +
-        '<p class="muted sm">Your Funds at Lloyd’s, plus the funds held in your open years, must cover next year’s ECA of <b class="num">' + fmtM(eca) + '</b> for a <b class="num">£' + nx.capacity + 'm</b> stamp.</p>' +
-        '<div class="cil" id="cil"><div class="cilbar"><i class="f" style="width:' + pctW(Math.min(Y.fal, avail)) + '"></i><i class="h" style="left:' + pctW(Math.min(Y.fal, avail)) + ';width:' + pctW(Math.max(0, avail - Y.fal)) + '"></i><span class="ap" style="left:' + pctW(eca) + '"><em>ECA</em></span></div>' +
-        '<div class="cillegend"><span><i class="f"></i>FAL ' + fmtM(Y.fal) + '</span><span><i class="h"></i>Held in the syndicate ' + fmtM(held, true) + (extra > 0 ? ' · cash calls ' + fmtM(extra) : '') + '</span><span>Total <b class="num">' + fmtM(avail) + '</b></span></div></div>' +
+        '<p class="muted sm">' + (aNext < 0.999 ? 'Your members bring their own FAL. Your own line is ' + Math.round(aNext * 100) + '% of next year’s stamp, so your capital, plus your share of the funds held in your open years, must cover <b class="num">' + fmtM(need) + '</b> of next year’s ' + fmtM(eca) + ' ECA.' :
+          'Your Funds at Lloyd’s, plus the funds held in your open years, must cover next year’s ECA of <b class="num">' + fmtM(eca) + '</b> for a <b class="num">£' + nx.capacity + 'm</b> stamp.') + '</p>' +
+        '<div class="cil" id="cil"><div class="cilbar"><i class="f" style="width:' + pctW(Math.min(myFal, avail)) + '"></i><i class="h" style="left:' + pctW(Math.min(myFal, avail)) + ';width:' + pctW(Math.max(0, avail - myFal)) + '"></i><span class="ap" style="left:' + pctW(need) + '"><em>' + (aNext < 0.999 ? 'Your ECA' : 'ECA') + '</em></span></div>' +
+        '<div class="cillegend"><span><i class="f"></i>' + (aNext < 0.999 || aNow < 0.999 ? 'Your FAL ' : 'FAL ') + fmtM(myFal) + '</span><span><i class="h"></i>' + (aNow < 0.999 ? 'Your share of funds held ' : 'Held in the syndicate ') + fmtM(mine, true) + '</span><span>Total <b class="num">' + fmtM(avail) + '</b></span></div></div>' +
         '<div id="cilAct" class="cilact"></div>', 'cilsheet');
       const act = S.body.querySelector('#cilAct');
       const finish = (msg, stampTxt, blue) => {
@@ -4181,28 +4426,27 @@ p.sm { margin: 0; }
         this.tick('COMING INTO LINE · ' + G.no + ' · ' + stampTxt.replace(/<[^>]+>.*$/, '').toUpperCase());
         if (AUTO) setTimeout(() => b.click(), 500 / SPEED);
       };
-      if (avail >= eca) {
-        const surplus = avail - eca * 1.15;
-        if (avail > eca * 1.35 && Y.fal > 1) {
-          const rel = E.round1(Math.min(Y.fal * 0.5, surplus));
-          act.innerHTML = '<p class="verdict">You’re comfortably in line. Release <b class="num">' + fmtM(rel) + '</b> of surplus FAL back to your capital providers? Idle capital still costs a return.</p><div class="resactions"><button class="btn brass" id="rel">Release ' + fmtM(rel) + '</button><button class="btn" id="keep">Keep it</button></div>';
+      if (avail >= need) {
+        if (avail > need * 1.35 && myFal > 1) {
+          const rel = E.round1(Math.min(myFal * 0.5, avail - need * 1.15));
+          act.innerHTML = '<p class="verdict">You’re comfortably in line. Release <b class="num">' + fmtM(rel) + '</b> of your surplus FAL? Idle capital still costs a return.</p><div class="resactions"><button class="btn brass" id="rel">Release ' + fmtM(rel) + '</button><button class="btn" id="keep">Keep it</button></div>';
           act.querySelector('#rel').addEventListener('click', () => {
-            nx.capital = nx.capital.map((c) => ({ src: c.src, label: c.label, amt: E.round1(c.amt * (1 - rel / Y.fal)), rate: c.rate }));
-            nx.fal = nx.capital.reduce((s, c) => s + c.amt, 0);
+            nx.capital = nx.capital.map((c) => ({ src: c.src, label: c.label, amt: E.round1(c.amt * (1 - rel / myFal)), rate: c.rate }));
+            nx.alignedFal = nx.capital.reduce((s2, c) => s2 + c.amt, 0);
             Sound.kaching();
-            finish('Surplus released. FAL for ' + yoaName(y + 1) + ': ' + fmtM(nx.fal) + '.', 'In line<small>Surplus released</small>', true);
+            finish('Surplus released. Your FAL for ' + yoaName(y + 1) + ': ' + fmtM(nx.alignedFal) + '.', 'In line<small>Surplus released</small>', true);
           });
-          act.querySelector('#keep').addEventListener('click', () => finish('FAL stays at ' + fmtM(Y.fal) + '. Belt and braces.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true));
+          act.querySelector('#keep').addEventListener('click', () => finish('Your FAL stays at ' + fmtM(myFal) + '. Belt and braces.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true));
           this.focusLater(act.querySelector('#rel'));
           if (AUTO) setTimeout(() => act.querySelector('#rel').click(), 400 / SPEED);
-        } else finish('Your capital covers next year’s ECA. Nothing to raise.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true);
+        } else finish('Your capital covers your share of next year’s ECA. Nothing to raise.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true);
         return;
       }
-      const short = eca - avail;
-      const shrunk = Math.max(10, Math.round(nx.capacity * Math.min(1, avail / eca)));
-      act.innerHTML = '<p class="verdict">You’re <b class="num" style="color:#ffb3a6">' + fmtM(short) + '</b> short. Raise it in a 12-second capital grab, or shrink next year’s stamp to £' + shrunk + 'm.</p><div class="resactions"><button class="btn primary" id="raise">Raise ' + fmtM(short) + ' →</button><button class="btn" id="shrink">Shrink to £' + shrunk + 'm</button></div>';
+      const short = need - avail;
+      const shrunk = Math.max(10, Math.round(nx.capacity * Math.min(1, avail / need)));
+      act.innerHTML = '<p class="verdict">You’re <b class="num" style="color:#ffb3a6">' + fmtM(short) + '</b> short' + (aNext > aNow + 0.005 ? ', partly because members left and their line is now yours to fund' : '') + '. Raise it in a 12-second capital grab, or shrink next year’s stamp to £' + shrunk + 'm.</p><div class="resactions"><button class="btn primary" id="raise">Raise ' + fmtM(short) + ' →</button><button class="btn" id="shrink">Shrink to £' + shrunk + 'm</button></div>';
       act.querySelector('#shrink').addEventListener('click', () => { nx.final = shrunk; finish('Next year’s stamp shrinks to £' + shrunk + 'm to fit your capital.', 'Plan shrunk<small>£' + shrunk + 'm stamp</small>', false); });
-      act.querySelector('#raise').addEventListener('click', () => this.miniGrab(S, nx, short, avail, eca, finish));
+      act.querySelector('#raise').addEventListener('click', () => this.miniGrab(S, nx, short, avail, need, finish));
       this.focusLater(act.querySelector('#raise'));
       if (AUTO) setTimeout(() => act.querySelector('#raise').click(), 400 / SPEED);
     },
@@ -4231,8 +4475,8 @@ p.sm { margin: 0; }
       const end = () => {
         if (over) return; over = true;
         this.overlayTick = null; F.close();
-        nx.fal = E.round1(nx.fal + raised);
-        if (raised >= short) finish('Raised ' + fmtM(raised) + '. FAL for ' + yoaName(y + 1) + ': ' + fmtM(nx.fal) + '.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true);
+        nx.alignedFal = E.round1(nx.alignedFal + raised);
+        if (raised >= short) finish('Raised ' + fmtM(raised) + '. Your FAL for ' + yoaName(y + 1) + ': ' + fmtM(nx.alignedFal) + '.', 'In line<small>YoA ' + yoaName(y + 1) + '</small>', true);
         else {
           nx.final = Math.max(10, Math.round(nx.capacity * Math.min(1, (avail + raised) / eca)));
           finish('Raised ' + fmtM(raised) + ' of ' + fmtM(short) + '. Next year’s stamp shrinks to £' + nx.final + 'm.', 'Short<small>£' + nx.final + 'm stamp</small>', false);
@@ -4249,9 +4493,12 @@ p.sm { margin: 0; }
       const Y = this.Y, nx = G.next || {};
       const split = nx.split || Object.assign({}, Y.split);
       const plan = nx.capacity || Y.plan;
+      const members = (nx.members || Y.members || []).map((x) => Object.assign({}, x));
+      const eca = nx.eca || E.capitalFor(split, G.loading, G.qs, plan).eca;
+      const alignedFal = nx.alignedFal != null ? nx.alignedFal : Y.alignedFal != null ? Y.alignedFal : Y.fal;
       G.years[this.y + 1] = {
-        split, plan, capacity: nx.final || plan, eca: nx.eca || E.capitalFor(split, G.loading, G.qs, plan).eca,
-        fal: nx.fal != null ? nx.fal : Y.fal, capital: nx.capital || Y.capital.map((c) => Object.assign({}, c)), outwards: [], outwardsCost: 0
+        split, plan, capacity: nx.final || plan, eca, alignedFal, fal: alignedFal + members.reduce((s2, x) => s2 + x.share, 0) * eca,
+        capital: nx.capital || Y.capital.map((c) => Object.assign({}, c)), members, outwards: [], outwardsCost: 0
       };
       G.next = null;
     },
@@ -4302,11 +4549,20 @@ p.sm { margin: 0; }
         : thisCor < 0.9 ? G.name + ' posts a ' + Math.round(thisCor * 100) + '% year'
         : thisCor > 1.05 ? 'Tough year at Box ' + G.no
         : 'Quiet year in the Room for ' + G.name;
-      const nextLine = y < 2 && G.years[y] ? (() => { const nx = G.next || {}; return '<p class="sm">YoA ' + yoaName(y + 1) + ': <b class="num">£' + (nx.final || nx.capacity || this.Y.plan) + 'm</b> stamp · FAL <b class="num">' + fmtM(nx.fal != null ? nx.fal : this.Y.fal) + '</b>' + (nx.verdict ? ' · PMD: ' + esc(nx.verdict.stamp) : '') + '.</p>'; })() : '';
+      const nextLine = y < 2 && G.years[y] ? (() => { const nx = G.next || {}; const aN = 1 - (nx.members || this.Y.members || []).reduce((s2, x) => s2 + x.share, 0); return '<p class="sm">YoA ' + yoaName(y + 1) + ': <b class="num">£' + (nx.final || nx.capacity || this.Y.plan) + 'm</b> stamp · your FAL <b class="num">' + fmtM(nx.alignedFal != null ? nx.alignedFal : this.Y.alignedFal) + '</b> · your line <b class="num">' + Math.round(aN * 100) + '%</b>' + (nx.verdict ? ' · PMD: ' + esc(nx.verdict.stamp) : '') + '.</p>'; })() : '';
+      // the agency's take on this year so far: its own line, plus fees and commission from members
+      const Yn = this.Y, memN = Yn.members || [], thirdN = memN.reduce((s2, x) => s2 + x.share, 0);
+      const uwEst = E.memberReturn(G.entries, G.market, y, G.au, Yn, G.qs).uw;
+      const feesN = memN.reduce((s2, x) => s2 + x.fee * x.share, 0) * Yn.capacity;
+      const pcN = thirdN > 0 ? memN.reduce((s2, x) => s2 + x.pc * x.share, 0) / thirdN * Math.max(0, thirdN * uwEst - feesN) : 0;
+      const takeN = (1 - thirdN) * uwEst + feesN + pcN - Yn.capital.reduce((s2, c) => s2 + c.amt * c.rate, 0);
+      const mnews = (G.memberNews[y] || []).map((n) => esc(n.label) + ({ leaves: ' leaves the stamp', cuts: ' halves its line to ' + Math.round(n.to * 100) + '%', offers: n.accepted ? ' grows to ' + Math.round(n.to * 100) + '%' : ' offered more; you declined' })[n.action] + '.');
+      const takeLine = '<p class="sm">Your take on YoA ' + yoaName(y) + ' so far: <b class="num" style="color:' + (takeN >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + fmtM(takeN, true) + '</b>' + (thirdN > 0 ? ' (your ' + Math.round((1 - thirdN) * 100) + '% line, plus ' + fmtM(feesN + pcN) + ' of fees and commission) of a projected ' + fmtM(uwEst, true) + ' syndicate result.' : ' of a projected ' + fmtM(uwEst, true) + ' result.') + '</p>';
       const S = this.sheet('<div class="annual"><div class="ledger mini"><div class="mast">The Lime Street Ledger</div><div class="dateline"><span>31 December ' + yoaName(y) + '</span><span>Year-end edition</span></div><h2>' + esc(hl) + '</h2></div>' +
         '<div class="an-grid"><div><span class="eyebrow">Your open years</span><table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>Proj. COR</th><th>Age</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>' +
-        (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
+        takeLine + (devLines.length ? '<ul class="devlist">' + devLines.slice(0, 3).map((d) => '<li>YoA ' + yoaName(d.k) + ' ' + esc(E.CLASSES[d.c].name) + ' reserves <b class="' + (d.amt > 0 ? 'bad' : 'good') + '">' + (d.pc > 0 ? '+' : '−') + Math.abs(d.pc * 100).toFixed(1) + '%</b></li>').join('') + '</ul>' : '') + nextLine + '</div>' +
         '<div><span class="eyebrow">The Derby after ' + (12 * (y + 1)) + ' months</span><ol class="standings">' + lanes.map(([n, v]) => '<li class="' + (n === 'You' ? 'me' : '') + '"><span>' + esc(n) + '</span><b class="num">' + fmtM(v, true) + '</b></li>').join('') + '</ol>' +
+        (memN.length || mnews.length ? '<span class="eyebrow">Member news</span><ul class="devlist">' + (mnews.length ? mnews.map((n) => '<li>' + n + '</li>').join('') : '<li>All your members are staying on.</li>') + '</ul>' : '') +
         '<span class="eyebrow">Rival news</span><ul class="devlist">' + news.map((n) => '<li>' + esc(n) + '</li>').join('') + '</ul></div></div>' +
         '<div class="an-foot"><button class="btn primary" id="aGo">' + (y < 2 ? 'On to ' + yoaName(y + 1) + ' →' : 'To the close →') + '</button></div></div>', 'annualsheet');
       const b = S.body.querySelector('#aGo');
@@ -4381,7 +4637,7 @@ p.sm { margin: 0; }
       const res = this.res;
       const dev = res.per.reduce((s, P) => s + P.res, 0);
       const line = this.root.querySelector('#resLine');
-      line.textContent = 'Three years: ' + fmtM(res.value, true) + ' of value' + (Math.abs(dev) > 0.05 ? (dev > 0 ? ' after ' + fmtM(dev) + ' of reserve strengthening' : ', helped by ' + fmtM(-dev) + ' of reserve releases') : '') + '.';
+      line.textContent = 'Three years: ' + fmtM(res.value, true) + ' to your agency' + (res.alignedAvg < 0.999 ? ', from a syndicate result of ' + fmtM(res.uwAll, true) : '') + (Math.abs(dev) > 0.05 ? (dev > 0 ? ', after ' + fmtM(dev) + ' of reserve strengthening' : ', helped by ' + fmtM(-dev) + ' of reserve releases') : '') + '.';
       line.style.color = res.value >= 0 ? 'var(--good)' : '#ffb3a6';
       if (res.value > 0) { const [x, y] = centre(line); FX.burst(x, y, 'coins', 24); Sound.kaching(); }
       const b = this.root.querySelector('#toResults'); b.hidden = false; b.focus({ preventScroll: true });
@@ -4411,7 +4667,7 @@ p.sm { margin: 0; }
   }
   function sumPer(res) {
     const t = {};
-    for (const k of ['gwp', 'comm', 'attr', 'cat', 'res', 'expenses', 'uwGross', 'qsTake', 'capCost']) t[k] = res.per.reduce((s, P) => s + (P.skipped ? 0 : P[k] || 0), 0);
+    for (const k of ['gwp', 'comm', 'attr', 'cat', 'res', 'expenses', 'uwGross', 'qsTake', 'uw', 'alignedUW', 'fees', 'pc', 'capCost']) t[k] = res.per.reduce((s, P) => s + (P.skipped ? 0 : P[k] || 0), 0);
     return t;
   }
   function waterfallSVG(res) {
@@ -4426,7 +4682,11 @@ p.sm { margin: 0; }
       ['Underwriting result', t.uwGross, 'total']
     ];
     if (G.qs) rows.push(['Outward QS share', -t.qsTake]);
-    rows.push(['Cost of capital', -t.capCost], ['Value created', res.value, 'total'], ['On-plan bonus', res.onPlanYears * 0.5], ['PMD letters', -res.pmd], ['Score (£m)', res.score / 1000, 'total']);
+    const members = t.uw - t.alignedUW;
+    if (Math.abs(members) > 0.05 || t.fees > 0.05) rows.push(['Members’ share', -members], ['Your aligned share', t.alignedUW, 'total']);
+    rows.push(['Cost of your capital', -t.capCost]);
+    if (t.fees > 0.05 || t.pc > 0.05) rows.push(['Managing agency fees', t.fees], ['Profit commission', t.pc]);
+    rows.push(['Value to your agency', res.value, 'total'], ['On-plan bonus', res.onPlanYears * 0.5], ['PMD letters', -res.pmd], ['Score (£m)', res.score / 1000, 'total']);
     let cum = 0;
     const segs = rows.map(([label, v, kind]) => {
       let a, b;
@@ -4468,15 +4728,15 @@ p.sm { margin: 0; }
     return [G.name + ' "disappointed" with first three years', 'Sources say the BOC is "not surprised".'];
   }
   function yoaTableHTML(res) {
-    return '<table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>COR</th><th>Value</th><th></th></tr></thead><tbody>' + res.per.map((P, k) =>
-      '<tr><td>YoA ' + yoaName(k) + '</td><td class="num">' + (P.skipped ? '–' : fmtM(P.gwp)) + '</td><td class="num">' + (P.skipped || !P.gwp ? '–' : Math.round(P.cor * 100) + '%') + '</td>' +
+    return '<table class="yoatable"><thead><tr><th>Year</th><th>Written</th><th>COR</th><th>Your line</th><th>Your take</th><th></th></tr></thead><tbody>' + res.per.map((P, k) =>
+      '<tr><td>YoA ' + yoaName(k) + '</td><td class="num">' + (P.skipped ? '–' : fmtM(P.gwp)) + '</td><td class="num">' + (P.skipped || !P.gwp ? '–' : Math.round(P.cor * 100) + '%') + '</td><td class="num">' + (P.skipped ? '–' : Math.round(P.aligned * 100) + '%') + '</td>' +
       '<td class="num" style="color:' + (P.skipped ? 'inherit' : P.value >= 0 ? 'var(--good)' : '#ffb3a6') + '">' + (P.skipped ? '–' : fmtM(P.value, true)) + '</td>' +
       '<td class="muted">' + (P.skipped ? 'Never written' : res.runoff !== null ? 'Run-off' : k === 0 ? 'Closed (RITC)' : 'Projected') + (P.onPlan ? ' · on plan' : '') + '</td></tr>').join('') + '</tbody></table>';
   }
 
   SCENES.results = {
     enter() {
-      setStep('Results · ' + SEASON.replace('3y-', ''));
+      setStep('Results · ' + SEASON_LABEL);
       const res = E.scoreGame(G.entries, gameOpts());
       G.result = res;
       const rivalRuns = {};
@@ -4500,6 +4760,7 @@ p.sm { margin: 0; }
       if (G.shreddedRed >= 3) badges.push('shredder');
       if (G.midnightScratch) badges.push('midnight');
       if (res.runoff === null && res.per.every((P) => P.value > 0)) badges.push('threepeat');
+      if (G.darling) badges.push('darling');
       if (own.length < 3) badges.push('declined');
       if (res.runoff !== null) badges.push('runoff');
       G.badges = badges;
@@ -4510,6 +4771,7 @@ p.sm { margin: 0; }
       const cats = G.market.events.filter((e) => e.done && !e.second).length;
       const para = 'Syndicate ' + G.no + ', a ' + mix.name + ' start-up, wrote ' + fmtM(res.gwp) + ' of premium over ' + (res.runoff !== null ? 'its short life' : 'three years of account') + ', backed by ' + fmtM(G.years[0].fal) + ' of Funds at Lloyd’s at launch.' +
         (cats ? ' It lived through ' + cats + (cats > 1 ? ' catastrophes.' : ' catastrophe.') : '') +
+        (res.alignedAvg < 0.999 ? ' Members took ' + Math.round((1 - res.alignedAvg) * 100) + '% of the stamp on average; the syndicate made ' + fmtM(res.uwAll, true) + ', of which the agency kept ' + fmtM(res.value, true) + ' after fees and profit commission.' : ' The agency kept the whole stamp to itself.') +
         (res.cashCalls.length ? ' It needed ' + (res.cashCalls.length > 1 ? res.cashCalls.length + ' cash calls' : 'a cash call') + ' along the way.' : '') + (G.pmd ? ' Performance Management wrote ' + G.pmd + (G.pmd > 1 ? ' letters.' : ' letter.') : '');
       const root = el('<section class="scene scroll"><div class="results-grid">' +
         '<article class="ledger' + (REDUCED ? '' : ' spin') + '" id="ledger"><div class="mast">The Lime Street Ledger</div>' +
@@ -4521,7 +4783,7 @@ p.sm { margin: 0; }
         '<div class="panel"><span class="eyebrow">Year by year</span>' + yoaTableHTML(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">Badges</span><div class="badges">' + (badges.length ? badges.map((b, i) => '<span class="badge' + (BADGES[b][2] ? ' shame' : '') + '" style="--dl:' + (0.6 + i * 0.15) + 's" title="' + esc(BADGES[b][1]) + '">' + esc(BADGES[b][0]) + '</span>').join('') : '<span class="muted">No badges this time. The Room is a hard school.</span>') + '</div></div>' +
-        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON.replace('3y-', '') + '</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
+        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON_LABEL + '</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
         '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy result</button></div>' +
         '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '</div></div></section>');
@@ -4530,7 +4792,7 @@ p.sm { margin: 0; }
       root.querySelector('#copy').addEventListener('click', () => this.copy());
       this.entry = {
         season: SEASON, score: res.score, syndicateNo: G.no, syndicateName: String(G.name).slice(0, 28), mixType: G.mixId, split: G.split, au: G.au,
-        badges: badges.slice(0, 8), cor: Math.round(res.cor * 1000) / 1000, roc: Math.round(res.roc * 1000) / 1000, per: res.per.map((P) => E.round1(P.value)), runoff: res.runoff,
+        badges: badges.slice(0, 8), cor: Math.round(res.cor * 1000) / 1000, roc: Math.round(res.roc * 1000) / 1000, per: res.per.map((P) => E.round1(P.value)), runoff: res.runoff, aligned: Math.round(res.alignedAvg * 100) / 100,
         curve: res.curve.map((v) => E.round1(v)), at: new Date().toISOString()
       };
       this.lbListener = () => this.renderLB();
@@ -4576,7 +4838,7 @@ p.sm { margin: 0; }
     },
     copy() {
       const r = this.res;
-      const text = 'Lime Street Launch · ' + SEASON.replace('3y-', '') + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ') · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
+      const text = 'Lime Street Launch · ' + SEASON_LABEL + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', own line ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
       const box = this.root.querySelector('#copyBox');
       const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'Your result is highlighted below.', 'var(--crane)'); };
       try {

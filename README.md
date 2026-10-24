@@ -18,7 +18,7 @@ After you press Start, **The road to the Room** gives an overview of every step 
 |---|---|---|
 | 1. Enquiry & Triage | Pick one of 10 business mix types, drag chips to tweak the split (up to 4 classes), and choose your Active Underwriter | Triage templates and the SBF class split |
 | 2. The BOC | Slide answers across the table to a three-person panel, then press and hold to stamp | Business Opportunities Committee, then Council in-principle approval |
-| 3. Making it Happen | Flick capital into your vault until you cover your ECA, then scribble signatures on the red tape | Capital set on the Lloyd's Standard Model (ECA = SCR × 1.35); FAL from corporate members, Names via members' agents and London Bridge 2; PRA/SM&CR, ATLAS coverholder approval, SBF |
+| 3. Making it Happen | **Fill the Stamp**: flick members' lines (Names via members' agents, a corporate investor, an ILS fund, a family office) and your agency's own capital into your £100m stamp, keeping at least 20% yourself. Then scribble signatures on the red tape | Syndicate capacity split into members' lines; each member's FAL covers its share of the ECA (SCR × 1.35); managing agent's fee and profit commission on third-party lines; PRA/SM&CR, ATLAS coverholder approval, SBF |
 
 **Three years of account (about 1½ minutes each)**
 
@@ -66,20 +66,26 @@ Each year draws one or two events from 23 scenarios, about half natural and half
 
 ## Scoring
 
-Your score is the value your syndicate creates for its capital providers over three years of account, at £1k = 1 point. Everyone applies for the same £100m stamp in year 1.
+Your score is the value **your managing agency** creates over three years of account, at £1k = 1 point. Everyone applies for the same £100m stamp in year 1.
 
 ```
 For each year of account:
   Gross written premium − commission − attritional losses − cat losses (after outwards)
-  − reserve development − expenses and outwards spend  = underwriting result
-  − cost of capital (and any cash call)                = value created
+  − reserve development − expenses and outwards spend  = syndicate underwriting result
+  − members' share of that result                      = your aligned share
+  − cost of your own capital (and your share of any cash call)
+  + managing agency fees on members' lines
+  + profit commission on members' profits (after their losses are made good)
+                                                        = value to your agency
 Add the three years, then
   + 500 for each year kept on plan − 1,000 per PMD letter = score
 ```
 
-Profits stay in the syndicate until a year closes, so they count towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash: pay up, or go into run-off and end the game.
+**Your stamp is split into lines.** Third-party members bring their own FAL, keep their share of the profit or loss, and pay you a fee and profit commission. Lloyd's wants at least 20% of the stamp to be your own. A big line of your own means more upside and more risk; a small one means steadier fee income. Every November, at coming into line, members react to the year: after a bad one some walk away and you must fund their line, and after a good one some ask for a bigger line, which you can accept or decline.
 
-**How likely are you to succeed?** In simulation over 104 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, follows the rate cycle) finishes with a positive score about **9 times in 10**. A casual player does so about 8 times in 10, with a lower score: a median of about 26,000 against 38,000. Random swiping succeeds about 1 time in 4.
+Profits stay in the syndicate until a year closes, so your share counts towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash, and you pay your share of it. Pay up, or go into run-off and end the game.
+
+**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, follows the rate cycle) finishes with a positive score about **9 times in 10** whatever their own line. A casual player does so about 8 times in 10, with a lower score. Random swiping succeeds about 1 time in 4. Keeping all of the stamp yourself gives the highest average (about 38,000 for a careful player); keeping 20% gives about 20,000, but a gentler worst case.
 
 ## Fair competition
 
