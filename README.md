@@ -117,7 +117,7 @@ No address is built into the page: the email opens with the To field empty. To h
 
 ## Fair competition
 
-The three-year market (each year's modifier, the catastrophes, the rate cycle, the in-tray events and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. Opened as a plain file, it keeps a leaderboard on your device and offers a "Copy result" line to paste into chat.
+The three-year market (each year's modifier, the catastrophes, the rate cycle, the in-tray events and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. On the GitHub Pages site (or as a plain file), the leaderboard lives on your device, and **Share result** (on phones, the share sheet; on desktops, **Copy result**) sends your score line with a link to the game, so colleagues can play the same week's market and reply with theirs.
 
 ## Under the hood
 

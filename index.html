@@ -5426,6 +5426,9 @@ p.sm { margin: 0; }
     if (res.pmd >= 3) return ['PMD schedules "friendly chat" with ' + G.no, 'Performance Management would like to discuss the plan. And the other plan. And the RDS.'];
     return [G.name + ' "disappointed" with first three years', 'Sources say the BOC is "not surprised".'];
   }
+  // where colleagues can play the same week: the page's own address on the web (not a local file or the artifact frame)
+  const gameLink = () => (/^https?:$/.test(location.protocol) && !window.claude ? location.origin + location.pathname : '');
+  const canShare = () => typeof navigator.share === 'function';
   // the feedback email: the player's words, then the game in one line so they don't have to describe it
   function feedbackBody(res, grade, text) {
     const mins = G.startedAt ? Math.max(1, Math.round((Date.now() - G.startedAt) / 60000)) : null;
@@ -5498,7 +5501,7 @@ p.sm { margin: 0; }
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">Badges</span><div class="badges">' + (badges.length ? badges.map((b, i) => '<span class="badge' + (BADGES[b][2] ? ' shame' : '') + '" style="--dl:' + (0.6 + i * 0.15) + 's" title="' + esc(BADGES[b][1]) + '">' + esc(BADGES[b][0]) + '</span>').join('') : '<span class="muted">No badges this time. The Room is a hard school.</span>') + '</div></div>' +
         '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + SEASON_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
-        '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy result</button><button class="btn" id="fbJump">Feedback</button></div>' +
+        '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">' + (canShare() ? 'Share result' : 'Copy result') + '</button><button class="btn" id="fbJump">Feedback</button></div>' +
         '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '</div></div></section>');
       this.root = root; this.res = res; this.rivalRuns = rivalRuns; this.grade = grade;
@@ -5528,7 +5531,7 @@ p.sm { margin: 0; }
         const note = this.root && this.root.querySelector('#lbNote');
         if (!note) return;
         note.textContent = r.shared ? (r.best === false ? 'Your best score this week is already on the shared board.' : 'Your score is on the shared board for everyone who can open this game.')
-          : LB.live ? 'Saved on this device. To post to the shared board, ask the owner for Contributor access.' : 'This board lives on this device. Copy your result to challenge colleagues.';
+          : LB.live ? 'Saved on this device. To post to the shared board, ask the owner for Contributor access.' : 'This board lives on this device. Share your result: colleagues who play this week face the same market.';
         this.renderLB();
       });
     },
@@ -5586,7 +5589,12 @@ p.sm { margin: 0; }
     copy() {
       const r = this.res;
       const text = 'Lime Street Launch · ' + SEASON_LABEL + ' · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', your share ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
-      this.copyText(text, 'Copied', 'Paste it into Teams and wait for the replies.');
+      const link = gameLink();
+      const full = text + (link ? ' Same market all week: ' + link : '');
+      const copyIt = () => this.copyText(full, 'Copied', 'Paste it into Teams and wait for the replies.');
+      // phones (and some desktops) get the share sheet; a cancelled share does nothing, a failed one copies instead
+      if (canShare()) navigator.share(Object.assign({ title: 'Lime Street Launch', text }, link ? { url: link } : {})).catch((e) => { if (!e || e.name !== 'AbortError') copyIt(); });
+      else copyIt();
     }
   };
 
