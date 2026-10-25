@@ -566,12 +566,16 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .fbchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .fbchip { border: 1px solid var(--girder); background: var(--night-2); color: var(--ink-2); border-radius: 999px; padding: 7px 11px; font: 600 0.74rem/1 var(--f-ui); cursor: pointer; }
 .fbchip:hover { border-color: var(--brass); color: var(--ink); }
-#fbText { width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px; background: var(--slip); color: var(--slip-ink); border: 0; border-radius: 8px; padding: 10px; font: 400 0.92rem/1.4 var(--f-slip); }
-#fbText:focus { outline: 3px solid var(--brass); outline-offset: 1px; }
+.fbtext { width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px; background: var(--slip); color: var(--slip-ink); border: 0; border-radius: 8px; padding: 10px; font: 400 0.92rem/1.4 var(--f-slip); }
+.fbtext:focus { outline: 3px solid var(--brass); outline-offset: 1px; }
 .fbrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 a.btn { text-decoration: none; }
 .fbnote { font-size: 0.74rem; color: var(--ink-3); flex: 1 1 220px; }
 .fbpanel.sent .fbnote { color: var(--good); font-weight: 700; }
+.fbsheet { display: grid; gap: 10px; }
+.fbsheet .fbpanel { border: 0; padding: 0; background: none; }
+.fbsheet .copybox { width: 100%; box-sizing: border-box; }
+.fbgo { display: flex; justify-content: flex-end; }
 .statsub { display: block; font-size: 0.64rem; color: var(--ink-3); margin-top: 1px; }
 .bocrule { margin: 4px 0 0; font-size: 0.72rem; color: var(--ink-3); text-align: center; }
 .alertpanel p { margin: 4px 0 8px; }
@@ -5433,6 +5437,33 @@ p.sm { margin: 0; }
   // where colleagues can play the same week: the page's own address on the web (not a local file or the artifact frame)
   const gameLink = () => (/^https?:$/.test(location.protocol) && !window.claude ? location.origin + location.pathname : '');
   const canShare = () => typeof navigator.share === 'function';
+  // the shared result: the score up top, the game's own headline, a highlight or two, and a link to take your own shot
+  function shareText(res, grade) {
+    const pts = fmtPts(res.score) + ' points', nemRun = G.rivalRuns[G.nemesis];
+    const cats = G.market.events.filter((e) => e.done && !e.second).length;
+    const lines = ['🔔 LIME STREET LAUNCH 🔔'];
+    if (res.runoff !== null) lines.push('I ran ' + G.name + ' at Lloyd’s until it went into run-off in ' + yoaName(Math.floor(res.runoff / 12)) + ' 💥', 'Final score: ' + pts);
+    else lines.push('I ran ' + G.name + ' at Lloyd’s for three years', 'and scored ' + pts + ' ' + (res.score >= E.GRADES[0][0] ? '🏆🔥' : res.score >= 0 ? '🏆' : '😬'));
+    lines.push('', '📰 “' + headline(res)[0] + '”');
+    const hi = [];
+    if (cats && res.runoff === null) hi.push('🌪️ Survived ' + cats + (cats > 1 ? ' catastrophes' : ' catastrophe'));
+    if ((G.badges || []).includes('slayer')) hi.push('⚔️ Beat every rival syndicate');
+    else if (nemRun && res.score > nemRun.score) hi.push('⚔️ Beat ' + E.RIVALS[G.nemesis].name);
+    if (res.runoff === null) hi.push('Rated: ' + grade);
+    if (hi.length) lines.push(hi.join(' · '));
+    const link = gameLink();
+    lines.push('', 'Think you can do better? Launch your own syndicate' + (link ? ' 👉' : '.'));
+    if (link) lines.push(link);
+    return lines.join('\n');
+  }
+  // the feedback block: one prompt, starter chips, a text box, Email it and Copy (p prefixes the ids so two can coexist)
+  function fbBlockHTML(p, label) {
+    return '<label class="fbq" for="' + p + 'Text">' + esc(label) + '</label>' +
+      '<div class="fbchips">' + FB_STARTERS.map((s, i) => '<button class="fbchip" data-s="' + i + '">' + esc(s.trim()) + '…</button>').join('') + '</div>' +
+      '<textarea id="' + p + 'Text" class="fbtext" rows="3" maxlength="600" placeholder="e.g. I’d like more time at the 1.1 rush, and a hint about what the BOC is looking for."></textarea>' +
+      '<div class="fbrow"><a class="btn primary" id="' + p + 'Mail" href="#">Email it</a><button class="btn" id="' + p + 'Copy">Copy</button><span class="fbnote" id="' + p + 'Note">' +
+      (FEEDBACK_TO ? 'Goes to ' + esc(FEEDBACK_TO) + ', with your score and setup attached.' : 'Your email opens ready to send, with your score and setup attached. Add the address of whoever shared the game.') + '</span></div>';
+  }
   // the feedback email: the player's words, then the game in one line so they don't have to describe it
   function feedbackBody(res, grade, text) {
     const mins = G.startedAt ? Math.max(1, Math.round((Date.now() - G.startedAt) / 60000)) : null;
@@ -5496,22 +5527,23 @@ p.sm { margin: 0; }
         '<div class="cols"><div class="photo">' + face(G.au, res.score >= 0 ? 'grin' : 'worried') + '</div><div class="body"><p>' + esc(para) + '</p><p>“' + esc(quote.replace(/\.$/, ',')) + '” said ' + esc(E.AUS[G.au].name) + ', Active Underwriter.</p></div></div>' +
         '<div class="figs"><div><b class="num">' + (res.gwp ? Math.round(res.cor * 100) + '%' : '–') + '</b><span>Combined ratio</span></div><div><b class="num">' + pct(res.roc, 1) + '</b><span>Syndicate RoC</span></div><div><b class="num">' + fmtM(res.value, true) + '</b><span>Your value</span></div><div><b class="num">' + fmtPts(res.score) + '</b><span>Score</span></div></div></article>' +
         '<div class="scorebox"><div class="bigscore"><span class="n num" id="bigN">0</span><small class="pts">points · £1k = 1 point</small><span class="g">' + esc(grade) + '</span></div>' +
-        '<div class="panel fbpanel" id="fbPanel"><span class="eyebrow">Make it better</span><label class="fbq" for="fbText">One thing that would make this game better?</label>' +
-        '<div class="fbchips">' + FB_STARTERS.map((s, i) => '<button class="fbchip" data-s="' + i + '">' + esc(s.trim()) + '…</button>').join('') + '</div>' +
-        '<textarea id="fbText" rows="3" maxlength="600" placeholder="e.g. I’d like more time at the 1.1 rush, and a hint about what the BOC is looking for."></textarea>' +
-        '<div class="fbrow"><a class="btn primary" id="fbMail" href="#">Email it</a><button class="btn" id="fbCopy">Copy</button><span class="fbnote" id="fbNote">' +
-        (FEEDBACK_TO ? 'Goes to ' + esc(FEEDBACK_TO) + ', with your score and setup attached.' : 'Your email opens ready to send, with your score and setup attached. Add the address of whoever shared the game.') + '</span></div></div>' +
+        '<div class="panel fbpanel" id="fbPanel"><span class="eyebrow">Make it better</span>' + fbBlockHTML('fb', 'One thing that would make this game better?') + '</div>' +
+        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + WEEK_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
         '<div class="panel"><span class="eyebrow">Year by year</span>' + yoaTableHTML(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">Badges</span><div class="badges">' + (badges.length ? badges.map((b, i) => '<span class="badge' + (BADGES[b][2] ? ' shame' : '') + '" style="--dl:' + (0.6 + i * 0.15) + 's" title="' + esc(BADGES[b][1]) + '">' + esc(BADGES[b][0]) + '</span>').join('') : '<span class="muted">No badges this time. The Room is a hard school.</span>') + '</div></div>' +
-        '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + WEEK_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
         '<div class="resactions"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">' + (canShare() ? 'Share result' : 'Copy result') + '</button><button class="btn" id="fbJump">Feedback</button></div>' +
         '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '</div></div></section>');
       this.root = root; this.res = res; this.rivalRuns = rivalRuns; this.grade = grade;
-      root.querySelector('#again').addEventListener('click', () => { newGame(); interstitial('enquiry', () => go('build')); });
+      // Play again asks for one idea first, unless feedback has already gone from this screen
+      const startAgain = () => { newGame(); interstitial('enquiry', () => go('build')); };
+      this.fbSent = false;
+      root.querySelector('#again').addEventListener('click', () => (this.fbSent ? startAgain() : this.askFeedback(startAgain)));
       root.querySelector('#copy').addEventListener('click', () => this.copy());
-      this.wireFeedback(root, res, grade);
+      const panel = root.querySelector('#fbPanel');
+      this.wireFeedback(panel, 'fb');
+      root.querySelector('#fbJump').addEventListener('click', () => { panel.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' }); root.querySelector('#fbText').focus({ preventScroll: true }); });
       this.entry = {
         season: WEEK, seed: G.season, score: res.score, syndicateNo: G.no, syndicateName: String(G.name).slice(0, 28), mixType: G.mixId, split: G.split, au: G.au,
         badges: badges.slice(0, 8), cor: Math.round(res.cor * 1000) / 1000, roc: Math.round(res.roc * 1000) / 1000, per: res.per.map((P) => E.round1(P.value)), runoff: res.runoff, aligned: Math.round(res.alignedAvg * 100) / 100,
@@ -5559,11 +5591,16 @@ p.sm { margin: 0; }
       }));
     },
     // the feedback panel: starter chips, a draft kept on this device, and a live mailto link
-    wireFeedback(root, res, grade) {
-      const ta = root.querySelector('#fbText'), mail = root.querySelector('#fbMail'), panel = root.querySelector('#fbPanel'), note = root.querySelector('#fbNote');
-      const body = () => feedbackBody(res, grade, ta.value);
+    // box holds one feedback block (prefix p); both blocks share the draft kept on this device
+    wireFeedback(box, p, onSent) {
+      const ta = box.querySelector('#' + p + 'Text'), mail = box.querySelector('#' + p + 'Mail'), note = box.querySelector('#' + p + 'Note');
+      const body = () => feedbackBody(this.res, this.grade, ta.value);
       const refresh = () => { mail.href = feedbackMail(body()); store.set('lsl-fb-draft', ta.value); };
-      const thanks = () => { panel.classList.add('sent'); note.textContent = 'Thanks! That goes straight into the next version.'; store.set('lsl-fb-draft', ''); };
+      const thanks = () => {
+        box.classList.add('sent'); note.textContent = 'Thanks! That goes straight into the next version.'; store.set('lsl-fb-draft', '');
+        this.fbSent = true;
+        if (onSent) onSent();
+      };
       const needText = (e) => {
         if (ta.value.trim().length >= 3) return false;
         e.preventDefault(); ta.focus();
@@ -5573,31 +5610,49 @@ p.sm { margin: 0; }
       ta.value = store.get('lsl-fb-draft', '') || '';
       refresh();
       ta.addEventListener('input', refresh);
-      root.querySelectorAll('.fbchip').forEach((c) => c.addEventListener('click', () => {
+      box.querySelectorAll('.fbchip').forEach((c) => c.addEventListener('click', () => {
         const s = FB_STARTERS[+c.dataset.s];
         ta.value = (ta.value.trim() ? ta.value.replace(/\s+$/, '') + '\n' : '') + s;
         ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
         refresh();
       }));
       mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); setTimeout(thanks, 300); });
-      root.querySelector('#fbCopy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.'); thanks(); });
-      root.querySelector('#fbJump').addEventListener('click', () => { panel.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' }); ta.focus({ preventScroll: true }); });
+      box.querySelector('#' + p + 'Copy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.', box.querySelector('.copybox')); thanks(); });
     },
-    copyText(text, title, msg) {
-      const box = this.root.querySelector('#copyBox');
+    // the Play again sheet: the same feedback block, then on to the next game
+    askFeedback(next) {
+      const body = el('<div class="fbsheet"><h3>Before your next go…</h3><p class="muted sm">You’ve just run a syndicate. What one thing would make the game better?</p>' +
+        '<div class="fbpanel" id="paPanel">' + fbBlockHTML('pa', 'Your idea') + '<textarea class="copybox" readonly hidden aria-label="Your feedback"></textarea></div>' +
+        '<div class="fbgo"><button class="btn" id="paGo">Skip and play again</button></div></div>');
+      const o = overlay(body);
+      const go2 = body.querySelector('#paGo');
+      // keep the results panel in step with whatever was typed or sent here
+      const sync = () => {
+        const t = this.root && this.root.querySelector('#fbText'); if (!t) return;
+        t.value = store.get('lsl-fb-draft', '') || ''; t.dispatchEvent(new Event('input'));
+        if (this.fbSent) { const rp = this.root.querySelector('#fbPanel'); rp.classList.add('sent'); rp.querySelector('#fbNote').textContent = 'Thanks! That goes straight into the next version.'; }
+      };
+      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+      const close = () => { o.remove(); removeEventListener('keydown', onKey); sync(); };
+      this.wireFeedback(body.querySelector('#paPanel'), 'pa', () => { go2.textContent = 'Play again →'; go2.classList.add('primary'); });
+      go2.addEventListener('click', () => { close(); next(); });
+      addEventListener('keydown', onKey);
+      o.addEventListener('click', (e) => { if (e.target === o) close(); });
+      setTimeout(() => { const t = body.querySelector('#paText'); if (t && t.isConnected) t.focus({ preventScroll: true }); }, 60);
+    },
+    copyText(text, title, msg, boxEl) {
+      const box = boxEl || this.root.querySelector('#copyBox');
       const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'The text is highlighted below.', 'var(--crane)'); };
       try {
         navigator.clipboard.writeText(text).then(() => toast(title, msg, 'var(--good)'), fallback);
       } catch (e) { fallback(); }
     },
     copy() {
-      const r = this.res;
-      const text = 'Lime Street Launch · Syndicate ' + G.no + ' ' + G.name + ' (' + E.MIX_BY_ID[G.mixId].name + ', ' + E.AUS[G.au].name + ', your share ' + Math.round(r.alignedAvg * 100) + '%) · Score ' + fmtPts(r.score) + ' · COR ' + (r.gwp ? Math.round(r.cor * 100) + '%' : '–') + ' · RoC ' + pct(r.roc, 1) + ' a year · ' + r.per.map((P, k) => yoaName(k) + ' ' + (P.skipped ? '–' : fmtM(P.value, true))).join(', ') + ' · ' + this.grade + '. Beat that.';
-      const link = gameLink();
-      const full = text + (link ? ' Your turn: ' + link : '');
-      const copyIt = () => this.copyText(full, 'Copied', 'Paste it into Teams and wait for the replies.');
-      // phones (and some desktops) get the share sheet; a cancelled share does nothing, a failed one copies instead
-      if (canShare()) navigator.share(Object.assign({ title: 'Lime Street Launch', text }, link ? { url: link } : {})).catch((e) => { if (!e || e.name !== 'AbortError') copyIt(); });
+      const text = shareText(this.res, this.grade);
+      const copyIt = () => this.copyText(text, 'Copied', 'Paste it into Teams and wait for the replies.');
+      // phones (and some desktops) get the share sheet, with the link inside the text so apps don't show it twice;
+      // a cancelled share does nothing, a failed one copies instead
+      if (canShare()) navigator.share({ title: 'Lime Street Launch', text }).catch((e) => { if (!e || e.name !== 'AbortError') copyIt(); });
       else copyIt();
     }
   };
