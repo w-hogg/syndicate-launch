@@ -2,7 +2,7 @@
 
 A seven-minute, competitive browser game about launching a new syndicate at Lloyd's.
 
-You choose a business mix, pitch to the Business Opportunities Committee, raise Funds at Lloyd's and get through the red tape. Then you run three years of account through the real syndicate calendar: the 1.1 renewal rush, catastrophes tracked as Realistic Disaster Scenarios, the business plan, coming into line and the close. Three rival syndicates are trying to ruin your day. Everyone gets the same three-year market each week, so the weekly leaderboard comes down to skill.
+You choose a business mix, pitch to the Business Opportunities Committee, raise Funds at Lloyd's and get through the red tape. Then you run three years of account through the real syndicate calendar: the 1.1 renewal rush, catastrophes tracked as Realistic Disaster Scenarios, the business plan, coming into line and the close. Three rival syndicates are trying to ruin your day. Every game draws a fresh three-year market, so no two games are the same.
 
 **Play:** open `index.html` in any modern browser. It is a single self-contained file with no build step. It works offline, apart from the Google Fonts.
 
@@ -107,7 +107,7 @@ Add the three years, then
 
 Profits stay in the syndicate until a year closes, so your share counts towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash, and you pay your share of it. Pay up, or go into run-off and end the game.
 
-**How likely are you to succeed?** In simulation over 52 seeded weeks, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle, handles the in-tray well) finishes with a positive score **about 9 times in 10** whatever their own share. A casual player does so 3 to 4 times in 5, with a lower score. Random swiping succeeds about 1 time in 5. Keeping all of the stamp yourself gives the highest average (about 34,000 for a careful player); keeping 20% gives about 19,000, but a gentler worst case.
+**How likely are you to succeed?** In simulation over 52 seeded markets, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle, handles the in-tray well) finishes with a positive score **about 9 times in 10** whatever their own share. A casual player does so 3 to 4 times in 5, with a lower score. Random swiping succeeds about 1 time in 5. Keeping all of the stamp yourself gives the highest average (about 34,000 for a careful player); keeping 20% gives about 19,000, but a gentler worst case.
 
 ## Feedback
 
@@ -115,13 +115,15 @@ The results screen asks one question: **"One thing that would make this game bet
 
 No address is built into the page: the email opens with the To field empty. To have feedback come to you, add your address to the link you share, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
 
-## Fair competition
+## Every game is different
 
-The three-year market (each year's modifier, the catastrophes, the rate cycle, the in-tray events and the hidden quality of every portfolio) is seeded from the ISO week, so colleagues who pick the same mix face the same deals. When the game is opened as a published Claude artifact, scores go to a shared weekly leaderboard, and you can race the ghost of the week's leader over 36 months. On the GitHub Pages site (or as a plain file), the leaderboard lives on your device, and **Share result** (on phones, the share sheet; on desktops, **Copy result**) sends your score line with a link to the game, so colleagues can play the same week's market and reply with theirs.
+Each game draws its own three-year market: each year's modifier, the catastrophes, the rate cycle, the in-tray events, the capital offers and the hidden quality of every portfolio. Play again, or reload, and you get a new one. The rivals play the same market as you in that game. Scores still go on a weekly leaderboard: in the published Claude artifact it's shared, and you can race the ghost of the week's leader; on the GitHub Pages site (or as a plain file) it lives on your device. **Share result** (on phones, the share sheet; on desktops, **Copy result**) sends your score line with a link to the game, so colleagues can take their own shot and reply with theirs.
+
+The feedback email names the game's market (for example `market 3c-603fn5pd`), so a reported game can be replayed exactly by adding `?season=3c-603fn5pd` to the link.
 
 ## Under the hood
 
-- The engine (`<script id="engine">`) is pure and has no DOM access: market seeding, the RDS catalogue, capital and diversification credit, deal generation, renewals, three-year scoring and the AI rivals. The class economics were tuned with a headless simulation of three-year games over 104 seeded weeks, so that skilled play beats naive play, outwards cut the downside, and every mix type wins some weeks.
+- The engine (`<script id="engine">`) is pure and has no DOM access: market seeding, the RDS catalogue, capital and diversification credit, deal generation, renewals, three-year scoring and the AI rivals. The class economics were tuned with a headless simulation of three-year games over 104 seeded markets, so that skilled play beats naive play, outwards cut the downside, and every mix type wins some of the time.
 - All graphics are drawn in code (HTML/CSS, inline SVG and a canvas effects layer) and all sound is synthesised with WebAudio. There are no image or audio files.
 
 *Unofficial. Not affiliated with or endorsed by Lloyd's. All brokers, investors, rivals and people are fictional, and the numbers are simplified for play.*
