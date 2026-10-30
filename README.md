@@ -111,7 +111,7 @@ Profits stay in the syndicate until a year closes, so your share counts towards 
 
 ## Feedback
 
-The results screen asks one question: **"One thing that would make this game better?"** Tap a starter ("I got stuck at…", "I loved…") or just type, then press **Email it**. Your email app opens with the suggestion written in and a one-line summary of the game attached (score, mix, Active Underwriter, time played, screen size), so there's nothing else to describe. **Copy** puts the same text on the clipboard for webmail, Teams or Slack. Drafts are kept on the device until sent. The leaderboard sits just below the feedback box, and pressing **Play again** first asks for one idea (with a one-tap skip), unless you've already sent feedback from that results screen.
+The results screen asks one question: **"One thing that would make this game better?"** Tap a starter ("I got stuck at…", "I loved…") or just type, then press **Email it**. Your email app opens with the suggestion written in and a one-line summary of the game attached (score, mix, Active Underwriter, time played, screen size), so there's nothing else to describe. **Copy** puts the same text on the clipboard for webmail, Teams or Slack. Drafts are kept on the device until sent. **Share result**, **Feedback** and **Play again** sit just below the feedback box, with the leaderboard under them, and pressing **Play again** first asks for one idea (with a one-tap skip), unless you've already sent feedback from that results screen.
 
 No address is built into the page: the email opens with the To field empty. To have feedback come to you, add your address to the link you share, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
 

@@ -909,8 +909,7 @@ p.sm { margin: 0; }
 .lbrow .sc { font: 800 1.05rem/1 var(--f-display); font-variant-numeric: tabular-nums; }
 .lbrow.ghostpick { border-color: var(--brass); }
 .resactions { display: flex; flex-wrap: wrap; gap: 8px; }
-.resbar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
-.resbox { grid-column: 1 / -1; }
+.resbar { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (max-width: 520px) { .resbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .resbar .btn { padding: 0 6px; font-size: 0.7rem; letter-spacing: 0.02em; white-space: nowrap; } }
 .copybox { width: 100%; min-height: 60px; background: var(--night-2); color: var(--ink); border: 1px solid var(--girder); border-radius: 8px; padding: 8px; font: 400 0.8rem/1.4 var(--f-slip); resize: none; }
 
@@ -5524,9 +5523,6 @@ p.sm { margin: 0; }
         (res.alignedAvg < 0.999 ? ' Members took ' + Math.round((1 - res.alignedAvg) * 100) + '% of the stamp on average; the syndicate made ' + fmtM(res.uwAll, true) + '; your agency kept ' + fmtM(res.value, true) + ', including ' + fmtM(res.fees + res.pc) + ' of fees and profit commission.' : ' The agency kept the whole stamp to itself.') +
         (res.cashCalls.length ? ' It needed ' + (res.cashCalls.length > 1 ? res.cashCalls.length + ' cash calls' : 'a cash call') + ' along the way.' : '') + (G.pmd ? ' Performance Management wrote ' + G.pmd + (G.pmd > 1 ? ' letters.' : ' letter.') : '');
       const root = el('<section class="scene scroll"><div class="results-grid">' +
-        // the actions lead the screen: share, feedback, then the next game
-        '<div class="resbar"><button class="btn primary" id="copy">' + (canShare() ? 'Share result' : 'Copy result') + '</button><button class="btn" id="fbJump">Feedback</button><button class="btn" id="again">Play again</button></div>' +
-        '<textarea class="copybox resbox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '<article class="ledger' + (REDUCED ? '' : ' spin') + '" id="ledger"><div class="mast">The Lime Street Ledger</div>' +
         '<div class="dateline"><span>31 December ' + yoaName(2) + ' · Late edition</span><span>Price: one Lutine Bell</span></div>' +
         '<h2>' + esc(hl) + '</h2><p class="deck">' + esc(deck) + '</p>' +
@@ -5534,6 +5530,9 @@ p.sm { margin: 0; }
         '<div class="figs"><div><b class="num">' + (res.gwp ? Math.round(res.cor * 100) + '%' : '–') + '</b><span>Combined ratio</span></div><div><b class="num">' + pct(res.roc, 1) + '</b><span>Syndicate RoC</span></div><div><b class="num">' + fmtM(res.value, true) + '</b><span>Your value</span></div><div><b class="num">' + fmtPts(res.score) + '</b><span>Score</span></div></div></article>' +
         '<div class="scorebox"><div class="bigscore"><span class="n num" id="bigN">0</span><small class="pts">points · £1k = 1 point</small><span class="g">' + esc(grade) + '</span></div>' +
         '<div class="panel fbpanel" id="fbPanel"><span class="eyebrow">Make it better</span>' + fbBlockHTML('fb', 'One thing that would make this game better?') + '</div>' +
+        // the actions sit under the feedback box: share, feedback, then the next game
+        '<div class="resbar"><button class="btn primary" id="copy">' + (canShare() ? 'Share result' : 'Copy result') + '</button><button class="btn" id="fbJump">Feedback</button><button class="btn" id="again">Play again</button></div>' +
+        '<textarea class="copybox" id="copyBox" readonly hidden aria-label="Your result"></textarea>' +
         '<div class="panel"><span class="eyebrow">This week’s leaderboard · ' + WEEK_LABEL + ' · points (£1k = 1 point)</span><div class="lb" id="lb"></div><p class="muted" id="lbNote" style="font-size:.78rem;margin:8px 0 0"></p></div>' +
         '<div class="panel"><span class="eyebrow">Year by year</span>' + yoaTableHTML(res) + '</div>' +
         '<div class="panel"><span class="eyebrow">How you scored over three years (£m)</span>' + waterfallSVG(res) + '</div>' +
