@@ -602,9 +602,13 @@ a.btn { text-decoration: none; }
 
 /* ---------- year planner pieces ---------- */
 .box { grid-template-rows: auto auto minmax(0, 1fr) auto; }
-.box > .clock { grid-row: 1; } .box > .brokerrow { grid-row: 2; } .box > .slotarea { grid-row: 3; } .box > .actions { grid-row: 4; }
+.box > .clockrow { grid-row: 1; } .box > .brokerrow { grid-row: 2; } .box > .slotarea { grid-row: 3; } .box > .actions { grid-row: 4; }
 .clock { justify-self: center; font: 900 1.9rem/1 var(--f-display); letter-spacing: 0.06em; padding: 4px 14px; border-radius: 8px; background: #05080c; border: 1px solid #1d2a38; color: #ffb648; font-variant-numeric: tabular-nums; text-shadow: 0 0 10px #ffb64866; }
 .clock.hot { color: #ff6b57; animation: throb .6s ease-in-out infinite; }
+.clockrow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; }
+.finishbtn { border: 1px solid var(--girder); background: var(--steel-2); color: var(--ink-2); border-radius: 999px; padding: 7px 12px; font: 700 0.68rem/1 var(--f-ui); text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
+.finishbtn:hover { border-color: var(--brass); color: var(--ink); }
+.finishbtn.armed { border-color: var(--warn); color: var(--warn); }
 .ffpanel { position: relative; width: min(460px, 100%); text-align: center; display: grid; gap: 6px; justify-items: center; padding: 16px; border-radius: 12px; border: 1px dashed var(--girder); background: #0c131b88; }
 .ffpanel p { margin: 0; color: var(--ink-2); font-size: var(--t-s); }
 .ffmonth { font: 900 2.2rem/1 var(--f-display); text-transform: uppercase; color: var(--brass-2); }
@@ -3755,12 +3759,13 @@ p.sm { margin: 0; }
         '<button class="gauge mixgauge" id="mixGauge" aria-label="Your business mix against plan"><span class="eyebrow">Mix <b id="hDrift"></b></span><span class="mixbars"><em>Plan</em><span class="mb" id="hPlan"></span><em>Written</em><span class="mb" id="hBound"></span></span></button>' +
         '<button class="perilbtn" id="rdsBtn" aria-label="Open the RDS Board">' + icon('storm') + '<span id="rdsTxt">RDS</span></button>' +
         '</div>' +
-        '<div class="box" id="box"><div class="clock" id="clock" hidden></div><div class="brokerrow" id="brokerRow"></div><div class="slotarea" id="slotArea"></div>' +
+        '<div class="box" id="box"><div class="clockrow"><div class="clock" id="clock" hidden></div><button class="finishbtn" id="finishRush" hidden title="Close your box and go on to 1 January">Finish 1.1 early →</button></div><div class="brokerrow" id="brokerRow"></div><div class="slotarea" id="slotArea"></div>' +
         '<div class="actions" id="actions"><button class="btn danger" data-line="0"><span>← Decline</span></button><button class="btn" data-line="1"><span>↓ Small line</span></button><button class="btn primary" data-line="2"><span>Big line →</span></button></div></div>' +
         '<div class="side"><div class="favours" id="favours">' + fav + '</div><div class="shelf" id="shelf" aria-label="Your book, by year of account"></div><button class="stampstrip" id="stampStrip" aria-label="Who is on your stamp"></button></div>' +
         '<div class="ticker" id="ticker" aria-live="off"></div>' +
         '</div></section>');
       this.root = root;
+      root.querySelector('#finishRush').addEventListener('click', () => this.finishRush());
       root.querySelectorAll('.actions [data-line]').forEach((b) => b.addEventListener('click', () => this.decide(+b.dataset.line)));
       root.querySelector('#mixGauge').addEventListener('click', (e) => { e.stopPropagation(); this.mixInfo(); });
       // the pins explain themselves on tap, so they work on touch screens too
@@ -4093,6 +4098,7 @@ p.sm { margin: 0; }
       this.nextAt = this.t + 0.6;
       this.setPhase('rush', '31 December · the 1.1 renewals');
       this.root.querySelector('#clock').hidden = false;
+      this.paintFinish(false);
       this.paintClock();
       this.setActions(true);
       this.root.querySelector('#slotArea').innerHTML = '<p class="waiting">Brokers are queuing at your box…</p>';
@@ -4123,15 +4129,37 @@ p.sm { margin: 0; }
       c.classList.toggle('hot', this.clock < 6);
       if (this.phase === 'rush') this.journey();
     },
-    endWindow() {
-      const left = this.deck.length - this.deckIdx + (this.cur && !this.cur.busy ? 1 : 0);
+    // slips still to answer in this window: the queue plus the one on the desk
+    slipsLeft() { return this.deck.length - this.deckIdx + (this.cur && !this.cur.busy ? 1 : 0); },
+    // the Finish 1.1 early button: hidden outside the rush; armed asks for a second tap while slips are still queuing
+    paintFinish(armed) {
+      const b = this.root.querySelector('#finishRush');
+      clearTimeout(this.finishTimer);
+      b.hidden = this.phase !== 'rush';
+      b.classList.toggle('armed', !!armed);
+      const n = this.slipsLeft();
+      b.textContent = armed ? 'Skip ' + n + (n > 1 ? ' slips' : ' slip') + '? Tap again' : 'Finish 1.1 early →';
+      if (armed) this.finishTimer = setTimeout(() => { if (this.phase === 'rush') this.paintFinish(false); }, 3000);
+    },
+    finishRush() {
+      if (this.phase !== 'rush' || this.over || paused) return;
+      const b = this.root.querySelector('#finishRush');
+      if (this.slipsLeft() > 0 && !b.classList.contains('armed')) { this.paintFinish(true); Sound.tick(); return; }
+      this.clock = 0;
+      this.endWindow(true);
+    },
+    endWindow(early) {
+      const left = this.slipsLeft();
       if (this.cur && !this.cur.busy) this.walk(true);
       this.root.querySelector('#clock').hidden = true;
+      clearTimeout(this.finishTimer); this.root.querySelector('#finishRush').hidden = true;
       this.setActions(false);
       if (this.phase === 'rush') {
         Sound.bell(2);
         const [x, y] = centre(this.root.querySelector('#box')); FX.burst(x, y, 'confetti', 80);
-        toast('Happy New Year from the Room', left > 0 ? left + ' slips missed the midnight deadline.' : 'Every slip got an answer before midnight.', 'var(--brass)');
+        const slips = left + (left > 1 ? ' slips' : ' slip');
+        toast('Happy New Year from the Room', early ? (left > 0 ? 'You closed your box early. ' + slips + ' went to other markets.' : 'You closed your box with every slip answered.')
+          : left > 0 ? slips + ' missed the midnight deadline.' : 'Every slip got an answer before midnight.', 'var(--brass)');
         this.tick('00:00 · 1 JANUARY ' + yoaName(this.y) + ' · YOA ' + yoaName(this.y) + ' INCEPTS · ' + G.no + ' WROTE ' + fmtM(yoaTot(this.y)).toUpperCase());
         setTimeout(() => { this.clearDeal(); this.openRDS({ mode: 'outwards' }); }, 900 / SPEED);
         this.setPhase('outwards', '1 January · buy your outwards');
@@ -4172,7 +4200,7 @@ p.sm { margin: 0; }
       store.set('lsl-coached-v2', true);
       this.over = true;
       const box = this.root.querySelector('#box');
-      const c = el('<div class="coach" role="dialog"><h4>Your first slip</h4><p><b>Drag the slip</b>: left to decline, down for a small line, right for a big line. Or use the buttons, or ← ↓ →.</p><p>Tap the <b>small print</b> to read it, but the broker’s patience drops. The <b>RDS line</b> shows which disaster scenario it adds to.</p><p>Need longer? <b>Ask for time</b> (T) tops up their patience twice. Ask a third time and they walk. The midnight clock keeps running.</p><button class="btn primary">Got it</button></div>');
+      const c = el('<div class="coach" role="dialog"><h4>Your first slip</h4><p><b>Drag the slip</b>: left to decline, down for a small line, right for a big line. Or use the buttons, or ← ↓ →.</p><p>Tap the <b>small print</b> to read it, but the broker’s patience drops. The <b>RDS line</b> shows which disaster scenario it adds to.</p><p>Need longer? <b>Ask for time</b> (T) tops up their patience twice. Ask a third time and they walk. The midnight clock keeps running.</p><p>Done before midnight? <b>Finish 1.1 early</b>, next to the clock, takes you on to 1 January.</p><button class="btn primary">Got it</button></div>');
       box.appendChild(c);
       c.querySelector('button').addEventListener('click', () => { c.remove(); this.over = false; });
       c.querySelector('button').focus({ preventScroll: true });
