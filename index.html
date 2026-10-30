@@ -5529,12 +5529,13 @@ p.sm { margin: 0; }
       '<div class="fbchips">' + FB_STARTERS.map((s, i) => '<button class="fbchip" data-s="' + i + '">' + esc(s.trim()) + '…</button>').join('') + '</div>' +
       '<textarea id="' + p + 'Text" class="fbtext" rows="3" maxlength="600" placeholder="e.g. I’d like more time at the 1.1 rush, and a hint about what the BOC is looking for."></textarea>' +
       '<div class="fbrow"><a class="btn primary" id="' + p + 'Mail" href="#">Email it</a><button class="btn" id="' + p + 'Copy">Copy</button><span class="fbnote" id="' + p + 'Note">' +
-      (FEEDBACK_TO ? '<b>Email it</b> opens your email app addressed to ' + esc(FEEDBACK_TO) + ', with this and a summary of your game written in. Then press Send.'
-        : '<b>Email it</b> opens your email app with this and a summary of your game written in. You add who it’s to, then press Send.') + '</span></div>';
+      (FEEDBACK_TO ? '<b>Email it</b> opens your email app addressed to ' + esc(FEEDBACK_TO) + ', with this and a summary of your game written in, and copies it too. Then press Send.'
+        : '<b>Email it</b> opens your email app with this and a summary of your game written in, and copies it too. You add who it’s to, then press Send.') + '</span></div>';
   }
   // what to say once feedback has left the page: the game can't see whether the email was actually sent
   const FB_AFTER = {
-    mail: () => (FEEDBACK_TO ? 'Your email app should now be open, addressed to ' + FEEDBACK_TO + '. Press Send there.' : 'Your email app should now be open with this ready to send. Add the address of whoever shared the game, then press Send.') + ' Nothing opened? Press Copy and paste it into an email or Teams.',
+    mail: (copied) => (FEEDBACK_TO ? 'Your email app should now be open, addressed to ' + FEEDBACK_TO + '. Press Send there.' : 'Your email app should now be open with this ready to send. Add the address of whoever shared the game, then press Send.') +
+      (copied ? ' It’s on your clipboard too: if nothing opened, paste it into an email or Teams.' : ' Nothing opened? Press Copy and paste it into an email or Teams.'),
     copy: () => 'Copied: paste it into an email or Teams to ' + (FEEDBACK_TO || 'whoever shared the game') + '.'
   };
   // the feedback email: the player's words, then the game in one line so they don't have to describe it
@@ -5670,8 +5671,8 @@ p.sm { margin: 0; }
       const ta = box.querySelector('#' + p + 'Text'), mail = box.querySelector('#' + p + 'Mail'), note = box.querySelector('#' + p + 'Note');
       const body = () => feedbackBody(this.res, this.grade, ta.value);
       const refresh = () => { mail.href = feedbackMail(body()); store.set('lsl-fb-draft', ta.value); };
-      const thanks = (how) => {
-        box.classList.add('sent'); note.textContent = FB_AFTER[how](); store.set('lsl-fb-draft', '');
+      const thanks = (how, copied) => {
+        box.classList.add('sent'); note.textContent = FB_AFTER[how](copied); store.set('lsl-fb-draft', '');
         this.fbSent = true;
         if (onSent) onSent();
       };
@@ -5690,7 +5691,8 @@ p.sm { margin: 0; }
         ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
         refresh();
       }));
-      mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); setTimeout(() => thanks('mail'), 300); });
+      // Email it copies the same text too, in case no email app opens
+      mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); this.copyQuiet(body()).then((ok) => setTimeout(() => thanks('mail', ok), 300)); });
       box.querySelector('#' + p + 'Copy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.', box.querySelector('.copybox')); thanks('copy'); });
     },
     // the Play again sheet: the same feedback block, then on to the next game
@@ -5714,6 +5716,10 @@ p.sm { margin: 0; }
       o.addEventListener('click', (e) => { if (e.target === o) close(); });
       setTimeout(() => { const t = body.querySelector('#paText'); if (t && t.isConnected) t.focus({ preventScroll: true }); }, 60);
     },
+    // copy with nothing on screen: resolves true if the text reached the clipboard
+    copyQuiet(text) {
+      try { return navigator.clipboard.writeText(text).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+    },
     copyText(text, title, msg, boxEl) {
       const box = boxEl || this.root.querySelector('#copyBox');
       const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Select and copy', 'The text is highlighted below.', 'var(--crane)'); };
@@ -5724,10 +5730,14 @@ p.sm { margin: 0; }
     copy() {
       const text = shareText(this.res, this.grade);
       const copyIt = () => this.copyText(text, 'Copied', 'Paste it into Teams and wait for the replies.');
-      // phones (and some desktops) get the share sheet, with the link inside the text so apps don't show it twice;
-      // a cancelled share does nothing, a failed one copies instead
-      if (canShare()) navigator.share({ title: 'Lime Street Launch', text }).catch((e) => { if (!e || e.name !== 'AbortError') copyIt(); });
-      else copyIt();
+      // phones (and some desktops) get the share sheet, with the link inside the text so apps don't show it twice.
+      // It's copied first, as a backup if Teams or email doesn't open (the sheet takes focus, and the clipboard needs it);
+      // a failed share falls back to the copy box only if that copy failed too
+      if (canShare()) {
+        const copied = this.copyQuiet(text);
+        copied.then((ok) => { if (ok) toast('Copied too', 'If Teams or your email doesn’t open, paste your result anywhere.', 'var(--good)'); });
+        navigator.share({ title: 'Lime Street Launch', text }).catch((e) => { if (!e || e.name !== 'AbortError') copied.then((ok) => { if (!ok) copyIt(); }); });
+      } else copyIt();
     }
   };
 
