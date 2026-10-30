@@ -121,6 +121,26 @@ Each game draws its own three-year market: each year's modifier, the catastrophe
 
 The feedback email names the game's market (for example `market 3c-603fn5pd`), so a reported game can be replayed exactly by adding `?season=3c-603fn5pd` to the link.
 
+## Lime Street Rooms: the 3D preview
+
+`rooms/` holds a second, role-play version of the game in 3D. You walk your character from room to room and make the same decisions by talking to people. It currently covers the opening and the first 1.1 renewals:
+
+| Room | What you do there |
+|---|---|
+| Your office | Pick a business mix at the whiteboard (and tweak the split), interview four Active Underwriter candidates and hire one, rename the syndicate at your desk |
+| The BOC committee room | Sit down in front of the Chair, the Actuary and the Regulator, answer three questions against the clock, then take your application to the Clerk to the Council to be stamped |
+| The capital lounge | Investors walk in with offers (members' shares, your own capital, an outward QS, expensive money). Talk to them before rival syndicates' reps reach them, and fill your stamp |
+| The red-tape corridor | Desks open one by one (PRA, ATLAS, SBF, cat model, wordings). Get to each and sign before it closes |
+| The Underwriting Room | Take your seat at your box. Brokers queue with slips until midnight; decline, or scratch a small or a big line. Then read your first-1.1 report: projected combined ratio, premium against the stamp, mix, RDS exposure and how your two rivals did |
+
+Your hired Active Underwriter follows you from room to room and sits beside you at the box. All the numbers come from the same engine as the 2D game: `rooms/index.html` carries an exact copy of `<script id="engine">` from `index.html`, so the two must be kept identical when the engine changes.
+
+**Play:** the 3D version loads model files, so it needs to be served over HTTP rather than opened as a file. On GitHub Pages it's at `/syndicate-launch/rooms/`; locally, run `python3 -m http.server` in the repository and open `http://localhost:8000/rooms/`.
+
+**Controls:** tap or click the floor to walk; tap people, desks and doors (or their name labels) to use them. On a keyboard: `W` `A` `S` `D` to walk, `E` to use what's nearest, `1`–`3` to answer, `←` `↓` `→` on slips, `R` to read the small print, `L` for a Long Lunch, `Esc` to pause. `?season=` replays a market and `?autoplay=1` (with `&speed=4`) plays itself through.
+
+**Under the hood:** three.js 0.170.0 is vendored in `rooms/vendor/` (no CDN). The furniture is KayKit Furniture Bits by Kay Lousberg (CC0, see `rooms/models/CREDITS.md`); the people are built from simple shapes and animated in code. Each room has a walk grid with A* path-finding, and the dialogue, sheets and gauges are HTML over the 3D canvas, in the same look as the 2D game.
+
 ## Under the hood
 
 - The engine (`<script id="engine">`) is pure and has no DOM access: market seeding, the RDS catalogue, capital and diversification credit, deal generation, renewals, three-year scoring and the AI rivals. The class economics were tuned with a headless simulation of three-year games over 104 seeded markets, so that skilled play beats naive play, outwards cut the downside, and every mix type wins some of the time.
