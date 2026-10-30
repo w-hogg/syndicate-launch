@@ -2295,6 +2295,7 @@ p.sm { margin: 0; }
   const yoaName = (y) => String(BASE_YEAR + y);
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const FF_MONTH = 0.65; // seconds per month while the planner fast-forwards
+  const RUSH_SECS = [60, 40]; // the 1.1 midnight clock: the first rush is longest, to get the book going; then each later one
 
   // ---------- small helpers ----------
   const $ = (s, root = document) => root.querySelector(s);
@@ -4086,8 +4087,9 @@ p.sm { margin: 0; }
         if (this.deck.length < before) toast(E.BROKERS[sn.broker].name + ' is sulking', (before - this.deck.length) + (before - this.deck.length > 1 ? ' slips' : ' slip') + ' went to a more generous market.', 'var(--warn)', 4);
       }
       this.deckIdx = 0;
-      this.clockMax = this.clock = Math.max(18, 32 - (y === 0 ? (G.rushPenalty || 0) : 0));
-      if (y === 0 && G.rushPenalty) toast('Late permission: −' + (32 - this.clockMax) + 's on the clock', (G.rushWhy || []).join('. ') + '.', 'var(--warn)', 5);
+      const base = RUSH_SECS[y === 0 ? 0 : 1];
+      this.clockMax = this.clock = Math.max(18, base - (y === 0 ? (G.rushPenalty || 0) : 0));
+      if (y === 0 && G.rushPenalty) toast('Late permission: −' + (base - this.clockMax) + 's on the clock', (G.rushWhy || []).join('. ') + '.', 'var(--warn)', 5);
       this.nextAt = this.t + 0.6;
       this.setPhase('rush', '31 December · the 1.1 renewals');
       this.root.querySelector('#clock').hidden = false;
@@ -4114,7 +4116,9 @@ p.sm { margin: 0; }
     paintClock() {
       const c = this.root.querySelector('#clock');
       const s = Math.max(0, Math.ceil(this.clock));
-      if (this.phase === 'rush') c.textContent = s > 0 ? '23:59:' + String(60 - s).padStart(2, '0') : '00:00:00';
+      // the rush counts down to midnight: s seconds left reads as 24:00:00 less s
+      const hms = (t) => [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map((v) => String(v).padStart(2, '0')).join(':');
+      if (this.phase === 'rush') c.textContent = s > 0 ? hms(86400 - s) : '00:00:00';
       else c.textContent = '1 JUL · ' + s + 's';
       c.classList.toggle('hot', this.clock < 6);
       if (this.phase === 'rush') this.journey();
