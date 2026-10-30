@@ -27,12 +27,12 @@ A planner bar runs January to December, with pins for 1.1, the Q1 review, 1.4 an
 | Beat | What you do | The real thing it mirrors |
 |---|---|---|
 | Renewal review (years 2 and 3) | Last year's books show traffic lights and the broker's offered rate. Drag the dogs into the shredder, or tap to cycle Renew → Grow → Shred | Renewal strategy before 1.1 |
-| 1.1 rush | A flip clock counts down to midnight on 31 December. Brokers bring portfolios (binders, consortia, QSs, lineslips); drag each slip left to decline, down for a small line or right for a big line. Every slip shows which RDS it adds to, and whether it helps your mix or moves you off plan. The clock doesn't stop for the RDS Board | Most of the market renews on 1 January |
-| Outwards | Place two annual cat XL shields on your RDS rows | Buying the reinsurance programme at 1.1 |
+| 1.1 rush | A flip clock counts down to midnight on 31 December. Brokers bring portfolios (binders, consortia, QSs, lineslips); drag each slip left to decline, down for a small line or right for a big line. Every slip shows which RDS it adds to, and whether it helps your mix or moves you off plan. Need longer on a slip? **Ask for time** tops up the broker's patience twice; ask a third time and they take it to a rival. The midnight clock keeps running, and doesn't stop for the RDS Board either | Most of the market renews on 1 January |
+| Outwards | No clock here. Place up to two annual cat XL shields on your RDS rows, and buy up to two index covers (ILWs). An ILW is about a quarter cheaper than a shield but only pays on a severe or extreme event, so it doesn't count towards your RDS appetite | Buying the reinsurance programme at 1.1 |
 | Q1 review | Lloyd's checks your RDS against appetite and your mix against plan | PMD quarterly monitoring |
 | Portfolio alerts | A coverholder misbehaves: audit it (£0.3m), exit the book, or ignore it and its loss ratio rises 35% | Binder oversight and bordereaux |
 | In-tray (twice a year) | An event needs one of three answers within 15 seconds: Lloyd's and the regulators, a market change, your people and brokers, or claims and reserves | The day job of a managing agency |
-| Catastrophes | Forecast storms give you 10 seconds to buy a last-minute ILW or make the Reinsurance Call; earthquakes, cyber and man-made losses arrive without warning | Lloyd's RDS: compulsory natural and man-made scenarios, specialist scenarios and syndicate-defined ones |
+| Catastrophes | Forecast storms give you 10 seconds to buy live cat cover (at storm-season prices, about 15% more than it should pay back) or make the Reinsurance Call; earthquakes, cyber and man-made losses arrive without warning | Lloyd's RDS: compulsory natural and man-made scenarios, specialist scenarios and syndicate-defined ones |
 | 1.7 window | A few mid-year slips, mostly property cat | The 1 July renewals |
 | SBF day (1 September) | Read the market outlook, choose next year's stamp (Shrink, Hold, Grow, Go large, all based on this year's actual stamp), move up to two chips, and get PMD's stamp. PMD caps growth above a 95% projected combined ratio, blocks it above 105% and cuts the stamp by 20% above 115% | The Syndicate Business Forecast |
 | Coming into line (30 November) | If your FAL plus funds held in the syndicate covers next year's ECA, you're in line. If not, a 12-second capital grab, or shrink the plan | Members coming into line |
@@ -45,6 +45,7 @@ The **Capital**, **GWP** and **Mix** gauges show their reference marks (the solv
 **Controls:** drag, tap or use the keyboard:
 - `←` / `↓` / `→` decide on a slip
 - `R` reads the small print
+- `T` asks the broker for more time
 - `1` / `2` / `3` play a Favour
 - `P` opens the RDS Board (between renewal windows)
 - `Esc` pauses
@@ -68,7 +69,7 @@ Each year draws one or two events from 23 scenarios, about half natural and half
 
 | Mix type | How it plays |
 |---|---|
-| Nat Cat Reinsurance | Fat margins and the most capital; a hurricane can end you |
+| Nat Cat Reinsurance | Fat margins and the most capital (an ECA above your stamp in year 1); a hurricane can end you |
 | Property D&F / US E&S | Binder-heavy; leakage if you don't watch the bordereaux |
 | Casualty Treaty | Looks great until the reserves develop |
 | Financial & Professional Lines | Long tail and softening rates; nuclear verdicts hurt |
@@ -105,15 +106,17 @@ Add the three years, then
 
 **Grades** go on the final score: Lloyd's darling (45,000+), Solid franchise (28,000+), Keep calm and carry on (15,000+), PMD on speed-dial (0+) and Remediation plan (below 0). A careful player lands roughly 15/35/30/15/5% across them.
 
+**Capital (ECA)** is your SCR × 1.35. The SCR comes from a capital factor for each class in your mix, less a diversification credit for a spread book. Volatile, cat-driven classes (Property Cat, Space, Parametric, Cyber) carry the highest factors, and because they move together they earn less credit. A new syndicate also carries a loading: +15% in year 1, +7.5% in year 2 and none by year 3. So a Nat Cat book needs about 110% of its stamp in year 1, a Frontier book about 90%, and Accident & Health about a third.
+
 Profits stay in the syndicate until a year closes, so your share counts towards your capital but growth still needs FAL. Fall below 60% of your ECA after a catastrophe and Lloyd's calls for cash, and you pay your share of it. Pay up, or go into run-off and end the game.
 
 **How likely are you to succeed?** In simulation over 52 seeded markets, a careful player (reads the small print, buys outwards on the biggest scenarios, shreds bad renewals, watches the mix, follows the rate cycle, handles the in-tray well) finishes with a positive score **about 9 times in 10** whatever their own share. A casual player does so 3 to 4 times in 5, with a lower score. Random swiping succeeds about 1 time in 5. Keeping all of the stamp yourself gives the highest average (about 34,000 for a careful player); keeping 20% gives about 19,000, but a gentler worst case.
 
 ## Feedback
 
-The results screen asks one question: **"One thing that would make this game better?"** Tap a starter ("I got stuck at…", "I loved…") or just type, then press **Email it**. Your email app opens with the suggestion written in and a one-line summary of the game attached (score, mix, Active Underwriter, time played, screen size), so there's nothing else to describe. **Copy** puts the same text on the clipboard for webmail, Teams or Slack. Drafts are kept on the device until sent. **Share result**, **Feedback** and **Play again** sit just below the feedback box, with the leaderboard under them, and pressing **Play again** first asks for one idea (with a one-tap skip), unless you've already sent feedback from that results screen.
+The results screen asks one question: **"One thing that would make this game better?"** Tap a starter ("I got stuck at…", "I loved…") or just type, then press **Email it**. Your email app opens with the suggestion written in and a one-line summary of the game attached (score, mix, Active Underwriter, time played, screen size), so there's nothing else to describe. You add who it's to and press Send; the panel says so, and suggests **Copy** if no email app opened. **Copy** puts the same text on the clipboard for webmail, Teams or Slack. Drafts are kept on the device until sent. **Share result**, **Feedback** and **Play again** sit just below the feedback box, with the leaderboard under them, and pressing **Play again** first asks for one idea (with a one-tap skip), unless you've already sent feedback from that results screen.
 
-No address is built into the page: the email opens with the To field empty. To have feedback come to you, add your address to the link you share, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
+No address is built into the page: the email opens with the To field empty. **When you share the game, add your address to the link** so the To field fills itself, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
 
 ## Every game is different
 

@@ -394,6 +394,15 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .brokerrow .bubble::after { left: 18px; bottom: auto; top: -6px; }
 .patience { height: 5px; border-radius: 3px; background: var(--steel-2); overflow: hidden; }
 .patience i { display: block; height: 100%; width: 100%; background: var(--good); transform-origin: left; }
+.patrow { display: flex; gap: 8px; align-items: center; }
+.patrow .patience { flex: 1; }
+.asktime { flex: none; border: 1px solid var(--girder); background: var(--steel-2); color: var(--ink-2); border-radius: 999px; padding: 4px 10px; font: 700 0.62rem/1 var(--f-ui); text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
+.asktime:hover { border-color: var(--brass); color: var(--ink); }
+.asktime.last { border-color: var(--warn); color: var(--warn); }
+.ilwchip { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 999px; border: 1px dashed var(--girder); font: 700 0.62rem/1.3 var(--f-ui); color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+.ilwchip:hover { border-color: var(--crane); color: var(--ink); }
+.ilwchip.on { border-style: solid; border-color: var(--crane); background: #3b7bff33; color: var(--ink); }
+.ilwtag { display: inline-block; margin-left: 4px; padding: 1px 5px; border-radius: 4px; background: #3b7bff33; color: var(--ink); font: 700 0.58rem/1.2 var(--f-ui); }
 .slotarea { position: relative; min-height: 0; display: grid; place-items: center; }
 .slip {
   position: relative; width: min(440px, 100%); max-height: 100%; overflow: hidden; background: var(--slip); color: var(--slip-ink); border-radius: 6px; padding: 12px 14px 12px 34px;
@@ -1062,12 +1071,12 @@ p.sm { margin: 0; }
 
   // Portfolio templates per class: [label, {rds: relative weight}, structure, window]
   const CLASSES = {
-    propcat: { name: 'Property Cat XoL', short: 'Prop Cat', seg: 're', lr: 0.577, comm: 0.12, scr: 0.70, cat: 0.30, vol: 0.06, tail: 0, rate: -10, distinct: 1,
+    propcat: { name: 'Property Cat XoL', short: 'Prop Cat', seg: 're', lr: 0.537, comm: 0.12, scr: 0.95, cat: 0.30, vol: 0.06, tail: 0, rate: -10, distinct: 1,
       deals: [['European windstorm cat XoL', { euw: 1, ukf: 0.3 }, 'treaty', '1.1'], ['UK flood & storm treaty', { ukf: 1, euw: 0.4 }, 'treaty', '1.1'],
         ['Japan quake & typhoon retro', { jeq: 1, jty: 0.8 }, 'treaty', '1.1'], ['US nationwide cat XoL', { nes: 1, nmq: 0.6, ceq: 0.6, flw: 0.4 }, 'treaty', '1.1'],
         ['Florida homeowners cat XoL', { flw: 1, nes: 0.2 }, 'treaty', '1.7'], ['Gulf commercial property cat QS', { gom: 1, nes: 0.3 }, 'QS', '1.7'],
         ['California quake cat XoL', { ceq: 1, wfr: 0.3 }, 'treaty', '1.7']] },
-    parametric: { name: 'Parametric Climate', short: 'Parametric', seg: 're', lr: 0.555, comm: 0.15, scr: 0.45, cat: 0.22, vol: 0.08, tail: 0, rate: 0, distinct: 3,
+    parametric: { name: 'Parametric Climate', short: 'Parametric', seg: 're', lr: 0.525, comm: 0.15, scr: 0.65, cat: 0.22, vol: 0.08, tail: 0, rate: 0, distinct: 3,
       deals: [['Parametric quake cover, Tokyo', { jeq: 1 }, 'treaty', '1.1'], ['Wildfire parametric for Californian vineyards', { wfr: 1, ceq: 0.3 }, 'binder', '1.1'],
         ['European flood parametric facility', { ukf: 1, euw: 0.5 }, 'facility', '1.1'], ['Parametric hurricane cover for Caribbean utilities', { flw: 1, gom: 0.4 }, 'facility', '1.7']] },
     propdf: { name: 'Property D&F / US E&S', short: 'Prop D&F', seg: 'pr', lr: 0.518, comm: 0.30, scr: 0.40, cat: 0.10, vol: 0.05, tail: 0, rate: -5, distinct: 1,
@@ -1082,7 +1091,7 @@ p.sm { margin: 0; }
     techeo: { name: 'Tech E&O', short: 'Tech E&O', seg: 'ca', lr: 0.577, comm: 0.27, scr: 0.40, cat: 0.08, vol: 0.04, tail: 0.05, rate: -5, distinct: 2,
       deals: [['SaaS tech E&O binder', { cyc: 1, lia: 0.4 }, 'binder', '1.1'], ['Tech E&O consortium', { cyc: 0.6, cyr: 0.5, lia: 0.5 }, 'consortium', '1.1'],
         ['Mid-year tech E&O lineslip', { cyc: 0.6, lia: 0.5 }, 'lineslip', '1.7']] },
-    cyber: { name: 'Cyber', short: 'Cyber', seg: 'ca', lr: 0.415, comm: 0.28, scr: 0.50, cat: 0.24, vol: 0.07, tail: 0, rate: -15, distinct: 2,
+    cyber: { name: 'Cyber', short: 'Cyber', seg: 'ca', lr: 0.39, comm: 0.28, scr: 0.65, cat: 0.24, vol: 0.07, tail: 0, rate: -15, distinct: 2,
       deals: [['SME cyber MGA binder', { cyr: 1, cyc: 0.5, cyb: 0.3 }, 'binder', '1.1'], ['20% QS of a cyber MGA book', { cyc: 1, cyr: 0.7, cyb: 0.4 }, 'QS', '1.1'],
         ['Large-corporate cyber consortium', { cyb: 1, cyc: 0.8, cyr: 0.6 }, 'consortium', '1.1'], ['Mid-year cyber QS', { cyr: 1, cyc: 0.6 }, 'QS', '1.7']] },
     marine: { name: 'Marine Hull & Cargo', short: 'Marine', seg: 'mat', lr: 0.542, comm: 0.25, scr: 0.40, cat: 0.11, vol: 0.05, tail: 0, rate: 5, distinct: 2,
@@ -1094,7 +1103,7 @@ p.sm { margin: 0; }
     aviation: { name: 'Aviation & Av War', short: 'Aviation', seg: 'mat', lr: 0.612, comm: 0.22, scr: 0.45, cat: 0.17, vol: 0.06, tail: 0, rate: 5, distinct: 2,
       deals: [['Airline hull & liability lineslip', { avc: 1, ter: 0.3 }, 'lineslip', '1.1'], ['Aviation war consortium', { pol: 1, ter: 0.4 }, 'consortium', '1.1'],
         ['General aviation binder', { avc: 0.6, ter: 0.2 }, 'binder', '1.7']] },
-    space: { name: 'Space', short: 'Space', seg: 'sp', lr: 0.528, comm: 0.15, scr: 0.60, cat: 0.32, vol: 0.10, tail: 0, rate: 10, distinct: 3,
+    space: { name: 'Space', short: 'Space', seg: 'sp', lr: 0.498, comm: 0.15, scr: 0.80, cat: 0.32, vol: 0.10, tail: 0, rate: 10, distinct: 3,
       deals: [['Satellite launch + 1 year in orbit', { sat: 1, pol: 0.2 }, 'consortium', '1.1'], ['LEO constellation in-orbit cover', { sat: 1, cyb: 0.3 }, 'facility', '1.7']] },
     terror: { name: 'Political Violence & Terror', short: 'PV & Terror', seg: 'sp', lr: 0.488, comm: 0.25, scr: 0.40, cat: 0.17, vol: 0.05, tail: 0, rate: 0, distinct: 2,
       deals: [['Political violence binder, emerging markets', { srcc: 1, pol: 0.5 }, 'binder', '1.1'], ['City-centre terrorism consortium', { ter: 1, srcc: 0.3 }, 'consortium', '1.1'],
@@ -1179,9 +1188,16 @@ p.sm { margin: 0; }
   const CASH_CALL_COST = 0.2;
   const QS_SHARE = 0.25;
   const OUTWARDS_LOAD = 1.05; // annual cat XL shields are priced just above their expected recovery
-  const ILW_COST = 0.25;      // last-minute ILW on a forecast event, share of gross RDS exposure
+  // Index cover (ILW), bought at 1 January: it pays only when the event is big enough for the industry loss to trigger it
+  // (severity 0.6 or more, about 60% of events), then halves your loss. Priced on that expected recovery, so about 0.76 x a shield.
+  const ILW_TRIGGER = 0.6, ILW_PRICE = 0.76;
+  // Live cat cover, bought as a storm bears down: priced off the forecast band at 15% over the expected recovery
+  const LIVE_CAT_LOAD = 1.15;
+  const sevBand = (sev) => (sev > 0.85 ? 0.975 : sev > 0.6 ? 0.725 : 0.45);
+  const liveCatCost = (gross, sev) => gross * 0.5 * sevBand(sev) * LIVE_CAT_LOAD;
   const APPETITE = 1.0;       // net RDS appetite: no single full scenario may cost more than your FAL
   const shieldCost = (rdsId, gross) => gross * RDS_P[rdsId] * 0.5 * OUTWARDS_LOAD;
+  const ilwCost = (rdsId, gross) => shieldCost(rdsId, gross) * ILW_PRICE;
   const WINDOW_SHARE = { '1.1': 0.85, '1.7': 0.15 };
   const CAPACITY_STEPS = { shrink: 0.8, hold: 1, grow: 1.25, large: 1.5 };
   const ON_PLAN = { lo: 0.85, hi: 1.15, drift: 20 }; // a year is on plan if premium is within 85–115% of the stamp and no more than 20% of it is in different classes
@@ -1195,9 +1211,9 @@ p.sm { margin: 0; }
   // Reactions at coming into line, on the members' return for the year: leave below `leave`, halve below `halve`,
   // ask for a bigger line (growBy) above `grow`. The ILS fund also leaves when catastrophes exceed catLimit of FAL.
   const MEMBERS = {
-    names: { label: 'Names via members’ agents', short: 'Names', color: '#e9d3a0', line: [0.08, 0.12], fee: 0.01, pc: 0.175, leave: 0, grow: 0.38, growBy: 0.5, note: 'Follow performance closely.' },
-    corporate: { label: 'Kestrel Insurance Group', short: 'Kestrel', color: '#9fd0ff', line: [0.2, 0.25], fee: 0.0075, pc: 0.15, halve: -0.05, grow: 0.42, growBy: 0.25, note: 'Patient corporate capital.' },
-    ils: { label: 'Thames Gate ILS fund', short: 'ILS fund', color: '#f0a35c', line: [0.15, 0.2], fee: 0.005, pc: 0.2, leave: 0, catLimit: 0.35, grow: 0.35, growBy: 0.5, note: 'Walks after a big catastrophe.' },
+    names: { label: 'Names via members’ agents', short: 'Names', color: '#e9d3a0', line: [0.08, 0.12], fee: 0.01, pc: 0.175, leave: 0, grow: 0.32, growBy: 0.5, note: 'Follow performance closely.' },
+    corporate: { label: 'Kestrel Insurance Group', short: 'Kestrel', color: '#9fd0ff', line: [0.2, 0.25], fee: 0.0075, pc: 0.15, halve: -0.05, grow: 0.36, growBy: 0.25, note: 'Patient corporate capital.' },
+    ils: { label: 'Thames Gate ILS fund', short: 'ILS fund', color: '#f0a35c', line: [0.15, 0.2], fee: 0.005, pc: 0.2, leave: 0, catLimit: 0.35, grow: 0.30, growBy: 0.5, note: 'Walks after a big catastrophe.' },
     family: { label: 'Family office', short: 'Family', color: '#c9e08a', line: [0.1, 0.15], fee: 0.01, pc: 0.1, stays: true, note: 'Loyal. Also owns a racehorse.' }
   };
   const round3 = (x) => Math.round(x * 1000) / 1000;
@@ -1324,14 +1340,19 @@ p.sm { margin: 0; }
     const w = {}; for (const k in split) if (split[k] > 0) w[k] = split[k] / tot;
     return w;
   }
-  function capitalFor(split, loading, qs, capacity) {
+  // cat-driven classes move together, so a book of them earns less diversification credit
+  const CAT_CLASSES = ['propcat', 'parametric', 'cyber', 'space'];
+  // a new syndicate carries a capital loading until it has a track record: year 1, year 2, year 3
+  const NEW_SYND_LOAD = [0.15, 0.075, 0];
+  function capitalFor(split, loading, qs, capacity, y) {
     const w = weights(split);
-    let scr = 0, hhi = 0;
-    for (const k in w) { scr += w[k] * CLASSES[k].scr; hhi += w[k] * w[k]; }
-    const div = 0.3 * (1 - hhi);
+    let scr = 0, hhi = 0, catShare = 0;
+    for (const k in w) { scr += w[k] * CLASSES[k].scr; hhi += w[k] * w[k]; if (CAT_CLASSES.includes(k)) catShare += w[k]; }
+    const div = 0.3 * (1 - hhi) * (1 - 0.5 * catShare);
     const scrAmt = (capacity || PLAN_GWP) * scr * (1 - div);
-    const eca = scrAmt * ECU * (1 + (loading || 0)) * (qs ? 1 - QS_SHARE : 1);
-    return { scrFactor: scr, div, scr: scrAmt, eca };
+    const young = NEW_SYND_LOAD[Math.min(y || 0, NEW_SYND_LOAD.length - 1)];
+    const eca = scrAmt * ECU * (1 + (loading || 0) + young) * (qs ? 1 - QS_SHARE : 1);
+    return { scrFactor: scr, div, scr: scrAmt, eca, young, catShare };
   }
   function mixProfile(split) {
     const w = weights(split);
@@ -1557,6 +1578,7 @@ p.sm { margin: 0; }
       }
       for (const e of (evByMonth[mo] || [])) {
         const shielded = (Yo.outwards || []).includes(e.rds);
+        const indexed = (Yo.ilwCover || []).includes(e.rds) && e.sev >= ILW_TRIGGER;
         let gross = 0;
         for (const l of lines) {
           if (mo < l.b.start || mo >= l.end) continue;
@@ -1565,12 +1587,14 @@ p.sm { margin: 0; }
           gross += l.b.P * f;
           let loss = l.b.P * f * e.sev;
           if (shielded) loss *= 0.5;
+          if (indexed) loss *= 0.5;
           if (o.ilw && o.ilw[e.key]) loss *= 0.5;
           if (o.reinsCall && o.reinsCall[e.key]) loss *= 0.5;
           l.cat += loss; uw -= loss;
           per[l.b.yoa].cat += loss;
         }
-        if (o.ilw && o.ilw[e.key]) { const c = gross * ILW_COST; per[y].ilw += c; uw -= c; }
+        // live cat cover is priced on what's left after the shield and index cover
+        if (o.ilw && o.ilw[e.key]) { const c = liveCatCost(gross * (shielded ? 0.5 : 1) * (indexed ? 0.5 : 1), e.sev); per[y].ilw += c; uw -= c; }
       }
       for (const f of (fxByMonth[mo] || [])) {
         if (f.synd) { uw -= f.synd; per[f.y].evSynd += f.synd; }
@@ -1691,11 +1715,12 @@ p.sm { margin: 0; }
     return { mult: ask, stamp: 'Approved', note: 'Approved as submitted.' };
   }
   // projected combined ratio of a YoA part-way through its first year
-  // Catastrophe multiplier on an event after the protection in place: shield, ILW, Reinsurance Call (0.8 when unknown)
+  // Catastrophe multiplier on an event after the protection in place: shield, index cover, live cat, Reinsurance Call (0.8 when unknown)
   function protMult(ev, prot) {
     if (!prot) return 0.8;
     const Y = prot.years && prot.years[Math.floor(ev.month / 12)];
-    return ((Y && (Y.outwards || []).includes(ev.rds)) ? 0.5 : 1) * (prot.ilw && prot.ilw[ev.key] ? 0.5 : 1) * (prot.reinsCall && prot.reinsCall[ev.key] ? 0.5 : 1);
+    return ((Y && (Y.outwards || []).includes(ev.rds)) ? 0.5 : 1) * ((Y && (Y.ilwCover || []).includes(ev.rds) && ev.sev >= ILW_TRIGGER) ? 0.5 : 1) *
+      (prot.ilw && prot.ilw[ev.key] ? 0.5 : 1) * (prot.reinsCall && prot.reinsCall[ev.key] ? 0.5 : 1);
   }
   const bookEnd = (e) => (e.alert === 'exit' && e.alertMonth != null ? Math.min(e.start + 12, e.alertMonth) : e.start + 12);
   // projected combined ratio of a YoA part-way through: catastrophes so far at their cost after your protection,
@@ -1707,7 +1732,8 @@ p.sm { margin: 0; }
       P += e.P;
       loss += e.P * (e.deal.comm + dealLR(e.deal, market) * (e.alert === 'ignore' ? 1.35 : 1) * fxLR(e, prot && prot.fx));
       const Y = prot && prot.years && prot.years[Math.floor(Math.max(month, e.start) / 12)];
-      let exp = 0; for (const r in e.deal.rds) exp += e.deal.rds[r] * RDS_P[r] * (Y && (Y.outwards || []).includes(r) ? 0.5 : 1);
+      // expected load still to come: a shield halves it; index cover takes off its expected share (0.5 x 0.759)
+      let exp = 0; for (const r in e.deal.rds) exp += e.deal.rds[r] * RDS_P[r] * (Y && (Y.outwards || []).includes(r) ? 0.5 : 1) * (Y && (Y.ilwCover || []).includes(r) ? 1 - 0.5 * ILW_PRICE : 1);
       loss += e.P * exp * clamp((bookEnd(e) - Math.max(month, e.start)) / 12, 0, 1);
     }
     for (const f of (prot && prot.fx) || []) if (f.y === yoa && f.month <= month && f.synd) loss += f.synd;
@@ -2086,7 +2112,7 @@ p.sm { margin: 0; }
     const loading = cfg.loading || 0;
     for (let y = 0; y < YEARS; y++) {
       const Y = market.years[y];
-      const eca = capitalFor(split, loading, !!cfg.qs, capacity).eca;
+      const eca = capitalFor(split, loading, !!cfg.qs, capacity, y).eca;
       // capital: year 1 raised at the start, later years come into line in November
       const blended = (cfg.capitalMode === 'loose' ? 0.10 : 0.085) + Y.capAdj;
       // capital: the agency funds its aligned share; members bring FAL for theirs
@@ -2180,17 +2206,13 @@ p.sm { margin: 0; }
       const expo = rdsExposure(entries, 12 * y);
       const top = Object.keys(expo).sort((a, b) => expo[b] - expo[a]).slice(0, 2);
       const outwards = cfg.outwards ? top : [];
-      const outwardsCost = outwards.reduce((s, rr) => s + shieldCost(rr, expo[rr]), 0) * (st.shieldMult[y] || 1);
+      const ilwCover = cfg.ilw ? Object.keys(expo).sort((a, b) => expo[b] - expo[a]).slice(2, 4).filter((rr) => expo[rr] > 0.1 * fal) : [];
+      const outwardsCost = (outwards.reduce((s, rr) => s + shieldCost(rr, expo[rr]), 0) + ilwCover.reduce((s, rr) => s + ilwCost(rr, expo[rr]), 0)) * (st.shieldMult[y] || 1);
       // Q1 review: a PMD letter if any net RDS is over appetite
       const appetite = rdsAppetite(split, cap, fal);
       if (Object.keys(expo).some(rr => expo[rr] * (outwards.includes(rr) ? 0.5 : 1) > appetite[rr])) letter('rds', 12 * y + 2);
-      if (cfg.ilw) for (const e of Y.events) {
-        if (!e.warn || outwards.includes(e.rds)) continue;
-        const ex = rdsExposure(entries, e.month)[e.rds] || 0;
-        if (ex > fal * 0.25) ilw[e.key] = true;
-      }
       if (boundTot > cap * 1.2) letter('gwp', 12 * y);
-      years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca: eca * cap / capacity, capacity: cap, split: Object.assign({}, split), outwards, outwardsCost, members: members.map(x => Object.assign({}, x)) });
+      years.push({ fal, alignedFal: falCarry, capital: capList.map(c => Object.assign({}, c)), eca: eca * cap / capacity, capacity: cap, split: Object.assign({}, split), outwards, ilwCover, outwardsCost, members: members.map(x => Object.assign({}, x)) });
       // the business plan for next year
       if (y < YEARS - 1) {
         const proj = projectYoA(entries, market, y, 12 * y + 8, cfg.au, prot);
@@ -2244,7 +2266,7 @@ p.sm { margin: 0; }
   root.LSL_ENGINE = {
     hashStr, rng, clamp, round1, seasonKey, YEARS, SEGMENTS, RDS, RDS_GROUPS, RDS_P, CLASSES, LONG_TAIL, PROPERTY,
     MIXES, MIX_BY_ID, AUS, BROKERS, MODIFIERS, RIVALS, NEMESIS, RACEHORSE,
-    PLAN_GWP, FIXED_COSTS, ECU, SOLVENCY_LINE, CASH_CALL_COST, QS_SHARE, OUTWARDS_LOAD, ILW_COST, APPETITE, WINDOW_SHARE, CAPACITY_STEPS,
+    PLAN_GWP, FIXED_COSTS, ECU, SOLVENCY_LINE, CASH_CALL_COST, QS_SHARE, OUTWARDS_LOAD, NEW_SYND_LOAD, CAT_CLASSES, ILW_TRIGGER, ILW_PRICE, LIVE_CAT_LOAD, liveCatCost, ilwCost, APPETITE, WINDOW_SHARE, CAPACITY_STEPS,
     MIN_ALIGNED, MAX_THIRD, MEMBERS, ON_PLAN, protMult, mixDrift,
     EVENTS, EVENT_BY_ID, EVENT_GROUPS, eventPlan, eventCtx, pickEvent, eventView, eventFx, eventPick, eventDeal, applyEventFx, describeFx, fxLR, stampFill, startMembers, memberReturn, memberReview, applyReview,
     fixedCosts, shieldCost, deckSize, weekMarket, splitKey, weights, capitalFor, mixProfile, capitalOffers, makeDeck, renewalOffer, deckScale, brokerLine, dealLR,
@@ -2681,7 +2703,7 @@ p.sm { margin: 0; }
     ['BOC', 'Business Opportunities Committee: the Lloyd’s panel that hears new syndicate applications.'],
     ['FAL', 'Funds at Lloyd’s: the capital members put up to back their share of the stamp.'],
     ['SCR', 'Solvency Capital Requirement: the capital needed to survive a 1-in-200 year, from the Lloyd’s model.'],
-    ['ECA', 'Economic Capital Assessment: the capital Lloyd’s actually requires, your SCR × 1.35.'],
+    ['ECA', 'Economic Capital Assessment: the capital Lloyd’s actually requires, your SCR × 1.35. Volatile cat classes need the most, and a new syndicate carries a loading for its first two years.'],
     ['Funds in Syndicate', 'Profits (or losses) held in your open years of account. They count towards your capital until the year closes.'],
     ['Names', 'Individual members of Lloyd’s, who join syndicates through a members’ agent.'],
     ['Members’ agent', 'Advises Names and places their capital on syndicates.'],
@@ -2695,7 +2717,8 @@ p.sm { margin: 0; }
     ['QS', 'Quota share: a reinsurer takes a fixed share of premium and losses.'],
     ['RDS', 'Realistic Disaster Scenarios: Lloyd’s standard what-if events. Your exposure to each is checked against your appetite.'],
     ['Cat XL', 'Catastrophe excess of loss: reinsurance you buy that pays out when a catastrophe hits a scenario.'],
-    ['ILW', 'Industry loss warranty: last-minute cover that pays if the industry loss is big enough.'],
+    ['ILW', 'Industry loss warranty: index cover bought at 1 January. It pays only if the industry loss is big enough (a severe or extreme event), so it’s cheaper than cat XL but carries basis risk.'],
+    ['Live cat', 'Cover bought as a catastrophe approaches. Available, at a storm-season price.'],
     ['PMD', 'Lloyd’s Performance Management Directorate. Writes letters.'],
     ['SBF', 'Syndicate Business Forecast: next year’s business plan, submitted each autumn.'],
     ['Coming into line', 'Each November, members’ capital must cover next year’s ECA.'],
@@ -2722,7 +2745,7 @@ p.sm { margin: 0; }
   const YEAR_BEATS = [
     ['Renewal review', 'Years 2 and 3: renew, grow or shred last year’s books'],
     ['1.1 rush', 'Brokers queue at your box until midnight on 31 December'],
-    ['Outwards', 'Put cat XL shields on your biggest disaster scenarios'],
+    ['Outwards', 'Cat XL shields and index cover (ILWs) on your biggest disaster scenarios, with no clock'],
     ['Q1 review', 'Lloyd’s checks your exposure and your mix'],
     ['In-tray', 'Twice a year, Lloyd’s, the market, your people or a claim needs an answer'],
     ['Catastrophes', 'Some come with a forecast, some without warning'],
@@ -2840,7 +2863,7 @@ p.sm { margin: 0; }
       '<p>Your score is the <b>value your managing agency creates over three years of account</b>. £1k = 1 point. Everyone starts with the same £100m stamp. Every game draws a fresh three-year market: new catastrophes, rate cycle, deals and in-tray.</p>' +
       '<pre>For each year of account:\n   Gross written premium\n − Commission\n − Attritional losses\n − Catastrophe losses (after your outwards)\n − Reserve development\n − Fixed expenses and reinsurance spend\n = Syndicate underwriting result\n − Members’ share\n = Your share of the result\n − Cost of your own capital (and your share of cash calls)\n + Managing agency fees on members’ shares\n + Profit commission on members’ profits\n = Value to your agency\nAdd the three years, then\n + £0.5m (500 points) for each year on plan\n − £1.0m (1,000 points) per Performance Management letter\n = SCORE (£1k = 1 point)</pre>' +
       '<p>Your stamp is split into shares. Members bring their own Funds at Lloyd’s (FAL) and keep their share of the result; you must keep at least 20% yourself. A bigger share of your own means more upside and more risk. Members react to results each November: some walk, some want more.</p>' +
-      '<p>Your ECA is your SCR × 1.35, built from your business mix and stamp. Spread books earn a diversification credit. Profits stay in the syndicate until the year closes. Fall below 60% of your ECA after a catastrophe and Lloyd’s calls for more capital.</p>' +
+      '<p>Your ECA is your SCR × 1.35, built from your business mix and stamp. Volatile, cat-driven classes (Property Cat, Space, Parametric, Cyber) need the most capital, and because they move together they earn less diversification credit than a spread book. A new syndicate also carries a capital loading: +' + Math.round(E.NEW_SYND_LOAD[0] * 100) + '% in year 1, +' + +(E.NEW_SYND_LOAD[1] * 100).toFixed(1) + '% in year 2 and none by year 3. Profits stay in the syndicate until the year closes. Fall below 60% of your ECA after a catastrophe and Lloyd’s calls for more capital.</p>' +
       '<p><b>The in-tray:</b> twice a year an event needs an answer: Lloyd’s, the market, your people or a claim. Questions from Lloyd’s and the regulators have a right answer, and you see the effect after you choose. Market, people and claims events are judgement calls, and each answer shows what it does. Fines and your own costs come straight off your agency’s value; syndicate costs are shared with your members.</p>' +
       '<p><b>On plan</b> means premium within 85–115% of your stamp and no more than ' + E.ON_PLAN.drift + '% of it in different classes from your plan. The GWP and Mix gauges turn green when you’re there.</p>' +
       '<h3>Glossary</h3><dl class="glossary">' + GLOSSARY.map(([t, d]) => '<dt>' + esc(t) + '</dt><dd>' + esc(d) + '</dd>').join('') + '</dl>' +
@@ -3022,11 +3045,16 @@ p.sm { margin: 0; }
   function gameOpts(extra) {
     return Object.assign({
       market: G.market, au: G.au, qs: G.qs,
-      years: G.years.map((Y) => ({ fal: Y.fal, alignedFal: Y.alignedFal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], outwardsCost: Y.outwardsCost || 0, members: Y.members || [] })),
+      years: G.years.map((Y) => ({ fal: Y.fal, alignedFal: Y.alignedFal, capital: Y.capital, eca: Y.eca, capacity: Y.capacity, split: Y.split, outwards: Y.outwards || [], ilwCover: Y.ilwCover || [], outwardsCost: Y.outwardsCost || 0, members: Y.members || [] })),
       ilw: G.ilw, reinsCall: G.reinsCall, pmd: G.pmd, pmdAt: G.pmdAt, fx: G.fx,
       cashCallChoice: (info) => G.cashChoices[info.month] || 'pay'
     }, extra || {});
   }
+  // the loadings on top of SCR × 1.35 in year y, for the capital notes
+  const ecaLoads = (y) => {
+    const young = E.NEW_SYND_LOAD[Math.min(y, E.NEW_SYND_LOAD.length - 1)];
+    return (young ? ', +' + +(young * 100).toFixed(1) + '% new-syndicate loading' : '') + (G.loading ? ', +' + Math.round(G.loading * 100) + '% review loading' : '');
+  };
   // what the projections should credit: shields by year, ILWs and the Reinsurance Call
   const protOpts = () => ({ years: G.years, ilw: G.ilw, reinsCall: G.reinsCall, fx: G.fx });
   // the opening: fill the first year's stamp with members' lines and the agency's own capital
@@ -3105,7 +3133,7 @@ p.sm { margin: 0; }
         const p = E.mixProfile(m.split);
         const dots = Object.keys(m.split).map((c) => '<i style="background:' + clsColor(c) + '" title="' + esc(E.CLASSES[c].name) + '"></i>').join('');
         return '<button class="mixcard" data-mix="' + m.id + '" aria-pressed="false"><span class="dots">' + dots + '</span><span class="mname">' + esc(m.name) + '</span><span class="mtag">' + esc(m.tag) + '</span>' +
-          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(netBar(p) * 100) + '%" title="Expected margin after average catastrophes: ' + pct(p.margin - p.catLoad, 1) + '"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%"></b></span></button>';
+          '<span class="minibars"><span>Margin</span><b style="--v:' + Math.round(netBar(p) * 100) + '%" title="Expected margin after average catastrophes: ' + pct(p.margin - p.catLoad, 1) + '"></b><span>Volatility</span><b style="--v:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%"></b><span>Capital</span><b style="--v:' + Math.round(Math.min(1, p.hunger / 1.1) * 100) + '%"></b></span></button>';
       }).join('');
       const auCards = Object.keys(E.AUS).map((id) => {
         const a = E.AUS[id];
@@ -3237,7 +3265,7 @@ p.sm { margin: 0; }
       stats.innerHTML =
         '<div class="stat"><span class="eyebrow">Expected margin</span><span class="v num">' + pct(p.margin - p.catLoad, 1) + '</span><small class="statsub">after average catastrophes · a quiet year: ' + pct(p.margin, 1) + '</small><div class="meter"><i style="width:' + Math.round(netBar(p) * 100) + '%"></i></div></div>' +
         '<div class="stat"><span class="eyebrow">Volatility</span><span class="v">' + (p.vol > 0.15 ? 'Wild' : p.vol > 0.12 ? 'Lively' : p.vol > 0.08 ? 'Steady' : 'Sleepy') + '</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.vol / 0.18) * 100) + '%;background:var(--bad)"></i></div></div>' +
-        '<div class="stat"><span class="eyebrow">Capital (ECA)</span><span class="v num">£' + p.eca.toFixed(0) + 'm</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.hunger / 0.75) * 100) + '%;background:var(--crane)"></i></div></div>' +
+        '<div class="stat"><span class="eyebrow">Capital (ECA)</span><span class="v num">£' + p.eca.toFixed(0) + 'm</span><div class="meter"><i style="width:' + Math.round(Math.min(1, p.hunger / 1.1) * 100) + '%;background:var(--crane)"></i></div></div>' +
         '<div class="stat' + (p.div > 0.15 ? ' shimmer' : '') + '"><span class="eyebrow">Diversification credit</span><span class="v num">' + pct(p.div, 0) + '</span><div class="meter"><i style="width:' + Math.round((p.div / 0.25) * 100) + '%;background:var(--good)"></i></div></div>';
     },
     finish() {
@@ -3484,7 +3512,7 @@ p.sm { margin: 0; }
       const root = el('<section class="scene">' +
         '<div class="stephead"><div><span class="eyebrow">Step 3 · Making it Happen</span><h2>Fill the Stamp</h2></div>' +
         '<div class="right"><div class="timer" id="gTimer"><span class="num">24s</span><span class="track"><span class="fill"></span></span></div><button class="btn primary" id="gDone">Lock it in</button></div>' +
-        '<p>Flick offers into your stamp (or tap them) before rival hands snatch them. A full £100m stamp needs <b class="num">£' + E.capitalFor(G.split, G.loading, false, E.PLAN_GWP).eca.toFixed(0) + 'm</b> of <b>Funds at Lloyd’s (FAL)</b>, your <b>Economic Capital Assessment (ECA)</b>. <b>Members’ shares</b> bring their own FAL and pay you fees and profit commission. <b>Your share</b> uses your agency’s capital: more upside, but it costs a return. Keep at least 20%.</p></div>' +
+        '<p>Flick offers into your stamp (or tap them) before rival hands snatch them. A full £100m stamp needs <b class="num">£' + E.capitalFor(G.split, G.loading, false, E.PLAN_GWP).eca.toFixed(0) + 'm</b> of <b>Funds at Lloyd’s (FAL)</b>, your <b>Economic Capital Assessment (ECA)</b>, including a ' + Math.round(E.NEW_SYND_LOAD[0] * 100) + '% new-syndicate loading. <b>Members’ shares</b> bring their own FAL and pay you fees and profit commission. <b>Your share</b> uses your agency’s capital: more upside, but it costs a return. Keep at least 20%.</p></div>' +
         '<div class="grab"><div class="field" id="field"></div>' +
         '<div class="vault stampvault" id="vault"><div class="stampbar" id="stampbar"></div><div class="target" id="vtarget"><span>Stamp</span></div><div class="minal" id="vmin"><span>Your 20% minimum</span></div><div class="vlabel"><span id="vPct">0%</span><small id="vAmt"></small></div></div></div>' +
         '<div class="grabstats"><span>Stamp <b id="gsStamp"></b></span><span>Your share <b id="gsAligned"></b></span><span>FAL <b id="gsFal"></b> of <b id="gsEca"></b></span><span>Your capital <b id="gsMine"></b> costs <b id="gsCost"></b> a year</span><span>Fees <b id="gsFees"></b> a year</span><span id="gsFeed" class="muted"></span></div>' +
@@ -3703,7 +3731,7 @@ p.sm { margin: 0; }
         recomputeCapital();
         G.cashTopUps = {};
                 // ECA scales with the stamp: a part-filled stamp needs only its share of the plan's ECA
-        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca * G.fill.filled, fal: G.fal, alignedFal: G.alignedFal, capital: G.capital.map((c) => Object.assign({}, c)), members: G.members.map((x) => Object.assign({}, x)), outwards: [], outwardsCost: 0 }];
+        G.years = [{ split: Object.assign({}, G.split), plan: E.PLAN_GWP, capacity: G.capacity, eca: G.eca * G.fill.filled, fal: G.fal, alignedFal: G.alignedFal, capital: G.capital.map((c) => Object.assign({}, c)), members: G.members.map((x) => Object.assign({}, x)), outwards: [], ilwCover: [], outwardsCost: 0 }];
         const ids = Object.keys(E.RIVALS);
         for (const id of ids) G.rivalRuns[id] = E.rivalRun(id, G.season, G.market);
         G.ghost = LB.ghostCurve();
@@ -3751,6 +3779,7 @@ p.sm { margin: 0; }
         else if (k === 'arrowright' || k === 'd') { e.preventDefault(); this.decide(2); }
         else if (k === 'r') this.revealNext();
         else if (k === 'p') root.querySelector('#rdsBtn').click();
+        else if (k === 't') this.askTime();
         else if (['1', '2', '3'].includes(k)) this.useFavour(['lunch', 'reins', 'poach'][+k - 1]);
       };
       addEventListener('keydown', this.onKey);
@@ -3983,7 +4012,7 @@ p.sm { margin: 0; }
         row('Funds in Syndicate<small> results held in your open years</small>', fmtM(c.held, true)) +
         (c.calls > 0.05 ? row('Cash calls paid', fmtM(c.calls)) : '') +
         row('Capital now', fmtM(c.now), 'tot') +
-        row('ECA<small> what Lloyd’s requires for this stamp (SCR × 1.35)</small>', fmtM(Y.eca)) +
+        row('ECA<small> what Lloyd’s requires for this stamp: SCR × 1.35' + ecaLoads(this.y) + '</small>', fmtM(Y.eca)) +
         row('Solvency line<small> 60% of ECA</small>', fmtM(Y.eca * E.SOLVENCY_LINE)) + '</table>' +
         '<p>Fall below the solvency line after a catastrophe and Lloyd’s makes a cash call. In November, your capital must cover next year’s ECA (coming into line).</p>');
     },
@@ -4010,8 +4039,9 @@ p.sm { margin: 0; }
       const at = abs == null ? Math.floor(this.abs()) : abs;
       const gross = E.rdsExposure(G.entries, at);
       const appetite = E.rdsAppetite(this.Y.split, this.Y.capacity, this.Y.fal);
-      const out = this.Y.outwards || [];
-      const rows = Object.keys(gross).map((r) => ({ r, gross: gross[r], net: gross[r] * (out.includes(r) ? 0.5 : 1), appetite: appetite[r], shielded: out.includes(r) }));
+      const out = this.Y.outwards || [], idx = this.Y.ilwCover || [];
+      // index cover has basis risk, so it doesn't count towards the RDS net (only shields do)
+      const rows = Object.keys(gross).map((r) => ({ r, gross: gross[r], net: gross[r] * (out.includes(r) ? 0.5 : 1), appetite: appetite[r], shielded: out.includes(r), indexed: idx.includes(r) }));
       rows.forEach((x) => { x.pct = x.net / x.appetite; });
       return { rows: rows.sort((a, b) => b.gross - a.gross), appetite };
     },
@@ -4118,7 +4148,9 @@ p.sm { margin: 0; }
       else if (room < 0.5) blocked = 'Stamp capacity full. Decline only.';
       this.cur = { d, patience: 1, total: 13 * b.patience * (G.au === 'veteran' ? 1.4 : 1), revealed: [false, false, false], shownAt: this.t, lunch: false, blocked, busy: false };
       const row = this.root.querySelector('#brokerRow');
-      row.innerHTML = '<div class="face">' + face(d.broker) + '</div><div class="who"><span class="bname">' + esc(b.name) + '<small>' + esc(b.firm) + '</small></span><div class="bubble">' + esc(E.brokerLine(d)) + '</div><div class="patience"><i id="pat"></i></div></div>';
+      row.innerHTML = '<div class="face">' + face(d.broker) + '</div><div class="who"><span class="bname">' + esc(b.name) + '<small>' + esc(b.firm) + '</small></span><div class="bubble">' + esc(E.brokerLine(d)) + '</div>' +
+        '<div class="patrow"><div class="patience"><i id="pat"></i></div><button class="asktime" id="askTime" title="Ask for time (T). The midnight clock keeps running.">Ask for time</button></div></div>';
+      row.querySelector('#askTime').addEventListener('click', () => this.askTime());
       this.renderSlip();
       this.root.querySelectorAll('.actions [data-line]').forEach((btn) => { btn.disabled = !!blocked && btn.dataset.line !== '0'; });
       Sound.tick();
@@ -4136,7 +4168,7 @@ p.sm { margin: 0; }
       store.set('lsl-coached-v2', true);
       this.over = true;
       const box = this.root.querySelector('#box');
-      const c = el('<div class="coach" role="dialog"><h4>Your first slip</h4><p><b>Drag the slip</b>: left to decline, down for a small line, right for a big line. Or use the buttons, or ← ↓ →.</p><p>Tap the <b>small print</b> to read it, but the broker’s patience drops. The <b>RDS line</b> shows which disaster scenario it adds to.</p><button class="btn primary">Got it</button></div>');
+      const c = el('<div class="coach" role="dialog"><h4>Your first slip</h4><p><b>Drag the slip</b>: left to decline, down for a small line, right for a big line. Or use the buttons, or ← ↓ →.</p><p>Tap the <b>small print</b> to read it, but the broker’s patience drops. The <b>RDS line</b> shows which disaster scenario it adds to.</p><p>Need longer? <b>Ask for time</b> (T) tops up their patience twice. Ask a third time and they walk. The midnight clock keeps running.</p><button class="btn primary">Got it</button></div>');
       box.appendChild(c);
       c.querySelector('button').addEventListener('click', () => { c.remove(); this.over = false; });
       c.querySelector('button').focus({ preventScroll: true });
@@ -4273,6 +4305,19 @@ p.sm { margin: 0; }
       setTimeout(() => this.clearDeal(), 700 / SPEED);
       this.nextAt = this.t + 0.8;
       this.updateRace();
+    },
+    // more time on a slip: twice the broker tops up their patience, a third ask and they take it elsewhere;
+    // the midnight clock keeps running throughout
+    askTime() {
+      const c = this.cur; if (!c || c.busy || this.over || paused) return;
+      c.asks = (c.asks || 0) + 1;
+      if (c.asks >= 3) { this.walk(); return; }
+      c.patience = Math.min(1, c.patience + (c.asks === 1 ? 0.4 : 0.25));
+      const bub = this.root.querySelector('#brokerRow .bubble');
+      if (bub) bub.textContent = c.asks === 1 ? 'Go on, then.' : 'Last chance. I’ve got other markets.';
+      const btn = this.root.querySelector('#askTime');
+      if (btn && c.asks === 2) { btn.classList.add('last'); btn.textContent = 'Ask again?'; btn.title = 'Ask again and the broker takes the slip to a rival.'; }
+      Sound.tick();
     },
     walk(silent) {
       const c = this.cur; if (!c || c.busy) return;
@@ -4531,7 +4576,7 @@ p.sm { margin: 0; }
       return '<button class="rdsrow' + (over ? ' over' : '') + (x.shielded ? ' shielded' : '') + (hit === x.r ? ' threat' : '') + '" data-r="' + x.r + '">' +
         '<span class="ri">' + icon(R.icon) + '</span><span class="rn"><b>' + esc(R.name) + '</b><small>' +
         (x.gross > 0 ? fmtM(x.gross) + ' gross · ' + fmtM(x.net) + ' net · ' + Math.round(x.pct * 100) + '% of appetite' : 'No exposure') + '</small></span>' +
-        '<span class="rs">' + (x.shielded ? icon('shield') : '') + '</span>' +
+        '<span class="rs">' + (x.shielded ? icon('shield') : '') + (x.indexed ? '<span class="ilwtag">ILW</span>' : '') + '</span>' +
         '<span class="rbar"><i class="g" style="width:' + w(x.gross) + '"></i><i class="n" style="width:' + w(x.net) + '"></i><span class="ap" style="left:' + w(x.appetite) + '"></span></span></button>';
     },
     openRDS(opt) {
@@ -4543,7 +4588,7 @@ p.sm { margin: 0; }
       const S = this.sheet('<span class="eyebrow">' + MONTHS[Math.min(11, this.month)] + ' ' + yoaName(this.y) + ' · Realistic Disaster Scenarios</span><h3>RDS Board</h3>' +
         '<p class="muted sm">Realistic Disaster Scenarios (RDS) are Lloyd’s standard what-if events. Each bar is your gross loss if that scenario happened in full, against the appetite in your business plan (the white line). Solid bars are net of your shields.</p>' +
         '<div class="rdsboard">' + this.rdsRowsHTML(st) + '</div>' +
-        '<div class="boardfoot stickfoot"><span class="muted sm">' + (G.armedReins ? 'Reinsurance Call armed: it halves the next catastrophe hit.' : (this.Y.outwards || []).length ? 'Shields on: ' + this.Y.outwards.map((r) => esc(E.RDS[r].name)).join(', ') + '.' : 'No shields this year.') + '</span><button class="btn" data-close>Close</button></div>', 'rdssheet');
+        '<div class="boardfoot stickfoot"><span class="muted sm">' + (G.armedReins ? 'Reinsurance Call armed: it halves the next catastrophe hit.' : ((this.Y.outwards || []).length ? 'Shields on: ' + this.Y.outwards.map((r) => esc(E.RDS[r].name)).join(', ') + '.' : 'No shields this year.') + ((this.Y.ilwCover || []).length ? ' Index cover (ILW) on: ' + this.Y.ilwCover.map((r) => esc(E.RDS[r].name)).join(', ') + '.' : '')) + '</span><button class="btn" data-close>Close</button></div>', 'rdssheet');
       const close = () => S.close();
       S.body.querySelector('[data-close]').addEventListener('click', close);
       S.o.addEventListener('click', (ev) => { if (ev.target === S.o) close(); });
@@ -4553,14 +4598,25 @@ p.sm { margin: 0; }
     // 1 January: two annual cat XL shields
     outwards() {
       const y = this.y, at = 12 * y;
-      this.Y.outwards = []; this.Y.outwardsCost = 0;
+      this.Y.outwards = []; this.Y.ilwCover = []; this.Y.outwardsCost = 0;
       const st = this.rdsState(at);
       const sm = G.shieldMult[y] || 1;
-      const cost = (r) => E.shieldCost(r, (st.rows.find((x) => x.r === r) || { gross: 0 }).gross) * sm;
-      const S = this.sheet('<span class="eyebrow">1 January ' + yoaName(y) + ' · outwards</span><h3>Buy your cat XL</h3>' +
-        '<p class="muted sm">A catastrophe excess of loss (cat XL) treaty is reinsurance you buy for the year. Drag a shield onto a disaster scenario (RDS) row, or tap the row. Each shield halves your losses from that scenario for the year. It’s priced at the expected recovery plus a margin: the price is shown on each row.' + (sm > 1 ? ' <b>After a reinsurer left the market, shields cost ' + Math.round((sm - 1) * 100) + '% more this year.</b>' : '') + '</p>' +
+      const grossOf = (r) => (st.rows.find((x) => x.r === r) || { gross: 0 }).gross;
+      const cost = (r) => E.shieldCost(r, grossOf(r)) * sm;
+      const icost = (r) => E.ilwCost(r, grossOf(r)) * sm;
+      const S = this.sheet('<span class="eyebrow">1 January ' + yoaName(y) + ' · outwards · no clock here: take your time</span><h3>Buy your reinsurance</h3>' +
+        '<p class="muted sm"><b>Cat XL shield</b> (up to two): drag one onto a disaster scenario (RDS) row, or tap the row. It halves your losses from that scenario all year, and counts towards your RDS appetite. ' +
+        '<b>Index cover, ILW</b> (up to two): tap a row’s ILW price. About a quarter cheaper, but an industry loss warranty only pays when the event is severe or extreme (the industry loss has to be big enough); then it halves your loss. Its basis risk means it doesn’t count towards your appetite. ' +
+        'Both are priced at the expected recovery plus a margin.' + (sm > 1 ? ' <b>After a reinsurer left the market, reinsurance costs ' + Math.round((sm - 1) * 100) + '% more this year.</b>' : '') + '</p>' +
         '<div class="stickbar"><div class="shields" id="shields"></div><div class="boardfoot"><span class="sm" id="outCost"></span><button class="btn primary" id="outDone"></button></div></div>' +
         '<div class="rdsboard" id="rdsb"></div>', 'rdssheet');
+      const toggleIlw = (r) => {
+        const L = this.Y.ilwCover, i = L.indexOf(r);
+        if (i >= 0) L.splice(i, 1);
+        else if (L.length < 2) { L.push(r); Sound.blip(true); }
+        else { toast('Two ILWs only', 'Tap an ILW price again to take it back.', 'var(--warn)'); return; }
+        paint();
+      };
       const toggle = (r) => {
         const i = this.Y.outwards.indexOf(r);
         if (i >= 0) this.Y.outwards.splice(i, 1);
@@ -4591,7 +4647,12 @@ p.sm { margin: 0; }
         board.innerHTML = this.rdsRowsHTML(now);
         board.querySelectorAll('.rdsrow').forEach((n) => {
           const r = n.dataset.r;
-          n.querySelector('.rs').innerHTML = (this.Y.outwards.includes(r) ? icon('shield') : '') + '<em class="num">' + fmtM(cost(r)) + '</em>';
+          const ion = this.Y.ilwCover.includes(r);
+          n.querySelector('.rs').innerHTML = (this.Y.outwards.includes(r) ? icon('shield') : '') + '<em class="num">XL ' + fmtM(cost(r)) + '</em>' +
+            '<span class="ilwchip' + (ion ? ' on' : '') + '" role="button" tabindex="0" aria-pressed="' + ion + '" data-ilw="' + r + '">ILW ' + fmtM(icost(r)) + '</span>';
+          const chip = n.querySelector('.ilwchip');
+          chip.addEventListener('click', (ev) => { ev.stopPropagation(); toggleIlw(r); });
+          chip.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); toggleIlw(r); } });
           n.addEventListener('click', () => toggle(r));
         });
         const left = 2 - this.Y.outwards.length;
@@ -4599,26 +4660,27 @@ p.sm { margin: 0; }
         sh.innerHTML = Array.from({ length: left }, () => '<button class="shieldtok">' + icon('shield') + 'Cat XL shield</button>').join('') +
           (left === 0 ? '<span class="muted sm">Both shields placed. Tap a shielded row to take one back.</span>' : '');
         sh.querySelectorAll('.shieldtok').forEach(wireShield);
-        this.Y.outwardsCost = this.Y.outwards.reduce((s, r) => s + cost(r), 0);
-        S.body.querySelector('#outCost').innerHTML = this.Y.outwards.length ? 'Outwards spend <b class="num">' + fmtM(this.Y.outwardsCost) + '</b> this year.' : 'No outwards yet. You can go naked, if you dare.';
-        S.body.querySelector('#outDone').textContent = this.Y.outwards.length ? 'Place outwards →' : 'Go without →';
+        this.Y.outwardsCost = this.Y.outwards.reduce((s, r) => s + cost(r), 0) + this.Y.ilwCover.reduce((s, r) => s + icost(r), 0);
+        const bought = this.Y.outwards.length + this.Y.ilwCover.length;
+        S.body.querySelector('#outCost').innerHTML = bought ? 'Outwards spend <b class="num">' + fmtM(this.Y.outwardsCost) + '</b> this year (' + this.Y.outwards.length + ' XL, ' + this.Y.ilwCover.length + ' ILW).' : 'No outwards yet. You can go naked, if you dare.';
+        S.body.querySelector('#outDone').textContent = bought ? 'Place outwards →' : 'Go without →';
       };
       paint();
       if (!st.rows.length) S.body.querySelector('#shields').innerHTML = '<span class="muted sm">Nothing to protect yet.</span>';
       const done = () => {
         S.close();
-        const o = this.Y.outwards;
-        this.tick(o.length ? 'OUTWARDS PLACED · ' + o.map((r) => E.RDS[r].name.toUpperCase()).join(' & ') + ' · ' + fmtM(this.Y.outwardsCost).toUpperCase() : G.no + ' GOES WITHOUT OUTWARDS. BRAVE.');
+        const o = this.Y.outwards.concat(this.Y.ilwCover.map((r) => r + '·ILW'));
+        this.tick(o.length ? 'OUTWARDS PLACED · ' + o.map((r) => (r.endsWith('·ILW') ? 'ILW ' + E.RDS[r.slice(0, -4)].name : E.RDS[r].name).toUpperCase()).join(' & ') + ' · ' + fmtM(this.Y.outwardsCost).toUpperCase() : G.no + ' GOES WITHOUT OUTWARDS. BRAVE.');
         this.updateRace();
         this.startFF();
       };
       const btn = S.body.querySelector('#outDone');
       btn.addEventListener('click', done);
       this.focusLater(btn);
-      if (AUTO) setTimeout(() => { st.rows.slice(0, 2).forEach((x) => toggle(x.r)); setTimeout(done, 300 / SPEED); }, 300 / SPEED);
+      if (AUTO) setTimeout(() => { st.rows.slice(0, 2).forEach((x) => toggle(x.r)); st.rows.slice(2, 4).filter((x) => x.gross > 0.1 * this.Y.fal).forEach((x) => toggleIlw(x.r)); setTimeout(done, 300 / SPEED); }, 300 / SPEED);
     },
 
-    // a catastrophe: forecast events give a countdown and a last-minute ILW; the rest just happen
+    // a catastrophe: forecast events give a countdown and a chance to buy live cat cover; the rest just happen
     catastrophe(e) {
       const R = E.RDS[e.rds];
       this.setPhase('cat', MONTHS[e.month % 12] + ' · ' + (R.sober ? 'major loss' : 'catastrophe'));
@@ -4628,17 +4690,20 @@ p.sm { margin: 0; }
       const row = st.rows.find((x) => x.r === e.rds);
       const gross = row ? row.gross : 0;
       const shielded = (this.Y.outwards || []).includes(e.rds);
+      const ilwOn = (this.Y.ilwCover || []).includes(e.rds), indexed = ilwOn && e.sev >= E.ILW_TRIGGER;
+      const lc = E.liveCatCost(gross * (shielded ? 0.5 : 1) * (indexed ? 0.5 : 1), e.sev);
+      const ilwNote = ilwOn ? (indexed ? ' Your index cover (ILW) will trigger on an event this big.' : ' Your index cover (ILW) won’t trigger on a moderate event.') : '';
       const head = e.warn
         ? '<div class="forecast">' + icon(R.icon) + '<div><b>Forecast</b> · ' + esc(R.forecast || e.name) + ' Expected to be <b>' + SEV_WORD(e.sev) + '</b>.</div></div>'
         : '<div class="forecast breaking">' + icon(R.icon) + '<div><b>Breaking</b> · ' + esc(R.breaking || e.name) + '</div></div>';
       let foot;
       if (e.warn) {
-        const ilw = gross > 0 ? '<button class="btn brass" id="ilw">' + icon('shield') + ' Buy an ILW · ' + fmtM(gross * E.ILW_COST) + '</button>' : '';
+        const ilw = gross > 0 ? '<button class="btn brass" id="ilw">' + icon('shield') + ' Live cat cover · ' + fmtM(lc) + '</button>' : '';
         const call = G.favours.reins && !G.armedReins && gross > 0 ? '<button class="btn" id="call">Make the Reinsurance Call</button>' : '';
-        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? ' · your shield halves it' : ' · no shield on this one') + '. An industry loss warranty (ILW) halves this loss.' : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span>' +
+        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? ' · your shield halves it' : ' · no shield on this one') + '.' + ilwNote + ' Live cat cover halves ' + (shielded || indexed ? 'what’s left of ' : '') + 'this loss at storm-season prices: about 15% more than it should pay back.' : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span>' +
           '<div class="cbtns">' + ilw + call + '<button class="btn danger" id="brace">Brace · <span class="num" id="cd">10s</span></button></div></div>';
       } else {
-        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? '. Your shield halves it.' : '. No shield on this one.') : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span></div>';
+        foot = '<div class="cfoot"><span class="sm muted" id="cTxt">' + (gross > 0 ? 'Gross exposure ' + fmtM(gross) + (shielded ? '. Your shield halves it.' : '. No shield on this one.') + ilwNote : 'You have nothing on this scenario.') + (G.armedReins ? ' Reinsurance Call armed.' : '') + '</span></div>';
       }
       const S = this.sheet('<span class="eyebrow">' + esc(E.RDS_GROUPS[R.group]) + ' · RDS: ' + esc(R.name) + '</span><h3>' + esc(e.name) + '</h3>' + head +
         '<div class="rdsboard" id="rdsb">' + this.rdsRowsHTML(st, e.rds, true) + '</div>' + foot + '<p class="lossline" id="lossline"></p><div class="cnext" id="cnext"></div>', 'rdssheet cat' + (R.sober ? ' sober' : ''));
@@ -4646,8 +4711,8 @@ p.sm { margin: 0; }
       if (!R.sober) Sound.rumble(); else Sound.thud();
       const ilwBtn = S.body.querySelector('#ilw');
       if (ilwBtn) ilwBtn.addEventListener('click', () => {
-        G.ilw[e.key] = true; ilwBtn.disabled = true; ilwBtn.innerHTML = icon('shield') + ' ILW bought';
-        Sound.kaching(); toast('ILW bought', 'Last-minute cover at a last-minute price: ' + fmtM(gross * E.ILW_COST) + '.', 'var(--brass)');
+        G.ilw[e.key] = true; ilwBtn.disabled = true; ilwBtn.innerHTML = icon('shield') + ' Live cat cover bought';
+        Sound.kaching(); toast('Live cat cover bought', 'Storm-season price: ' + fmtM(lc) + '.', 'var(--brass)');
       });
       const callBtn = S.body.querySelector('#call');
       if (callBtn) callBtn.addEventListener('click', () => { this.useFavour('reins'); callBtn.remove(); });
@@ -4660,7 +4725,6 @@ p.sm { margin: 0; }
         if (t <= 0) this.landfall();
       };
       if (AUTO && e.warn) setTimeout(() => {
-        if (ilwBtn && !shielded && gross > this.Y.fal * 0.25) ilwBtn.click();
         setTimeout(() => this.landfall(), 300 / SPEED);
       }, 400 / SPEED);
     },
@@ -4678,12 +4742,13 @@ p.sm { margin: 0; }
       const reinsKept = G.armedReins && gross <= 0;
       if (G.armedReins && gross > 0) { G.reinsCall[e.key] = true; G.armedReins = false; }
       const shielded = (this.Y.outwards || []).includes(e.rds);
-      const mult = (shielded ? 0.5 : 1) * (G.ilw[e.key] ? 0.5 : 1) * (G.reinsCall[e.key] ? 0.5 : 1);
+      const indexed = (this.Y.ilwCover || []).includes(e.rds) && e.sev >= E.ILW_TRIGGER;
+      const mult = (shielded ? 0.5 : 1) * (indexed ? 0.5 : 1) * (G.ilw[e.key] ? 0.5 : 1) * (G.reinsCall[e.key] ? 0.5 : 1);
       let loss = 0;
       for (const b of hitBooks) { loss += b.P * b.deal.rds[e.rds] * e.sev * mult; b.catHit = true; this.paintBinder(b); }
       const net = loss * (G.qs ? 1 - E.QS_SHARE : 1);
       e.loss = net; e.gross = gross;
-      if (loss > 0 && (shielded || G.ilw[e.key])) G.calledIt = true;
+      if (loss > 0 && (shielded || indexed || G.ilw[e.key])) G.calledIt = true;
       S.body.querySelectorAll('.cbtns').forEach((n) => n.remove());
       const rowN = S.body.querySelector('.rdsrow[data-r="' + e.rds + '"]');
       const [tx, ty] = centre(rowN || S.body);
@@ -4693,7 +4758,7 @@ p.sm { margin: 0; }
         Sound.bell(1);
         if (rowN) { rowN.classList.remove('threat'); rowN.classList.add('hit'); }
         const ll = S.body.querySelector('#lossline');
-        const cover = [shielded && 'your shield', G.ilw[e.key] && 'the ILW', G.reinsCall[e.key] && 'the Reinsurance Call'].filter(Boolean);
+        const cover = [shielded && 'your shield', indexed && 'your index cover (ILW)', G.ilw[e.key] && 'live cat cover', G.reinsCall[e.key] && 'the Reinsurance Call'].filter(Boolean);
         if (net > 0) {
           ll.textContent = (R.sober ? 'Net loss to the syndicate: ' : e.name + ' costs you ') + fmtM(net);
           S.body.querySelector('#cTxt').textContent = 'The event came in at ' + Math.round(e.sev * 100) + '% of the full scenario.' + (cover.length ? ' Saved by ' + cover.join(' and ') + '.' : ' No cover on it.') + (G.qs ? ' Your outward QS takes a quarter.' : '');
@@ -4875,7 +4940,7 @@ p.sm { margin: 0; }
         const cb = S.body.querySelector('#capbtns');
         cb.innerHTML = Object.keys(E.CAPACITY_STEPS).map((k) => {
           const stamp = Math.round(Y.capacity * E.CAPACITY_STEPS[k]);
-          const eca = E.capitalFor(plan.split, G.loading, G.qs, stamp).eca;
+          const eca = E.capitalFor(plan.split, G.loading, G.qs, stamp, y + 1).eca;
           return '<button class="capbtn' + (plan.ask === k ? ' on' : '') + '" data-k="' + k + '" aria-pressed="' + (plan.ask === k) + '"><b>' + STEP_LABEL[k][0] + '</b><span class="num">' + STEP_LABEL[k][1] + ' · £' + stamp + 'm</span><small class="num">ECA £' + eca.toFixed(0) + 'm</small></button>';
         }).join('');
         cb.querySelectorAll('.capbtn').forEach((b) => b.addEventListener('click', () => { plan.ask = b.dataset.k; Sound.tick(); paint(); }));
@@ -5020,7 +5085,7 @@ p.sm { margin: 0; }
     // the agency's own capital must cover its share of next year's ECA
     cilCapital(nx) {
       const y = this.y, Y = this.Y;
-      const eca = E.capitalFor(nx.split, G.loading, G.qs, nx.capacity).eca;
+      const eca = E.capitalFor(nx.split, G.loading, G.qs, nx.capacity, y + 1).eca;
       const res = this.live();
       const held = res.uwCurve[12 * y + 10] || 0, extra = falExtra();
       const aNow = 1 - (Y.members || []).reduce((s2, x) => s2 + x.share, 0);
@@ -5118,11 +5183,11 @@ p.sm { margin: 0; }
       const members = (nx.members || Y.members || []).map((x) => Object.assign({}, x));
       // a stamp cut back at coming into line needs only its share of the planned ECA, and so do the members' FAL
       const capacity = nx.final || plan;
-      const eca = (nx.eca || E.capitalFor(split, G.loading, G.qs, plan).eca) * capacity / plan;
+      const eca = (nx.eca || E.capitalFor(split, G.loading, G.qs, plan, this.y + 1).eca) * capacity / plan;
       const alignedFal = nx.alignedFal != null ? nx.alignedFal : Y.alignedFal != null ? Y.alignedFal : Y.fal;
       G.years[this.y + 1] = {
         split, plan, capacity, eca, alignedFal, fal: alignedFal + members.reduce((s2, x) => s2 + x.share, 0) * eca,
-        capital: nx.capital || Y.capital.map((c) => Object.assign({}, c)), members, outwards: [], outwardsCost: 0
+        capital: nx.capital || Y.capital.map((c) => Object.assign({}, c)), members, outwards: [], ilwCover: [], outwardsCost: 0
       };
       G.next = null;
     },
@@ -5464,8 +5529,14 @@ p.sm { margin: 0; }
       '<div class="fbchips">' + FB_STARTERS.map((s, i) => '<button class="fbchip" data-s="' + i + '">' + esc(s.trim()) + '…</button>').join('') + '</div>' +
       '<textarea id="' + p + 'Text" class="fbtext" rows="3" maxlength="600" placeholder="e.g. I’d like more time at the 1.1 rush, and a hint about what the BOC is looking for."></textarea>' +
       '<div class="fbrow"><a class="btn primary" id="' + p + 'Mail" href="#">Email it</a><button class="btn" id="' + p + 'Copy">Copy</button><span class="fbnote" id="' + p + 'Note">' +
-      (FEEDBACK_TO ? 'Goes to ' + esc(FEEDBACK_TO) + ', with your score and setup attached.' : 'Your email opens ready to send, with your score and setup attached. Add the address of whoever shared the game.') + '</span></div>';
+      (FEEDBACK_TO ? '<b>Email it</b> opens your email app addressed to ' + esc(FEEDBACK_TO) + ', with this and a summary of your game written in. Then press Send.'
+        : '<b>Email it</b> opens your email app with this and a summary of your game written in. You add who it’s to, then press Send.') + '</span></div>';
   }
+  // what to say once feedback has left the page: the game can't see whether the email was actually sent
+  const FB_AFTER = {
+    mail: () => (FEEDBACK_TO ? 'Your email app should now be open, addressed to ' + FEEDBACK_TO + '. Press Send there.' : 'Your email app should now be open with this ready to send. Add the address of whoever shared the game, then press Send.') + ' Nothing opened? Press Copy and paste it into an email or Teams.',
+    copy: () => 'Copied: paste it into an email or Teams to ' + (FEEDBACK_TO || 'whoever shared the game') + '.'
+  };
   // the feedback email: the player's words, then the game in one line so they don't have to describe it
   function feedbackBody(res, grade, text) {
     const mins = G.startedAt ? Math.max(1, Math.round((Date.now() - G.startedAt) / 60000)) : null;
@@ -5599,8 +5670,8 @@ p.sm { margin: 0; }
       const ta = box.querySelector('#' + p + 'Text'), mail = box.querySelector('#' + p + 'Mail'), note = box.querySelector('#' + p + 'Note');
       const body = () => feedbackBody(this.res, this.grade, ta.value);
       const refresh = () => { mail.href = feedbackMail(body()); store.set('lsl-fb-draft', ta.value); };
-      const thanks = () => {
-        box.classList.add('sent'); note.textContent = 'Thanks! That goes straight into the next version.'; store.set('lsl-fb-draft', '');
+      const thanks = (how) => {
+        box.classList.add('sent'); note.textContent = FB_AFTER[how](); store.set('lsl-fb-draft', '');
         this.fbSent = true;
         if (onSent) onSent();
       };
@@ -5619,8 +5690,8 @@ p.sm { margin: 0; }
         ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
         refresh();
       }));
-      mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); setTimeout(thanks, 300); });
-      box.querySelector('#' + p + 'Copy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.', box.querySelector('.copybox')); thanks(); });
+      mail.addEventListener('click', (e) => { if (needText(e)) return; refresh(); setTimeout(() => thanks('mail'), 300); });
+      box.querySelector('#' + p + 'Copy').addEventListener('click', (e) => { if (needText(e)) return; this.copyText(body(), 'Feedback copied', 'Paste it into an email, Teams or Slack to whoever shared the game.', box.querySelector('.copybox')); thanks('copy'); });
     },
     // the Play again sheet: the same feedback block, then on to the next game
     askFeedback(next) {
@@ -5633,7 +5704,7 @@ p.sm { margin: 0; }
       const sync = () => {
         const t = this.root && this.root.querySelector('#fbText'); if (!t) return;
         t.value = store.get('lsl-fb-draft', '') || ''; t.dispatchEvent(new Event('input'));
-        if (this.fbSent) { const rp = this.root.querySelector('#fbPanel'); rp.classList.add('sent'); rp.querySelector('#fbNote').textContent = 'Thanks! That goes straight into the next version.'; }
+        if (this.fbSent) { const rp = this.root.querySelector('#fbPanel'); rp.classList.add('sent'); rp.querySelector('#fbNote').textContent = body.querySelector('#paNote').textContent; }
       };
       const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
       const close = () => { o.remove(); removeEventListener('keydown', onKey); sync(); };
