@@ -118,6 +118,28 @@ The results screen asks one question: **"One thing that would make this game bet
 
 No address is built into the page: the email opens with the To field empty. **When you share the game, add your address to the link** so the To field fills itself, for example `https://w-hogg.github.io/syndicate-launch/?feedback=you@company.com`. Only a plain email address is accepted.
 
+## Game stats
+
+Every game played on the GitHub Pages site can add a row to a Google Sheet that only you can see. A game's row is created once the player picks a mix, then updated as they go. **Reached** reads BOC, Capital, Red tape, Year 1, Year 2, Year 3, Close, Finished or Run-off, so you can see where people stop as well as how finished games went.
+
+Each row holds:
+- **Timing:** when it started and was last updated, minutes played, device and screen size, game version.
+- **Setup:** the market (replay it with `?season=`), mix, Active Underwriter and own share.
+- **Result:** score, grade, each year's value, combined ratio, PMD letters, cash calls and run-off.
+- **Play:** 1.1 slips missed each year, Finish 1.1 early, Ask for time, shields and ILWs each year, live cat cover, the Reinsurance Call, in-tray answers and badges.
+- **Afterwards:** whether feedback was sent (by email or copy, never the text) and whether the result was shared.
+- **Player:** a random ID kept on the device, to count repeat players.
+
+Nothing personal is recorded: no names, emails or syndicate names. The title screen says stats are recorded and has a **Don't record mine** switch. Nothing is sent from a local file, from the artifact, with `?nostats` in the link, or from a browser set to Global Privacy Control or Do Not Track.
+
+**Setting it up (once):**
+1. Make a new Google Sheet. Choose **Extensions → Apps Script**, replace the code with [`stats/apps-script.gs`](stats/apps-script.gs) and save.
+2. Choose **Deploy → New deployment**, pick **Web app**, set *Execute as* to **Me** and *Who has access* to **Anyone**, then press **Deploy** and allow access.
+3. Copy the web app URL (it ends in `/exec`). Opening it in a browser should say the receiver is running.
+4. In `index.html`, find the `const STATS_URL` line and put the URL between the empty quotes `''` at its end. Stats stay off until it's set.
+
+The first game creates a **Games** tab with a header row. The receiver ignores anything that isn't a game record, never lets text start a formula, and stops adding rows at 50,000.
+
 ## Every game is different
 
 Each game draws its own three-year market: each year's modifier, the catastrophes, the rate cycle, the in-tray events, the capital offers and the hidden quality of every portfolio. Play again, or reload, and you get a new one. The rivals play the same market as you in that game. Scores still go on a weekly leaderboard: in the published Claude artifact it's shared, and you can race the ghost of the week's leader; on the GitHub Pages site (or as a plain file) it lives on your device. **Share result** (on phones, the share sheet; on desktops, **Copy result**) sends an eye-catching summary (your score, the newspaper's headline, the catastrophes you survived, the rival you beat and your rating) with a link to the game, so colleagues can take their own shot and reply with theirs.

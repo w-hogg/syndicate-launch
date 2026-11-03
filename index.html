@@ -143,6 +143,8 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .led span { display: inline-block; white-space: nowrap; padding-left: 100%; font: 700 0.95rem/1 var(--f-slip); color: #ffb648; letter-spacing: 0.08em; text-shadow: 0 0 6px #ff9a2a88; animation: marquee 24s linear infinite; }
 @keyframes marquee { to { transform: translateX(-100%); } }
 .title-actions { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.statsnote { margin-top: 6px; }
+.statsoff { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; cursor: pointer; }
 .disclaimer { position: relative; z-index: 2; font-size: var(--t-xs); color: var(--ink-2); margin: 0; background: #0a111bcc; padding: 3px 10px; border-radius: 999px; }
 
 /* ---------- step header ---------- */
@@ -2299,6 +2301,7 @@ p.sm { margin: 0; }
   const yoaName = (y) => String(BASE_YEAR + y);
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const FF_MONTH = 0.65; // seconds per month while the planner fast-forwards
+  const BUILD = '2026-11-03'; // the build date, filled in by build.py
   const RUSH_SECS = [60, 40]; // the 1.1 midnight clock: the first rush is longest, to get the book going; then each later one
 
   // ---------- small helpers ----------
@@ -2823,6 +2826,7 @@ p.sm { margin: 0; }
     stageEl.appendChild(sceneRoot);
     if (scene.mounted) scene.mounted();
     Journey.sync(name);
+    Stats.scene(name);
   }
   function interstitial(key, next) {
     const [title, body] = FACTS[key];
@@ -3089,7 +3093,8 @@ p.sm { margin: 0; }
         '<p>Pick your business mix, survive the BOC and raise the capital. Then run three years of account: the 1.1 renewals, catastrophes, business plans and coming into line. Every game is a new market. Beat the rivals, then beat your best.</p></div>' +
         '<div class="title-bottom"><div class="led" aria-hidden="true"><span>' + esc(ledText) + '</span></div>' +
         '<div class="title-actions"><button class="btn primary" id="startBtn">Start <span class="kbd">Enter</span></button><button class="btn" id="howBtn">How scoring works</button></div>' +
-        '<p class="disclaimer">Unofficial. Not affiliated with Lloyd’s. All brokers, investors and rivals are fictional. Numbers simplified.</p></div></section>');
+        '<p class="disclaimer">Unofficial. Not affiliated with Lloyd’s. All brokers, investors and rivals are fictional. Numbers simplified.</p>' + Stats.noteHTML() + '</div></section>');
+      Stats.wire(root);
       root.querySelector('#howBtn').addEventListener('click', () => $('#helpBtn').click());
       const start = () => {
         removeEventListener('keydown', this.onKey);
@@ -4157,6 +4162,7 @@ p.sm { margin: 0; }
       if (this.phase === 'rush') {
         Sound.bell(2);
         const [x, y] = centre(this.root.querySelector('#box')); FX.burst(x, y, 'confetti', 80);
+        (G.rush = G.rush || {})[this.y] = { left, early: !!early };
         const slips = left + (left > 1 ? ' slips' : ' slip');
         toast('Happy New Year from the Room', early ? (left > 0 ? 'You closed your box early. ' + slips + ' went to other markets.' : 'You closed your box with every slip answered.')
           : left > 0 ? slips + ' missed the midnight deadline.' : 'Every slip got an answer before midnight.', 'var(--brass)');
@@ -4342,7 +4348,7 @@ p.sm { margin: 0; }
     // the midnight clock keeps running throughout
     askTime() {
       const c = this.cur; if (!c || c.busy || this.over || paused) return;
-      c.asks = (c.asks || 0) + 1;
+      c.asks = (c.asks || 0) + 1; G.asks = (G.asks || 0) + 1;
       if (c.asks >= 3) { this.walk(); return; }
       c.patience = Math.min(1, c.patience + (c.asks === 1 ? 0.4 : 0.25));
       const bub = this.root.querySelector('#brokerRow .bubble');
@@ -5706,6 +5712,7 @@ p.sm { margin: 0; }
       const thanks = (how, copied) => {
         box.classList.add('sent'); note.textContent = FB_AFTER[how](copied); store.set('lsl-fb-draft', '');
         this.fbSent = true;
+        if (!G.fbHow) { G.fbHow = how; Stats.send(); }
         if (onSent) onSent();
       };
       const needText = (e) => {
@@ -5761,6 +5768,7 @@ p.sm { margin: 0; }
     },
     copy() {
       const text = shareText(this.res, this.grade);
+      if (!G.shared) { G.shared = true; Stats.send(); }
       const copyIt = () => this.copyText(text, 'Copied', 'Paste it into Teams and wait for the replies.');
       // phones (and some desktops) get the share sheet, with the link inside the text so apps don't show it twice.
       // It's copied first, as a backup if Teams or email doesn't open (the sheet takes focus, and the clipboard needs it);
@@ -5770,6 +5778,80 @@ p.sm { margin: 0; }
         copied.then((ok) => { if (ok) toast('Copied too', 'If Teams or your email doesn’t open, paste your result anywhere.', 'var(--good)'); });
         navigator.share({ title: 'Lime Street Launch', text }).catch((e) => { if (!e || e.name !== 'AbortError') copied.then((ok) => { if (!ok) copyIt(); }); });
       } else copyIt();
+    }
+  };
+
+  // ---------- anonymous game stats: one row per game in a Google Sheet (see stats/apps-script.gs) ----------
+  // Off unless STATS_URL is set, and never from a local file, the artifact, ?nostats, a browser asking not to be
+  // tracked, or a player who switched it off on the title screen. Autoplay (the tests) sends only with ?statsdebug,
+  // and then to a dummy address.
+  const STATS_URL = params.has('statsdebug') ? 'https://script.google.com/macros/s/lsl-statsdebug/exec' : '';
+  const Stats = {
+    enabled() {
+      return !!STATS_URL && /^https?:$/.test(location.protocol) && !window.claude && !params.has('nostats') &&
+        navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1' && (!AUTO || params.has('statsdebug'));
+    },
+    on() { return this.enabled() && !store.get('lsl-nostats', false); },
+    id(prefix, n) {
+      const a = new Uint8Array(n);
+      try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < n; i++) a[i] = Math.floor(rand() * 256); }
+      return prefix + Array.from(a, (x) => (x % 36).toString(36)).join('');
+    },
+    player() { let id = store.get('lsl-player', null); if (!id) { id = this.id('p-', 10); store.set('lsl-player', id); } return id; },
+    // each step a game reaches updates its row; the results screen says Finished or Run-off
+    scene(name) {
+      const st = { pitch: 'BOC', grab: 'Capital', tape: 'Red tape', year: 'Year ' + (G.y + 1), close: 'Close' }[name];
+      if (st) this.send(st);
+      else if (name === 'results' && G.result) this.send(G.result.runoff !== null ? 'Run-off' : 'Finished');
+    },
+    // with no status, resend the last one (feedback and sharing after the results)
+    send(status) {
+      if (!this.on() || !G || !G.mixId || !G.au) return;
+      if (status) G.statsStatus = status; else status = G.statsStatus;
+      if (!status) return;
+      if (!G.statsId) { G.statsId = this.id('g-', 12); G.statsN = store.get('lsl-games', 0) + 1; store.set('lsl-games', G.statsN); }
+      let body;
+      try { body = JSON.stringify(this.record(status)); } catch (e) { return; }
+      // text/plain needs no CORS preflight; the beacon survives the page closing
+      try { if (navigator.sendBeacon && navigator.sendBeacon(STATS_URL, new Blob([body], { type: 'text/plain;charset=UTF-8' }))) return; } catch (e) { /* try fetch */ }
+      try { fetch(STATS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body }).catch(() => {}); } catch (e) { /* stats never get in the way */ }
+    },
+    record(status) {
+      const res = G.result, rush = G.rush || {}, ys = [0, 1, 2];
+      const byYear = (f) => ys.map(f).join(' / ');
+      return {
+        app: 'lsl', gameId: G.statsId, status, player: this.player(), playerGame: G.statsN,
+        minutes: G.startedAt ? Math.round((Date.now() - G.startedAt) / 6000) / 10 : '',
+        market: G.season, mix: E.MIX_BY_ID[G.mixId].name, au: E.AUS[G.au].name,
+        share: res ? Math.round(res.alignedAvg * 100) : G.fill ? Math.round(G.fill.aligned * 100) : '',
+        score: res ? Math.round(res.score) : '', grade: res ? E.grade(res.score, res.runoff) : '',
+        y1: res ? E.round1(res.per[0].value) : '', y2: res ? E.round1(res.per[1].value) : '', y3: res ? E.round1(res.per[2].value) : '',
+        cor: res && res.gwp ? Math.round(res.cor * 100) : '', pmd: G.pmd,
+        cashCalls: res ? res.cashCalls.length : '', runoff: res && res.runoff !== null ? yoaName(Math.floor(res.runoff / 12)) : '',
+        missed: byYear((y) => (rush[y] ? rush[y].left : '–')),
+        early: ys.filter((y) => rush[y] && rush[y].early).map((y) => 'Y' + (y + 1)).join(' ') || 'No',
+        askTime: G.asks || 0,
+        shields: byYear((y) => (G.years[y] ? (G.years[y].outwards || []).length : '–')),
+        ilws: byYear((y) => (G.years[y] ? (G.years[y].ilwCover || []).length : '–')),
+        liveCat: Object.keys(G.ilw).length, reinsCall: G.favours.reins ? 'No' : 'Yes',
+        inTray: G.evLog.map((f) => f.id + ' ' + ('ABC'[f.i] || '?') + (f.tag ? ' (' + f.tag + ')' : '')).join(', '),
+        badges: (G.badges || []).join(' '),
+        feedback: G.fbHow === 'mail' ? 'Email' : G.fbHow === 'copy' ? 'Copy' : 'No', shared: G.shared ? 'Yes' : 'No',
+        device: matchMedia('(pointer: coarse)').matches ? (Math.min(screen.width, screen.height) < 600 ? 'Phone' : 'Tablet') : 'Desktop',
+        screen: innerWidth + '×' + innerHeight, build: BUILD
+      };
+    },
+    // the line under the disclaimer on the title screen, with a switch for this device
+    noteHTML() { return this.enabled() ? '<p class="disclaimer statsnote" id="statsNote"></p>' : ''; },
+    wire(root) {
+      const n = root.querySelector('#statsNote'); if (!n) return;
+      const paint = () => {
+        const off = store.get('lsl-nostats', false);
+        n.innerHTML = (off ? 'Game stats are off on this device. ' : 'Anonymous game stats (no names or emails) are recorded to improve the game. ') +
+          '<button class="statsoff" type="button" id="statsOff">' + (off ? 'Turn them back on' : 'Don’t record mine') + '</button>';
+        n.querySelector('button').addEventListener('click', () => { store.set('lsl-nostats', !off); paint(); });
+      };
+      paint();
     }
   };
 
