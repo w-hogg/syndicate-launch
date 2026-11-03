@@ -5785,7 +5785,8 @@ p.sm { margin: 0; }
   // Off unless STATS_URL is set, and never from a local file, the artifact, ?nostats, a browser asking not to be
   // tracked, or a player who switched it off on the title screen. Autoplay (the tests) sends only with ?statsdebug,
   // and then to a dummy address.
-  const STATS_URL = params.has('statsdebug') ? 'https://script.google.com/macros/s/lsl-statsdebug/exec' : '';
+  const STATS_URL = params.has('statsdebug') ? 'https://script.google.com/macros/s/lsl-statsdebug/exec'
+    : 'https://script.google.com/macros/s/AKfycbydPYPc7WCBeF-woOtQojYqH_zAqL5fm9OLiodQk7O2ikt-A9AhPofsjUUefOdJZHAL/exec';
   const Stats = {
     enabled() {
       return !!STATS_URL && /^https?:$/.test(location.protocol) && !window.claude && !params.has('nostats') &&
