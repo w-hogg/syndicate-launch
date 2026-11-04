@@ -130,7 +130,7 @@ Each row holds:
 - **Afterwards:** whether feedback was sent (by email or copy, never the text) and whether the result was shared.
 - **Player:** a random ID kept on the device, to count repeat players.
 
-Nothing personal is recorded: no names, emails or syndicate names. The title screen says stats are recorded and has a **Don't record mine** switch. Nothing is sent from a local file, from the artifact, with `?nostats` in the link, or from a browser set to Global Privacy Control or Do Not Track.
+Game stats never include names, emails or syndicate names: the only names in the Sheet are the ones players choose to add to the top 5 (below). The title screen says stats are recorded and has a **Don't record mine** switch. Nothing is sent from a local file, from the artifact, with `?nostats` in the link, or from a browser set to Global Privacy Control or Do Not Track.
 
 **Setting it up (once):**
 1. Make a new Google Sheet. Choose **Extensions → Apps Script**, replace the code with [`stats/apps-script.gs`](stats/apps-script.gs) and save.
@@ -138,7 +138,16 @@ Nothing personal is recorded: no names, emails or syndicate names. The title scr
 3. Copy the web app URL (it ends in `/exec`). Opening it in a browser should say the receiver is running.
 4. In `index.html`, find the `const STATS_URL` line and put the URL between the empty quotes `''` at its end. Stats stay off until it's set.
 
-The first game creates a **Games** tab with a header row. The receiver ignores anything that isn't a game record, never lets text start a formula, and stops adding rows at 50,000.
+The first game creates a **Games** tab with a header row. The receiver ignores anything that isn't a game record, never lets text start a formula, and stops adding rows at 50,000. After changing the script, choose **Deploy → Manage deployments → Edit → Version: New version → Deploy**; the URL stays the same. The script starts with `@OnlyCurrentDoc`, which limits its Google permission to this one spreadsheet.
+
+### The all-time top 5
+
+The results screen shows the five best scores from everyone who has played, one entry per player (their best), above the weekly board. A positive score that beats fifth place gets a box to add a name, so everyone who plays afterwards sees it.
+
+- **Names:** 2 to 20 letters, numbers, spaces and `. ' & -`, with a basic rude-word filter in both the game and the receiver. Names show straight away; to remove one, delete its row in the **Top 5** tab (the board refreshes within a minute).
+- **What's saved:** the name, score, mix, Active Underwriter, market, date, the anonymous player ID and the game ID, which ties the name to that game's stats row.
+- **Who can use it:** anyone on the GitHub Pages site, even with stats switched off, since adding a name is the player's own choice. Not the artifact or a local file.
+- **Fair play:** a browser game can't fully stop a faked score. The receiver only accepts sensible scores (1 to 250,000), one name per game and ten tries an hour per device, and you can delete any row.
 
 ## Every game is different
 
